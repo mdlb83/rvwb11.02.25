@@ -4,7 +4,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom
 import { CampgroundEntry } from '../../types/campground';
 
 interface CampgroundBottomSheetProps {
-  campground: CampgroundEntry;
+  campground: CampgroundEntry | null;
   onClose: () => void;
 }
 
@@ -12,12 +12,18 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
 
+  // Determine if bottom sheet should be visible (index -1 = closed, index 1 = open)
+  const sheetIndex = useMemo(() => (campground ? 1 : -1), [campground]);
+
+  // Update bottom sheet position when campground changes
   useEffect(() => {
-    // Small delay to ensure bottom sheet is mounted before expanding
-    const timer = setTimeout(() => {
-      bottomSheetRef.current?.expand();
-    }, 100);
-    return () => clearTimeout(timer);
+    if (campground) {
+      // Small delay to ensure smooth animation
+      const timer = setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(1);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
   }, [campground]);
 
   const handleClose = useCallback(() => {
@@ -39,6 +45,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   );
 
   const handleGetDirections = () => {
+    if (!campground) return;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${campground.latitude},${campground.longitude}`;
     Linking.openURL(url);
   };
@@ -80,7 +87,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      index={1}
+      index={sheetIndex}
       snapPoints={snapPoints}
       enablePanDownToClose={true}
       onChange={(index) => {
@@ -92,8 +99,10 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       handleIndicatorStyle={styles.handleIndicator}
     >
       <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
+        {campground ? (
+          <>
+            <View style={styles.header}>
+              <Text style={styles.title}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
           <Text style={styles.subtitle}>
             {campground.city}, {campground.state}
           </Text>
@@ -152,9 +161,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </View>
         )}
 
-        <TouchableOpacity style={styles.directionsButton} onPress={handleGetDirections}>
-          <Text style={styles.directionsButtonText}>Get Directions</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.directionsButton} onPress={handleGetDirections}>
+              <Text style={styles.directionsButtonText}>Get Directions</Text>
+            </TouchableOpacity>
+          </>
+        ) : null}
       </BottomSheetScrollView>
     </BottomSheet>
   );

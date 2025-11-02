@@ -23,12 +23,10 @@ export default function MapScreen() {
         campgrounds={campgrounds}
         onMarkerPress={setSelectedCampground}
       />
-      {selectedCampground && (
-        <CampgroundBottomSheet
-          campground={selectedCampground}
-          onClose={() => setSelectedCampground(null)}
-        />
-      )}
+      <CampgroundBottomSheet
+        campground={selectedCampground}
+        onClose={() => setSelectedCampground(null)}
+      />
     </View>
   );
 }
