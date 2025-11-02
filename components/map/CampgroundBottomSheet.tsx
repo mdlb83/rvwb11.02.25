@@ -13,7 +13,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
 
   useEffect(() => {
-    bottomSheetRef.current?.expand();
+    // Small delay to ensure bottom sheet is mounted before expanding
+    const timer = setTimeout(() => {
+      bottomSheetRef.current?.expand();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [campground]);
 
   const handleClose = useCallback(() => {
@@ -76,16 +80,20 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      index={0}
+      index={1}
       snapPoints={snapPoints}
       enablePanDownToClose={true}
-      onClose={handleClose}
+      onChange={(index) => {
+        if (index === -1) {
+          onClose();
+        }
+      }}
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={styles.handleIndicator}
     >
       <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
-          <Text style={styles.title}>{campground.campground.name}</Text>
+          <Text style={styles.title}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
           <Text style={styles.subtitle}>
             {campground.city}, {campground.state}
           </Text>
@@ -100,19 +108,23 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                 {campground.hookup_type === 'full' ? 'Full Hookup' : 'Partial Hookup'}
               </Text>
             </View>
-            <Text style={styles.typeText}>{campground.campground.type}</Text>
+            {campground.campground?.type && (
+              <Text style={styles.typeText}>{campground.campground.type}</Text>
+            )}
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Campground Info</Text>
-          <View style={styles.infoText}>
-            {renderHtmlContent(campground.campground.info)}
+        {campground.campground && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Campground Info</Text>
+            <View style={styles.infoText}>
+              {renderHtmlContent(campground.campground.info || 'No information available.')}
+            </View>
+            {campground.campground.notes && (
+              <Text style={styles.notesText}>{campground.campground.notes}</Text>
+            )}
           </View>
-          {campground.campground.notes && (
-            <Text style={styles.notesText}>{campground.campground.notes}</Text>
-          )}
-        </View>
+        )}
 
         {campground.trails.length > 0 && (
           <View style={styles.section}>

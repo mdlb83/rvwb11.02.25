@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { CampgroundEntry } from '../../types/campground';
 import CampgroundMarker from './CampgroundMarker';
 
@@ -29,13 +29,19 @@ export default function CampgroundMap({ campgrounds, onMarkerPress }: Campground
         showsUserLocation={true}
         showsMyLocationButton={true}
       >
-        {campgrounds.map((campground, index) => (
-          <CampgroundMarker
-            key={`${campground.city}-${campground.state}-${index}`}
-            campground={campground}
-            onPress={() => onMarkerPress(campground)}
-          />
-        ))}
+        {campgrounds
+          .filter((campground) => 
+            campground.campground && 
+            campground.latitude && 
+            campground.longitude
+          )
+          .map((campground, index) => (
+            <CampgroundMarker
+              key={`${campground.city}-${campground.state}-${index}`}
+              campground={campground}
+              onPress={() => onMarkerPress(campground)}
+            />
+          ))}
       </MapView>
     </View>
   );
