@@ -8,12 +8,14 @@ export interface CampgroundFilters {
   searchQuery?: string;
 }
 
-export function useCampgrounds(filters?: CampgroundFilters) {
+export function useCampgrounds(filters?: CampgroundFilters, retryKey?: number) {
   const [campgrounds, setCampgrounds] = useState<CampgroundEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     loadCampgrounds()
       .then(data => {
         setCampgrounds(data);
@@ -23,7 +25,7 @@ export function useCampgrounds(filters?: CampgroundFilters) {
         setError(err);
         setLoading(false);
       });
-  }, []);
+  }, [retryKey]);
 
   const filteredCampgrounds = useMemo(() => {
     if (!filters) {

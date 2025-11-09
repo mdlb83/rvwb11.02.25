@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Alert } from 'react-native';
+import { View, StyleSheet, Keyboard, TouchableWithoutFeedback, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
@@ -10,6 +10,10 @@ import CampgroundBottomSheet from '../components/map/CampgroundBottomSheet';
 import SearchBar from '../components/filters/SearchBar';
 import FilterButton from '../components/filters/FilterButton';
 import LocationButton from '../components/map/LocationButton';
+import LoadingState from '../components/common/LoadingState';
+import ErrorState from '../components/common/ErrorState';
+import EmptyState from '../components/common/EmptyState';
+import ResultCountBadge from '../components/map/ResultCountBadge';
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -24,7 +28,12 @@ export default function MapScreen() {
     searchQuery: searchQuery.trim() || undefined,
   };
 
-  const { campgrounds, loading } = useCampgrounds(filters);
+  const [retryKey, setRetryKey] = useState(0);
+  const { campgrounds, loading, error, allCampgrounds } = useCampgrounds(filters, retryKey);
+  
+  // Check if we have active filters
+  const hasActiveFilters = selectedHookupType !== 'all' || searchQuery.trim().length > 0;
+  const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
@@ -40,10 +49,50 @@ export default function MapScreen() {
     };
   }, []);
 
+  // Show loading state
   if (loading) {
+    return <LoadingState />;
+  }
+
+  // Show error state
+  if (error) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+      <ErrorState
+        message={error.message || 'Failed to load campground data. Please check your connection and try again.'}
+        onRetry={() => {
+          // Trigger retry by updating key
+          setRetryKey(prev => prev + 1);
+        }}
+      />
+    );
+  }
+
+  // Show empty state when filters return no results
+  if (hasNoResults) {
+    return (
+      <View style={styles.container}>
+        <EmptyState
+          title="No campgrounds found"
+          message={
+            searchQuery.trim().length > 0
+              ? `No campgrounds match "${searchQuery}". Try adjusting your search or filters.`
+              : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
+          }
+          icon="map-outline"
+        />
+        <View style={[styles.filtersContainer, { paddingBottom: insets.bottom }]}>
+          <View style={styles.searchRow}>
+            <SearchBar
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onClear={handleClearSearch}
+            />
+            <FilterButton
+              selectedHookupType={selectedHookupType}
+              onHookupTypeChange={setSelectedHookupType}
+            />
+          </View>
+        </View>
       </View>
     );
   }
@@ -89,6 +138,9 @@ export default function MapScreen() {
             onMapPress={handleMapPress}
             mapRef={mapRef}
           />
+          {hasActiveFilters && campgrounds.length > 0 && (
+            <ResultCountBadge count={campgrounds.length} total={allCampgrounds.length} />
+          )}
         </View>
       </TouchableWithoutFeedback>
       {!selectedCampground && (
@@ -139,11 +191,6 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   mapWrapper: {
     flex: 1,
