@@ -12,24 +12,34 @@ module.exports = {
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#4CAF50"
     },
+    description: "Find RV campgrounds with easy access to paved bike trails across the United States. Discover 385+ campground locations with full and partial hookups, detailed trail information, and directions.",
+    keywords: ["RV", "campground", "bike trails", "camping", "RVing", "bicycle", "trails", "full hookup", "partial hookup"],
+    privacy: "public",
+    githubUrl: "https://github.com/mdlb83/rvwb11.02.25",
     assetBundlePatterns: [
       "**/*"
     ],
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.rvingwithbikes.app",
+      buildNumber: "1",
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""
+      },
+      infoPlist: {
+        NSLocationWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map.",
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map."
       }
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#4CAF50"
       },
       package: "com.rvingwithbikes.app",
+      versionCode: 1,
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""
