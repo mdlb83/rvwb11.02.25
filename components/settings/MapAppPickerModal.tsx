@@ -32,7 +32,7 @@ export default function MapAppPickerModal({
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
+        <View testID="modal-overlay" style={styles.overlay}>
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalContent}>
               <Text style={styles.title}>Choose Map App</Text>

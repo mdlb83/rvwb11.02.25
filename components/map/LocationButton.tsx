@@ -8,7 +8,12 @@ interface LocationButtonProps {
 
 export default function LocationButton({ onPress }: LocationButtonProps) {
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      testID="location-button"
+      style={styles.button}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <Ionicons name="navigate" size={22} color="#333" />
     </TouchableOpacity>
   );

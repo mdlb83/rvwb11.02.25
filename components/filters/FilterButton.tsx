@@ -32,6 +32,7 @@ export default function FilterButton({
   return (
     <>
       <TouchableOpacity
+        testID="filter-button"
         style={[
           styles.filterButton,
           selectedHookupType !== 'all' && styles.filterButtonActive,

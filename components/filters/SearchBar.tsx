@@ -28,7 +28,11 @@ export default function SearchBar({
         autoCorrect={false}
       />
       {value.length > 0 && (
-        <TouchableOpacity onPress={onClear} style={styles.clearButton}>
+        <TouchableOpacity
+          testID="clear-button"
+          onPress={onClear}
+          style={styles.clearButton}
+        >
           <Ionicons name="close-circle" size={20} color="#999" />
         </TouchableOpacity>
       )}
