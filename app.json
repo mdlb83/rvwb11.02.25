@@ -18,7 +18,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.rvingwithbikes.app",
       "config": {
-        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY_HERE"
+        "googleMapsApiKey": "YOUR_IOS_GOOGLE_MAPS_API_KEY_HERE"
       }
     },
     "android": {
@@ -29,7 +29,7 @@
       "package": "com.rvingwithbikes.app",
       "config": {
         "googleMaps": {
-          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY_HERE"
+          "apiKey": "YOUR_ANDROID_GOOGLE_MAPS_API_KEY_HERE"
         }
       },
       "permissions": [

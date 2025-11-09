@@ -36,29 +36,24 @@ This app requires Google Maps API keys for both iOS and Android platforms. Follo
      - Select "Restrict key"
      - Choose only the Maps SDK APIs you enabled
 
-## Step 2: Add Keys to app.json
+## Step 2: Add Keys to .env File
 
-Once you have your API keys, update `app.json`:
+**IMPORTANT:** API keys are stored in a `.env` file (not committed to git) for security.
 
-### For iOS:
-```json
-"ios": {
-  "config": {
-    "googleMapsApiKey": "YOUR_IOS_API_KEY_HERE"
-  }
-}
-```
+1. **Copy the example file:**
+   ```bash
+   cp .env.example .env
+   ```
 
-### For Android:
-```json
-"android": {
-  "config": {
-    "googleMaps": {
-      "apiKey": "YOUR_ANDROID_API_KEY_HERE"
-    }
-  }
-}
-```
+2. **Edit `.env` and add your API keys:**
+   ```bash
+   # Google Maps API Keys
+   GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
+   GOOGLE_MAPS_IOS_API_KEY=YOUR_IOS_GOOGLE_MAPS_API_KEY_HERE
+   GOOGLE_MAPS_ANDROID_API_KEY=YOUR_ANDROID_GOOGLE_MAPS_API_KEY_HERE
+   ```
+
+3. **The app.config.js file will automatically read from `.env`** - no need to edit app.json or app.config.js directly.
 
 ## Step 3: Get Android SHA-1 Fingerprint (For Key Restriction)
 
@@ -75,7 +70,7 @@ The SHA-1 will be generated when you create your production build with EAS.
 
 ## Step 4: Test Your Setup
 
-1. **Update app.json** with your API keys
+1. **Create `.env` file** with your API keys (see Step 2)
 2. **Restart Expo server:**
    ```bash
    npm start -- --clear
@@ -88,7 +83,7 @@ The SHA-1 will be generated when you create your production build with EAS.
 ## Troubleshooting
 
 ### Map Not Loading
-- Verify API keys are correct in `app.json`
+- Verify API keys are correct in `.env` file
 - Check that Maps SDK APIs are enabled in Google Cloud Console
 - Ensure API key restrictions allow your app (if restrictions are set)
 - Check Expo logs for API key errors
@@ -99,11 +94,11 @@ The SHA-1 will be generated when you create your production build with EAS.
 - Ensure key restrictions match your app's bundle ID/package name
 
 ### iOS Build Issues
-- Make sure the iOS API key is in `ios.config.googleMapsApiKey`
+- Make sure the iOS API key is set in `.env` as `GOOGLE_MAPS_IOS_API_KEY`
 - Verify bundle identifier matches: `com.rvingwithbikes.app`
 
 ### Android Build Issues
-- Make sure the Android API key is in `android.config.googleMaps.apiKey`
+- Make sure the Android API key is set in `.env` as `GOOGLE_MAPS_ANDROID_API_KEY`
 - Verify package name matches: `com.rvingwithbikes.app`
 
 ## Security Best Practices
@@ -114,25 +109,24 @@ The SHA-1 will be generated when you create your production build with EAS.
 4. **Never commit API keys to public repositories**
 5. **Use environment variables for production** (consider using EAS Secrets)
 
-## Using Environment Variables (Advanced)
+## Using EAS Secrets (For Production Builds)
 
-For better security, you can use EAS Secrets:
+For production builds with EAS, you can also use EAS Secrets:
 
 ```bash
 # Set secrets
-eas secret:create --scope project --name GOOGLE_MAPS_IOS_KEY --value "your-ios-key"
-eas secret:create --scope project --name GOOGLE_MAPS_ANDROID_KEY --value "your-android-key"
+eas secret:create --scope project --name GOOGLE_MAPS_IOS_API_KEY --value "your-ios-key"
+eas secret:create --scope project --name GOOGLE_MAPS_ANDROID_API_KEY --value "your-android-key"
 ```
 
-Then reference them in `app.json` using `process.env.GOOGLE_MAPS_IOS_KEY` (requires app.json to support env vars or use app.config.js).
+The `app.config.js` file will automatically use these secrets during EAS builds.
 
 ## Current Configuration
 
-Your current `app.json` has placeholder values:
-- iOS: `YOUR_IOS_GOOGLE_MAPS_API_KEY_HERE`
-- Android: `YOUR_ANDROID_GOOGLE_MAPS_API_KEY_HERE`
-
-Replace these with your actual API keys from Google Cloud Console.
+API keys are stored in `.env` file (not committed to git):
+- Copy `.env.example` to `.env`
+- Add your actual API keys from Google Cloud Console
+- The `.env` file is already in `.gitignore` for security
 
 ---
 

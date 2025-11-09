@@ -131,7 +131,7 @@ If you have multiple environments (dev, staging, production), you can:
 Your app uses:
 - **Bundle ID (iOS):** `com.rvingwithbikes.app`
 - **Package Name (Android):** `com.rvingwithbikes.app`
-- **API Key:** `YOUR_GOOGLE_MAPS_API_KEY_HERE`
+- **API Key:** Set in `.env` file (see setup instructions)
 
 Make sure these match exactly in your Google Cloud Console restrictions!
 
