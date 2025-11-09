@@ -30,7 +30,8 @@ module.exports = {
       },
       infoPlist: {
         NSLocationWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map.",
-        NSLocationAlwaysAndWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map.",
+        ITSAppUsesNonExemptEncryption: false
       }
     },
     android: {
