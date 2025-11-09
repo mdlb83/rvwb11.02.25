@@ -180,6 +180,9 @@ npm test
 - Google Maps API keys need to be configured for maps to work
 - Some campground entries may have missing/null data (currently filtered out)
 
+### 🔄 Enhancement Needed
+- **Keyboard dismissal on map touch**: After searching, when user touches the map, the keyboard should automatically dismiss to improve UX
+
 ## Development Notes
 
 ### Important Commands
