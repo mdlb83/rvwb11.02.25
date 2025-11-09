@@ -1,7 +1,10 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { CampgroundEntry } from '../../types/campground';
+import { useMapAppPreference } from '../../hooks/useMapAppPreference';
+import { getMapAppUrl, MapApp } from '../../utils/mapAppPreferences';
+import MapAppPickerModal from '../settings/MapAppPickerModal';
 
 interface CampgroundBottomSheetProps {
   campground: CampgroundEntry | null;
@@ -10,21 +13,37 @@ interface CampgroundBottomSheetProps {
 
 export default function CampgroundBottomSheet({ campground, onClose }: CampgroundBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
+  // Adjusted snap points to ensure buttons are visible: 30% peek, 65% default (shows buttons), 90% expanded
+  const snapPoints = useMemo(() => ['30%', '65%', '90%'], []);
+  const { preference, loading, savePreference } = useMapAppPreference();
+  const [showPicker, setShowPicker] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'directions' | 'search' | null>(null);
 
-  // Determine if bottom sheet should be visible (index -1 = closed, index 1 = open)
-  const sheetIndex = useMemo(() => (campground ? 1 : -1), [campground]);
+  // Determine initial snap index based on content
+  // If campground has blog post, open at index 2 (90%) to show all content including buttons
+  // Otherwise open at index 1 (65%) which should show buttons for most content
+  const initialSnapIndex = useMemo(() => {
+    if (!campground) return -1;
+    // If there's a blog post, open at 90% to ensure buttons are visible
+    if (campground.blog_post) {
+      return 2; // 90%
+    }
+    return 1; // 65% - should show buttons for most content
+  }, [campground]);
+
+  // Determine if bottom sheet should be visible (index -1 = closed)
+  const sheetIndex = useMemo(() => (campground ? initialSnapIndex : -1), [campground, initialSnapIndex]);
 
   // Update bottom sheet position when campground changes
   useEffect(() => {
     if (campground) {
       // Small delay to ensure smooth animation
       const timer = setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(1);
+        bottomSheetRef.current?.snapToIndex(initialSnapIndex);
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [campground]);
+  }, [campground, initialSnapIndex]);
 
   const handleClose = useCallback(() => {
     bottomSheetRef.current?.close();
@@ -44,44 +63,262 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     [handleClose]
   );
 
-  const handleGetDirections = () => {
+  const handleGetDirections = async () => {
     if (!campground) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${campground.latitude},${campground.longitude}`;
-    Linking.openURL(url);
+
+    // If no preference is set, show picker
+    if (!preference && !loading) {
+      setPendingAction('directions');
+      setShowPicker(true);
+      return;
+    }
+
+    const mapApp = preference || 'default';
+    const url = getMapAppUrl(mapApp, 'directions', {
+      latitude: campground.latitude,
+      longitude: campground.longitude,
+    });
+
+    Linking.openURL(url).catch((err) => {
+      console.error('Failed to open maps:', err);
+      // Fallback to web-based Google Maps
+      Linking.openURL(
+        `https://www.google.com/maps/dir/?api=1&destination=${campground.latitude},${campground.longitude}`
+      );
+    });
+  };
+
+  const handleOpenInMaps = async () => {
+    if (!campground) return;
+
+    // If no preference is set, show picker
+    if (!preference && !loading) {
+      setPendingAction('search');
+      setShowPicker(true);
+      return;
+    }
+
+    const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
+    const mapApp = preference || 'default';
+    const url = getMapAppUrl(mapApp, 'search', {
+      query: campgroundName,
+    });
+
+    Linking.openURL(url).catch((err) => {
+      console.error('Failed to open maps:', err);
+      // Fallback to web-based Google Maps
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campgroundName)}`);
+    });
+  };
+
+  const handleMapAppSelected = async (app: MapApp) => {
+    await savePreference(app);
+
+    // Execute the pending action if there was one
+    if (pendingAction && campground) {
+      if (pendingAction === 'directions') {
+        const url = getMapAppUrl(app, 'directions', {
+          latitude: campground.latitude,
+          longitude: campground.longitude,
+        });
+        Linking.openURL(url).catch((err) => {
+          console.error('Failed to open maps:', err);
+        });
+      } else if (pendingAction === 'search') {
+        const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
+        const url = getMapAppUrl(app, 'search', {
+          query: campgroundName,
+        });
+        Linking.openURL(url).catch((err) => {
+          console.error('Failed to open maps:', err);
+        });
+      }
+      setPendingAction(null);
+    }
+  };
+
+  const handleReportProblem = () => {
+    if (!campground) return;
+    const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
+    const subject = encodeURIComponent(`Problem Report: ${campgroundName}`);
+    const body = encodeURIComponent(
+      `I'm reporting a problem with the following campground:\n\n` +
+      `Campground: ${campgroundName}\n` +
+      `Location: ${campground.city}, ${campground.state}\n\n` +
+      `Problem details:\n\n`
+    );
+    const emailUrl = `mailto:dcbc3705@gmail.com?subject=${subject}&body=${body}`;
+    Linking.openURL(emailUrl).catch((err) => {
+      console.error('Failed to open email:', err);
+    });
+  };
+
+  const handleSuggestCampground = () => {
+    const subject = encodeURIComponent('Suggest a New Campground');
+    const body = encodeURIComponent(
+      `I'd like to suggest adding the following campground:\n\n` +
+      `Campground Name:\n` +
+      `Location (City, State):\n` +
+      `Hookup Type (Full/Partial):\n` +
+      `Campground Website/Info:\n` +
+      `Nearby Bike Trails:\n` +
+      `Additional Notes:\n\n`
+    );
+    const emailUrl = `mailto:dcbc3705@gmail.com?subject=${subject}&body=${body}`;
+    Linking.openURL(emailUrl).catch((err) => {
+      console.error('Failed to open email:', err);
+    });
   };
 
   const renderHtmlContent = (html: string) => {
-    // Simple HTML link extraction - in production, use a proper HTML renderer
-    const linkRegex = /<a\s+href=['"]([^'"]+)['"][^>]*>(.*?)<\/a>/gi;
-    let lastIndex = 0;
+    // Handle nested links by parsing with a stack to track nesting depth
+    interface LinkTag {
+      url: string;
+      startIndex: number;
+      endIndex: number;
+      depth: number;
+    }
+
+    const linkStack: LinkTag[] = [];
     const elements: (string | { text: string; url: string })[] = [];
+    
+    // Find all opening and closing <a> tags
+    const openTagRegex = /<a\s+href=['"]([^'"]+)['"][^>]*>/gi;
+    const closeTagRegex = /<\/a>/gi;
+    
+    // Collect all tag positions
+    const tags: Array<{ type: 'open' | 'close'; index: number; url?: string }> = [];
+    
     let match;
-
-    while ((match = linkRegex.exec(html)) !== null) {
-      if (match.index > lastIndex) {
-        elements.push(html.substring(lastIndex, match.index));
-      }
-      elements.push({ text: match[2], url: match[1] });
-      lastIndex = match.index + match[0].length;
+    while ((match = openTagRegex.exec(html)) !== null) {
+      tags.push({ type: 'open', index: match.index, url: match[1] });
     }
+    
+    while ((match = closeTagRegex.exec(html)) !== null) {
+      tags.push({ type: 'close', index: match.index });
+    }
+    
+    // Sort tags by position
+    tags.sort((a, b) => a.index - b.index);
+    
+    // Process tags to build link hierarchy
+    let lastIndex = 0;
+    let currentDepth = 0;
+    const linkRanges: Array<{ url: string; start: number; end: number; depth: number }> = [];
+    
+    for (const tag of tags) {
+      if (tag.type === 'open' && tag.url) {
+        // Add text before this tag if any
+        if (tag.index > lastIndex) {
+          const textBefore = html.substring(lastIndex, tag.index);
+          if (textBefore.trim()) {
+            elements.push(textBefore);
+          }
+        }
+        
+        linkStack.push({
+          url: tag.url,
+          startIndex: tag.index,
+          endIndex: -1,
+          depth: currentDepth,
+        });
+        currentDepth++;
+        lastIndex = tag.index + html.substring(tag.index).match(/<a\s+href=['"]([^'"]+)['"][^>]*>/)![0].length;
+      } else if (tag.type === 'close') {
+        if (linkStack.length > 0) {
+          const link = linkStack.pop()!;
+          link.endIndex = tag.index;
+          linkRanges.push({
+            url: link.url,
+            start: link.startIndex,
+            end: tag.index + 4, // +4 for </a>
+            depth: link.depth,
+          });
+          currentDepth--;
+          lastIndex = tag.index + 4;
+        }
+      }
+    }
+    
+    // Add remaining text after last tag
     if (lastIndex < html.length) {
-      elements.push(html.substring(lastIndex));
+      const textAfter = html.substring(lastIndex);
+      if (textAfter.trim()) {
+        elements.push(textAfter);
+      }
+    }
+    
+    // Now build the final elements using only outermost links
+    if (linkRanges.length === 0) {
+      // No links found, return plain text
+      return <Text style={styles.htmlText}>{html.replace(/<[^>]*>/g, '')}</Text>;
+    }
+    
+    // Sort ranges by start position and filter to only outermost (depth 0)
+    const outermostLinks = linkRanges
+      .filter(link => link.depth === 0)
+      .sort((a, b) => a.start - b.start);
+    
+    // Rebuild the content using outermost links only
+    const finalElements: (string | { text: string; url: string })[] = [];
+    let currentPos = 0;
+    
+    for (const link of outermostLinks) {
+      // Add text before this link
+      if (link.start > currentPos) {
+        const textBefore = html.substring(currentPos, link.start);
+        // Remove any inner <a> tags from this text
+        const cleanedText = textBefore.replace(/<a\s+href=['"]([^'"]+)['"][^>]*>/gi, '').replace(/<\/a>/gi, '');
+        if (cleanedText.trim()) {
+          finalElements.push(cleanedText);
+        }
+      }
+      
+      // Extract link text (removing inner <a> tags)
+      const linkContent = html.substring(link.start, link.end);
+      const linkText = linkContent
+        .replace(/<a\s+href=['"]([^'"]+)['"][^>]*>/gi, '')
+        .replace(/<\/a>/gi, '')
+        .trim();
+      
+      if (linkText) {
+        finalElements.push({ text: linkText, url: link.url });
+      }
+      
+      currentPos = link.end;
+    }
+    
+    // Add remaining text
+    if (currentPos < html.length) {
+      const remainingText = html.substring(currentPos).replace(/<a\s+href=['"]([^'"]+)['"][^>]*>/gi, '').replace(/<\/a>/gi, '');
+      if (remainingText.trim()) {
+        finalElements.push(remainingText);
+      }
+    }
+    
+    // If no links were processed, fall back to stripping all HTML
+    if (finalElements.length === 0) {
+      return <Text style={styles.htmlText}>{html.replace(/<[^>]*>/g, '')}</Text>;
     }
 
-    return elements.map((item, index) => {
-      if (typeof item === 'string') {
-        return <Text key={index}>{item}</Text>;
-      }
-      return (
-        <Text
-          key={index}
-          style={styles.link}
-          onPress={() => Linking.openURL(item.url)}
-        >
-          {item.text}
-        </Text>
-      );
-    });
+    return (
+      <Text style={styles.htmlText}>
+        {finalElements.map((item, index) => {
+          if (typeof item === 'string') {
+            return item;
+          }
+          return (
+            <Text
+              key={index}
+              style={styles.link}
+              onPress={() => Linking.openURL(item.url)}
+            >
+              {item.text}
+            </Text>
+          );
+        })}
+      </Text>
+    );
   };
 
   return (
@@ -98,7 +335,10 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={styles.handleIndicator}
     >
-      <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
+      <BottomSheetScrollView 
+        contentContainerStyle={styles.contentContainer}
+        style={styles.scrollView}
+      >
         {campground ? (
           <>
             <View style={styles.header}>
@@ -144,11 +384,18 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                 <Text style={styles.trailInfo}>
                   {trail.distance} • {trail.surface}
                 </Text>
-                <View style={styles.trailDescription}>
-                  {renderHtmlContent(trail.description)}
-                </View>
+                {renderHtmlContent(trail.description)}
               </View>
             ))}
+          </View>
+        )}
+
+        {campground.blog_post && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Related Blog Post</Text>
+            <View style={styles.blogPostContainer}>
+              {renderHtmlContent(campground.blog_post)}
+            </View>
           </View>
         )}
 
@@ -161,20 +408,63 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </View>
         )}
 
-            <TouchableOpacity style={styles.directionsButton} onPress={handleGetDirections}>
-              <Text style={styles.directionsButtonText}>Get Directions</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={[styles.actionButton, styles.directionsButton]} onPress={handleGetDirections}>
+                <Text style={styles.actionButtonText}>Get Directions</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionButton, styles.openMapsButton]} onPress={handleOpenInMaps}>
+                <Text style={styles.actionButtonText}>Open in Maps</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => setShowPicker(true)}
+            >
+              <Text style={styles.settingsButtonText}>⚙️ Change Map App</Text>
             </TouchableOpacity>
+
+            <View style={styles.feedbackSection}>
+              <Text style={styles.feedbackTitle}>Help Improve This App</Text>
+              <View style={styles.feedbackButtons}>
+                <TouchableOpacity
+                  style={styles.feedbackButton}
+                  onPress={handleReportProblem}
+                >
+                  <Text style={styles.feedbackButtonText}>📧 Report a Problem</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.feedbackButton}
+                  onPress={handleSuggestCampground}
+                >
+                  <Text style={styles.feedbackButtonText}>➕ Suggest a Campground</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </>
         ) : null}
       </BottomSheetScrollView>
+      <MapAppPickerModal
+        visible={showPicker}
+        currentApp={preference}
+        onSelect={handleMapAppSelected}
+        onClose={() => {
+          setShowPicker(false);
+          setPendingAction(null);
+        }}
+      />
     </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+  },
   contentContainer: {
     padding: 16,
     paddingBottom: 32,
+    width: '100%',
+    maxWidth: '100%',
   },
   handleIndicator: {
     backgroundColor: '#999',
@@ -187,11 +477,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 4,
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
     marginBottom: 12,
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   badgeContainer: {
     flexDirection: 'row',
@@ -212,9 +506,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontStyle: 'italic',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   section: {
     marginBottom: 20,
+    width: '100%',
   },
   sectionTitle: {
     fontSize: 18,
@@ -226,57 +523,126 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     lineHeight: 20,
+    width: '100%',
     flexWrap: 'wrap',
+  },
+  htmlText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    width: '100%',
+    maxWidth: '100%',
   },
   notesText: {
     fontSize: 13,
     color: '#666',
     marginTop: 8,
     fontStyle: 'italic',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   trailCard: {
     backgroundColor: '#f5f5f5',
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
+    width: '100%',
+    maxWidth: '100%',
+    alignSelf: 'stretch',
   },
   trailName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   trailInfo: {
     fontSize: 13,
     color: '#666',
     marginBottom: 6,
-  },
-  trailDescription: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
     flexWrap: 'wrap',
+    flexShrink: 1,
   },
   link: {
     color: '#2196F3',
     textDecorationLine: 'underline',
+    flexShrink: 1,
+  },
+  blogPostContainer: {
+    marginTop: 4,
   },
   contributorText: {
     fontSize: 13,
     color: '#666',
     fontStyle: 'italic',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
-  directionsButton: {
-    backgroundColor: '#2196F3',
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  actionButton: {
+    flex: 1,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 8,
   },
-  directionsButtonText: {
+  directionsButton: {
+    backgroundColor: '#2196F3',
+  },
+  openMapsButton: {
+    backgroundColor: '#4CAF50',
+  },
+  actionButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  settingsButton: {
+    marginTop: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  settingsButtonText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  feedbackSection: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  feedbackTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  feedbackButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  feedbackButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  feedbackButtonText: {
+    fontSize: 13,
+    color: '#333',
+    textAlign: 'center',
   },
 });
 
