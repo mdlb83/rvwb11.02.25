@@ -7,10 +7,13 @@ import CampgroundMarker from './CampgroundMarker';
 interface CampgroundMapProps {
   campgrounds: CampgroundEntry[];
   onMarkerPress: (campground: CampgroundEntry) => void;
+  onMapPress?: () => void;
+  mapRef?: React.RefObject<MapView>;
 }
 
-export default function CampgroundMap({ campgrounds, onMarkerPress }: CampgroundMapProps) {
-  const mapRef = useRef<MapView>(null);
+export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef }: CampgroundMapProps) {
+  const internalMapRef = useRef<MapView>(null);
+  const mapRefToUse = mapRef || internalMapRef;
 
   const initialRegion: Region = {
     latitude: 39.8283, // Center of US
@@ -22,12 +25,13 @@ export default function CampgroundMap({ campgrounds, onMarkerPress }: Campground
   return (
     <View style={styles.container}>
       <MapView
-        ref={mapRef}
+        ref={mapRefToUse}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={initialRegion}
         showsUserLocation={true}
-        showsMyLocationButton={true}
+        showsMyLocationButton={false}
+        onPress={onMapPress}
       >
         {campgrounds
           .filter((campground) => 
