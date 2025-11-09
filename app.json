@@ -18,7 +18,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.rvingwithbikes.app",
       "config": {
-        "googleMapsApiKey": "YOUR_IOS_GOOGLE_MAPS_API_KEY_HERE"
+        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY_HERE"
       }
     },
     "android": {
@@ -29,12 +29,14 @@
       "package": "com.rvingwithbikes.app",
       "config": {
         "googleMaps": {
-          "apiKey": "YOUR_ANDROID_GOOGLE_MAPS_API_KEY_HERE"
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY_HERE"
         }
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -51,7 +53,13 @@
         "expo-router"
       ]
     ],
-    "scheme": "rvingwithbikes"
+    "scheme": "rvingwithbikes",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "50d44783-aa41-470d-ba07-94e784f0272a"
+      }
+    },
+    "owner": "mikemakesapps"
   }
 }
-

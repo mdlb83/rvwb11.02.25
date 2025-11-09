@@ -26,10 +26,12 @@ npm install
 ```
 
 2. Configure Google Maps API keys:
+   - **See detailed guide:** `GOOGLE_MAPS_SETUP.md`
    - Get API keys from [Google Cloud Console](https://console.cloud.google.com/google/maps-apis)
+   - Enable "Maps SDK for iOS" and "Maps SDK for Android" APIs
    - Update `app.json`:
-     - iOS: `ios.config.googleMapsApiKey`
-     - Android: `android.config.googleMaps.apiKey`
+     - iOS: Replace `YOUR_IOS_GOOGLE_MAPS_API_KEY_HERE` in `ios.config.googleMapsApiKey`
+     - Android: Replace `YOUR_ANDROID_GOOGLE_MAPS_API_KEY_HERE` in `android.config.googleMaps.apiKey`
 
 3. Start the development server:
 ```bash
