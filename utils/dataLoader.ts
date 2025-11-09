@@ -32,6 +32,11 @@ export function filterCampgrounds(
   }
 ): CampgroundEntry[] {
   return entries.filter(entry => {
+    // Filter out entries with null campground data
+    if (!entry.campground) {
+      return false;
+    }
+
     if (filters.state && entry.state !== filters.state) {
       return false;
     }
@@ -40,9 +45,9 @@ export function filterCampgrounds(
     }
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
-      const matchesName = entry.campground.name.toLowerCase().includes(query);
-      const matchesCity = entry.city.toLowerCase().includes(query);
-      const matchesState = entry.state.toLowerCase().includes(query);
+      const matchesName = entry.campground?.name?.toLowerCase().includes(query) || false;
+      const matchesCity = entry.city?.toLowerCase().includes(query) || false;
+      const matchesState = entry.state?.toLowerCase().includes(query) || false;
       if (!matchesName && !matchesCity && !matchesState) {
         return false;
       }
