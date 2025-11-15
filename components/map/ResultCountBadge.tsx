@@ -15,7 +15,7 @@ export default function ResultCountBadge({ count, total }: ResultCountBadgeProps
   }
 
   return (
-    <View style={[styles.container, { top: insets.top + 16 }]}>
+    <View style={[styles.container, { top: insets.top + 16 }]} pointerEvents="none">
       <Text style={styles.text}>
         {count} {count === 1 ? 'campground' : 'campgrounds'}
         {count < total && ` of ${total}`}

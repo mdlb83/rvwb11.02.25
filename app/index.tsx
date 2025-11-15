@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Keyboard, TouchableWithoutFeedback, Alert } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
+import * as Linking from 'expo-linking';
 import { useCampgrounds, CampgroundFilters } from '../hooks/useCampgrounds';
 import { CampgroundEntry } from '../types/campground';
 import CampgroundMap from '../components/map/CampgroundMap';
@@ -34,6 +35,64 @@ export default function MapScreen() {
   // Check if we have active filters
   const hasActiveFilters = selectedHookupType !== 'all' || searchQuery.trim().length > 0;
   const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
+
+  // Handle deep links to restore campground when user returns from map app
+  useEffect(() => {
+    const handleDeepLink = async (event: { url: string }) => {
+      const { path, queryParams } = Linking.parse(event.url);
+      
+      if (path === 'campground' && queryParams) {
+        const lat = parseFloat(queryParams.lat as string);
+        const lng = parseFloat(queryParams.lng as string);
+        const id = queryParams.id as string;
+
+        if (lat && lng && allCampgrounds.length > 0) {
+          // Find campground by ID or coordinates
+          let campground: CampgroundEntry | null = null;
+          
+          if (id) {
+            // Try to find by ID (city-state-name combination)
+            campground = allCampgrounds.find(cg => {
+              const cgId = `${cg.city}-${cg.state}-${cg.campground?.name || ''}`.toLowerCase().replace(/\s+/g, '-');
+              return cgId === id.toLowerCase();
+            }) || null;
+          }
+          
+          // Fallback to finding by coordinates if ID not found
+          if (!campground) {
+            campground = allCampgrounds.find(cg => 
+              Math.abs(cg.latitude - lat) < 0.001 && Math.abs(cg.longitude - lng) < 0.001
+            ) || null;
+          }
+
+          if (campground) {
+            setSelectedCampground(campground);
+            // Optionally center map on campground
+            mapRef.current?.animateToRegion({
+              latitude: campground.latitude,
+              longitude: campground.longitude,
+              latitudeDelta: 0.1,
+              longitudeDelta: 0.1,
+            }, 500);
+          }
+        }
+      }
+    };
+
+    // Handle initial URL if app was opened via deep link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    // Listen for deep links while app is running
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [allCampgrounds]);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
@@ -67,6 +126,14 @@ export default function MapScreen() {
     );
   }
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
+  const handleMapPress = () => {
+    Keyboard.dismiss();
+  };
+
   // Show empty state when filters return no results
   if (hasNoResults) {
     return (
@@ -97,14 +164,6 @@ export default function MapScreen() {
     );
   }
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
-
-  const handleMapPress = () => {
-    Keyboard.dismiss();
-  };
-
   const handleLocationPress = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -130,19 +189,17 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <TouchableWithoutFeedback onPress={handleMapPress}>
-        <View style={styles.mapWrapper}>
-          <CampgroundMap
-            campgrounds={campgrounds}
-            onMarkerPress={setSelectedCampground}
-            onMapPress={handleMapPress}
-            mapRef={mapRef}
-          />
-          {hasActiveFilters && campgrounds.length > 0 && (
-            <ResultCountBadge count={campgrounds.length} total={allCampgrounds.length} />
-          )}
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={styles.mapWrapper} pointerEvents="box-none">
+        <CampgroundMap
+          campgrounds={campgrounds}
+          onMarkerPress={setSelectedCampground}
+          onMapPress={handleMapPress}
+          mapRef={mapRef}
+        />
+        {hasActiveFilters && campgrounds.length > 0 && (
+          <ResultCountBadge count={campgrounds.length} total={allCampgrounds.length} />
+        )}
+      </View>
       {!selectedCampground && (
         <>
           <View
@@ -194,6 +251,7 @@ const styles = StyleSheet.create({
   },
   mapWrapper: {
     flex: 1,
+    // Allow touches to pass through to map, but children can still receive touches
   },
   filtersContainer: {
     position: 'absolute',

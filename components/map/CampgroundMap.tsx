@@ -8,7 +8,7 @@ interface CampgroundMapProps {
   campgrounds: CampgroundEntry[];
   onMarkerPress: (campground: CampgroundEntry) => void;
   onMapPress?: () => void;
-  mapRef?: React.RefObject<MapView>;
+  mapRef?: React.RefObject<MapView | null>;
 }
 
 export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef }: CampgroundMapProps) {

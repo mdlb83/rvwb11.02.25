@@ -30,9 +30,10 @@ export function getMapAppUrl(
     latitude?: number;
     longitude?: number;
     query?: string;
+    campgroundId?: string; // Optional: for deep linking back to app
   }
 ): string {
-  const { latitude, longitude, query } = params;
+  const { latitude, longitude, query, campgroundId } = params;
 
   if (app === 'default') {
     // Use platform default
@@ -43,16 +44,29 @@ export function getMapAppUrl(
     }
   }
 
+  // Build callback URL for deep linking back to app
+  let callbackUrl = '';
+  if (campgroundId && latitude !== undefined && longitude !== undefined) {
+    callbackUrl = `rvingwithbikes://campground?id=${encodeURIComponent(campgroundId)}&lat=${latitude}&lng=${longitude}`;
+  }
+
   if (type === 'directions' && latitude !== undefined && longitude !== undefined) {
     // Directions URLs
     switch (app) {
       case 'apple':
         return `http://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
       case 'google':
+        // Add callback URL for Google Maps to enable "Back to App" functionality
+        if (callbackUrl) {
+          return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&callback=${encodeURIComponent(callbackUrl)}`;
+        }
         return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
       case 'waze':
         return `waze://?navigate=yes&ll=${latitude},${longitude}`;
       default:
+        if (callbackUrl) {
+          return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&callback=${encodeURIComponent(callbackUrl)}`;
+        }
         return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
     }
   } else if (type === 'search' && query) {
@@ -62,10 +76,17 @@ export function getMapAppUrl(
       case 'apple':
         return `http://maps.apple.com/?q=${encodedQuery}`;
       case 'google':
+        // Add callback URL for Google Maps
+        if (callbackUrl) {
+          return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}&callback=${encodeURIComponent(callbackUrl)}`;
+        }
         return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
       case 'waze':
         return `waze://?q=${encodedQuery}`;
       default:
+        if (callbackUrl) {
+          return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}&callback=${encodeURIComponent(callbackUrl)}`;
+        }
         return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
     }
   }

@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { CampgroundEntry } from '../../types/campground';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
-import { getMapAppUrl, MapApp } from '../../utils/mapAppPreferences';
+import { getMapAppUrl, getMapAppName, MapApp } from '../../utils/mapAppPreferences';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
+import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 
 interface CampgroundBottomSheetProps {
   campground: CampgroundEntry | null;
@@ -17,7 +18,18 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const snapPoints = useMemo(() => ['30%', '65%', '90%'], []);
   const { preference, loading, savePreference } = useMapAppPreference();
   const [showPicker, setShowPicker] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [pendingAction, setPendingAction] = useState<'directions' | 'search' | null>(null);
+  const [pendingMapApp, setPendingMapApp] = useState<MapApp | null>(null);
+
+  // Generate a unique ID for the campground for deep linking
+  const campgroundId = useMemo(() => {
+    if (!campground) return '';
+    const name = campground.campground?.name || '';
+    const sanitizedName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const sanitizedCity = campground.city.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return `${sanitizedCity}-${campground.state.toLowerCase()}-${sanitizedName}`;
+  }, [campground]);
 
   // Determine initial snap index based on content
   // If campground has blog post, open at index 2 (90%) to show all content including buttons
@@ -43,6 +55,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       }, 50);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [campground, initialSnapIndex]);
 
   const handleClose = useCallback(() => {
@@ -74,9 +87,21 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     }
 
     const mapApp = preference || 'default';
+    const actualApp = mapApp === 'default' ? (Platform.OS === 'ios' ? 'apple' : 'google') : mapApp;
+    
+    // Show instructions for Apple Maps and Waze (they don't support callback URLs)
+    if (actualApp === 'apple' || actualApp === 'waze') {
+      setPendingMapApp(actualApp);
+      setPendingAction('directions');
+      setShowInstructions(true);
+      return;
+    }
+
+    // For Google Maps, add callback URL for easy return
     const url = getMapAppUrl(mapApp, 'directions', {
       latitude: campground.latitude,
       longitude: campground.longitude,
+      campgroundId: campgroundId,
     });
 
     Linking.openURL(url).catch((err) => {
@@ -86,6 +111,35 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         `https://www.google.com/maps/dir/?api=1&destination=${campground.latitude},${campground.longitude}`
       );
     });
+  };
+
+  const handleOpenMapAfterInstructions = () => {
+    if (!campground || !pendingMapApp || !pendingAction) return;
+
+    setShowInstructions(false);
+    
+    if (pendingAction === 'directions') {
+      const url = getMapAppUrl(pendingMapApp, 'directions', {
+        latitude: campground.latitude,
+        longitude: campground.longitude,
+        campgroundId: campgroundId,
+      });
+      Linking.openURL(url).catch((err) => {
+        console.error('Failed to open maps:', err);
+      });
+    } else if (pendingAction === 'search') {
+      const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
+      const url = getMapAppUrl(pendingMapApp, 'search', {
+        query: campgroundName,
+        campgroundId: campgroundId,
+      });
+      Linking.openURL(url).catch((err) => {
+        console.error('Failed to open maps:', err);
+      });
+    }
+
+    setPendingMapApp(null);
+    setPendingAction(null);
   };
 
   const handleOpenInMaps = async () => {
@@ -98,10 +152,22 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       return;
     }
 
-    const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
     const mapApp = preference || 'default';
+    const actualApp = mapApp === 'default' ? (Platform.OS === 'ios' ? 'apple' : 'google') : mapApp;
+    
+    // Show instructions for Apple Maps and Waze (they don't support callback URLs)
+    if (actualApp === 'apple' || actualApp === 'waze') {
+      setPendingMapApp(actualApp);
+      setPendingAction('search');
+      setShowInstructions(true);
+      return;
+    }
+
+    // For Google Maps, add callback URL for easy return
+    const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
     const url = getMapAppUrl(mapApp, 'search', {
       query: campgroundName,
+      campgroundId: campgroundId,
     });
 
     Linking.openURL(url).catch((err) => {
@@ -116,10 +182,22 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
 
     // Execute the pending action if there was one
     if (pendingAction && campground) {
+      const actualApp = app === 'default' ? (require('react-native').Platform.OS === 'ios' ? 'apple' : 'google') : app;
+      
+      // Show instructions for Apple Maps and Waze
+      if (actualApp === 'apple' || actualApp === 'waze') {
+        setPendingMapApp(actualApp);
+        setShowPicker(false);
+        setShowInstructions(true);
+        return;
+      }
+
+      // For Google Maps, open directly with callback URL
       if (pendingAction === 'directions') {
         const url = getMapAppUrl(app, 'directions', {
           latitude: campground.latitude,
           longitude: campground.longitude,
+          campgroundId: campgroundId,
         });
         Linking.openURL(url).catch((err) => {
           console.error('Failed to open maps:', err);
@@ -128,12 +206,15 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
         const url = getMapAppUrl(app, 'search', {
           query: campgroundName,
+          campgroundId: campgroundId,
         });
         Linking.openURL(url).catch((err) => {
           console.error('Failed to open maps:', err);
         });
       }
       setPendingAction(null);
+    } else {
+      setShowPicker(false);
     }
   };
 
@@ -451,6 +532,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           setShowPicker(false);
           setPendingAction(null);
         }}
+      />
+      <MapReturnInstructionsModal
+        visible={showInstructions}
+        mapAppName={pendingMapApp ? getMapAppName(pendingMapApp) : ''}
+        onClose={handleOpenMapAfterInstructions}
       />
     </BottomSheet>
   );
