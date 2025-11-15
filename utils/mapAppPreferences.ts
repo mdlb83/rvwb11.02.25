@@ -4,6 +4,7 @@ import { Platform, Linking } from 'react-native';
 export type MapApp = 'apple' | 'google' | 'waze' | 'default';
 
 const MAP_APP_PREFERENCE_KEY = '@rving_with_bikes:map_app_preference';
+const DONT_SHOW_INSTRUCTIONS_KEY = '@rving_with_bikes:dont_show_map_instructions';
 
 export async function getMapAppPreference(): Promise<MapApp | null> {
   try {
@@ -20,6 +21,24 @@ export async function setMapAppPreference(app: MapApp): Promise<void> {
     await AsyncStorage.setItem(MAP_APP_PREFERENCE_KEY, app);
   } catch (error) {
     console.error('Error setting map app preference:', error);
+  }
+}
+
+export async function getDontShowInstructionsPreference(): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(DONT_SHOW_INSTRUCTIONS_KEY);
+    return value === 'true';
+  } catch (error) {
+    console.error('Error getting dont show instructions preference:', error);
+    return false;
+  }
+}
+
+export async function setDontShowInstructionsPreference(dontShow: boolean): Promise<void> {
+  try {
+    await AsyncStorage.setItem(DONT_SHOW_INSTRUCTIONS_KEY, dontShow ? 'true' : 'false');
+  } catch (error) {
+    console.error('Error setting dont show instructions preference:', error);
   }
 }
 

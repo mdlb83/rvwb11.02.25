@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { setDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
 
 interface MapReturnInstructionsModalProps {
   visible: boolean;
@@ -13,17 +14,33 @@ export default function MapReturnInstructionsModal({
   mapAppName,
   onClose,
 }: MapReturnInstructionsModalProps) {
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const isIOS = Platform.OS === 'ios';
   const instructions = isIOS
     ? 'Swipe up from the bottom edge of your screen to return to this app.'
     : 'Use the back button or app switcher to return to this app.';
+
+  // Reset checkbox when modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      setDontShowAgain(false);
+    }
+  }, [visible]);
+
+  const handleClose = async () => {
+    if (dontShowAgain) {
+      await setDontShowInstructionsPreference(true);
+    }
+    setDontShowAgain(false);
+    onClose();
+  };
 
   return (
     <Modal
       visible={visible}
       transparent={true}
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
@@ -44,7 +61,20 @@ export default function MapReturnInstructionsModal({
             </View>
           )}
 
-          <TouchableOpacity style={styles.button} onPress={onClose}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setDontShowAgain(!dontShowAgain)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, dontShowAgain && styles.checkboxChecked]}>
+              {dontShowAgain && (
+                <Ionicons name="checkmark" size={16} color="#fff" />
+              )}
+            </View>
+            <Text style={styles.checkboxLabel}>Don't show this message again</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleClose}>
             <Text style={styles.buttonText}>Got it</Text>
           </TouchableOpacity>
         </View>
@@ -111,6 +141,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    width: '100%',
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#666',
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: '#666',
+    flex: 1,
   },
 });
 

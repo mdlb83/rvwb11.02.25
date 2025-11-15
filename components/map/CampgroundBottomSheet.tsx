@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'rea
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { CampgroundEntry } from '../../types/campground';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
-import { getMapAppUrl, getMapAppName, MapApp } from '../../utils/mapAppPreferences';
+import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 
@@ -21,6 +21,16 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const [showInstructions, setShowInstructions] = useState(false);
   const [pendingAction, setPendingAction] = useState<'directions' | 'search' | null>(null);
   const [pendingMapApp, setPendingMapApp] = useState<MapApp | null>(null);
+  const [dontShowInstructions, setDontShowInstructions] = useState(false);
+
+  // Load the "don't show instructions" preference on mount
+  useEffect(() => {
+    const loadPreference = async () => {
+      const dontShow = await getDontShowInstructionsPreference();
+      setDontShowInstructions(dontShow);
+    };
+    loadPreference();
+  }, []);
 
   // Generate a unique ID for the campground for deep linking
   const campgroundId = useMemo(() => {
@@ -89,15 +99,15 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     const mapApp = preference || 'default';
     const actualApp = mapApp === 'default' ? (Platform.OS === 'ios' ? 'apple' : 'google') : mapApp;
     
-    // Show instructions for Apple Maps and Waze (they don't support callback URLs)
-    if (actualApp === 'apple' || actualApp === 'waze') {
+    // Show instructions for all map apps unless user has opted out
+    if (!dontShowInstructions) {
       setPendingMapApp(actualApp);
       setPendingAction('directions');
       setShowInstructions(true);
       return;
     }
 
-    // For Google Maps, add callback URL for easy return
+    // User has opted out of seeing instructions, open directly
     const url = getMapAppUrl(mapApp, 'directions', {
       latitude: campground.latitude,
       longitude: campground.longitude,
@@ -113,10 +123,14 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     });
   };
 
-  const handleOpenMapAfterInstructions = () => {
+  const handleOpenMapAfterInstructions = async () => {
     if (!campground || !pendingMapApp || !pendingAction) return;
 
     setShowInstructions(false);
+    
+    // Reload preference in case user checked "don't show again"
+    const updatedPreference = await getDontShowInstructionsPreference();
+    setDontShowInstructions(updatedPreference);
     
     if (pendingAction === 'directions') {
       const url = getMapAppUrl(pendingMapApp, 'directions', {
@@ -155,15 +169,15 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     const mapApp = preference || 'default';
     const actualApp = mapApp === 'default' ? (Platform.OS === 'ios' ? 'apple' : 'google') : mapApp;
     
-    // Show instructions for Apple Maps and Waze (they don't support callback URLs)
-    if (actualApp === 'apple' || actualApp === 'waze') {
+    // Show instructions for all map apps unless user has opted out
+    if (!dontShowInstructions) {
       setPendingMapApp(actualApp);
       setPendingAction('search');
       setShowInstructions(true);
       return;
     }
 
-    // For Google Maps, add callback URL for easy return
+    // User has opted out of seeing instructions, open directly
     const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
     const url = getMapAppUrl(mapApp, 'search', {
       query: campgroundName,
@@ -184,15 +198,15 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     if (pendingAction && campground) {
       const actualApp = app === 'default' ? (require('react-native').Platform.OS === 'ios' ? 'apple' : 'google') : app;
       
-      // Show instructions for Apple Maps and Waze
-      if (actualApp === 'apple' || actualApp === 'waze') {
+      // Show instructions for all map apps unless user has opted out
+      if (!dontShowInstructions) {
         setPendingMapApp(actualApp);
         setShowPicker(false);
         setShowInstructions(true);
         return;
       }
 
-      // For Google Maps, open directly with callback URL
+      // User has opted out of seeing instructions, open directly
       if (pendingAction === 'directions') {
         const url = getMapAppUrl(app, 'directions', {
           latitude: campground.latitude,
