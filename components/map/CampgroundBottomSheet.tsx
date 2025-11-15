@@ -198,8 +198,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     if (pendingAction && campground) {
       const actualApp = app === 'default' ? (require('react-native').Platform.OS === 'ios' ? 'apple' : 'google') : app;
       
+      // Load the preference synchronously here to avoid race conditions
+      const dontShow = await getDontShowInstructionsPreference();
+      
       // Show instructions for all map apps unless user has opted out
-      if (!dontShowInstructions) {
+      if (!dontShow) {
         setPendingMapApp(actualApp);
         setShowPicker(false);
         setShowInstructions(true);
