@@ -17,3 +17,8 @@ web-build/
 .env
 .env.local
 
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+

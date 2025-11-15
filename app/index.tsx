@@ -15,6 +15,7 @@ import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
 import ResultCountBadge from '../components/map/ResultCountBadge';
+import { getCampgroundCoordinates } from '../utils/mapUtils';
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -32,9 +33,47 @@ export default function MapScreen() {
   const [retryKey, setRetryKey] = useState(0);
   const { campgrounds, loading, error, allCampgrounds } = useCampgrounds(filters, retryKey);
   
+  // Track the last filter state to avoid unnecessary zooms
+  const lastFilterStateRef = useRef<string>('');
+  
   // Check if we have active filters
   const hasActiveFilters = selectedHookupType !== 'all' || searchQuery.trim().length > 0;
   const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
+
+  // Zoom to search/filter results when they change
+  useEffect(() => {
+    // Only zoom if filters are active, we have results, and the filter state has changed
+    if (!hasActiveFilters || campgrounds.length === 0 || loading || error) {
+      return;
+    }
+
+    const currentFilterState = `${selectedHookupType}-${searchQuery.trim()}`;
+    
+    // Skip if we've already zoomed for this filter state
+    if (lastFilterStateRef.current === currentFilterState) {
+      return;
+    }
+
+    // Update the ref to track this filter state
+    lastFilterStateRef.current = currentFilterState;
+
+    // Get coordinates for filtered campgrounds
+    const coordinates = getCampgroundCoordinates(campgrounds);
+    
+    if (coordinates.length > 0 && mapRef.current) {
+      // Use fitToCoordinates to zoom to all results
+      // Add padding to ensure markers aren't at the edge
+      mapRef.current.fitToCoordinates(coordinates, {
+        edgePadding: {
+          top: 100,
+          right: 50,
+          bottom: 200,
+          left: 50,
+        },
+        animated: true,
+      });
+    }
+  }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, loading, error]);
 
   // Handle deep links to restore campground when user returns from map app
   useEffect(() => {
@@ -128,6 +167,8 @@ export default function MapScreen() {
 
   const handleClearSearch = () => {
     setSearchQuery('');
+    // Reset filter state ref so zoom can happen again if filters are re-applied
+    lastFilterStateRef.current = '';
   };
 
   const handleMapPress = () => {
