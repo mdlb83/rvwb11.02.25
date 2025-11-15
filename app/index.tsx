@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Keyboard, Alert } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
 import * as Linking from 'expo-linking';
+import { Ionicons } from '@expo/vector-icons';
 import { useCampgrounds, CampgroundFilters } from '../hooks/useCampgrounds';
 import { CampgroundEntry } from '../types/campground';
 import CampgroundMap from '../components/map/CampgroundMap';
@@ -175,6 +176,23 @@ export default function MapScreen() {
     Keyboard.dismiss();
   };
 
+  const handleSuggestCampground = () => {
+    const subject = encodeURIComponent('Suggest a New Campground');
+    const body = encodeURIComponent(
+      `I'd like to suggest adding the following campground:\n\n` +
+      `Campground Name:\n` +
+      `Location (City, State):\n` +
+      `Hookup Type (Full/Partial):\n` +
+      `Campground Website/Info:\n` +
+      `Nearby Bike Trails:\n` +
+      `Additional Notes:\n\n`
+    );
+    const emailUrl = `mailto:dcbc3705@gmail.com?subject=${subject}&body=${body}`;
+    Linking.openURL(emailUrl).catch((err) => {
+      console.error('Failed to open email:', err);
+    });
+  };
+
   // Show empty state when filters return no results
   if (hasNoResults) {
     return (
@@ -190,15 +208,22 @@ export default function MapScreen() {
         />
         <View style={[styles.filtersContainer, { paddingBottom: insets.bottom }]}>
           <View style={styles.searchRow}>
+            <FilterButton
+              selectedHookupType={selectedHookupType}
+              onHookupTypeChange={setSelectedHookupType}
+            />
             <SearchBar
               value={searchQuery}
               onChangeText={setSearchQuery}
               onClear={handleClearSearch}
             />
-            <FilterButton
-              selectedHookupType={selectedHookupType}
-              onHookupTypeChange={setSelectedHookupType}
-            />
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleSuggestCampground}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add-circle" size={24} color="#4CAF50" />
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -265,15 +290,22 @@ export default function MapScreen() {
             ]}
           >
             <View style={styles.searchRow}>
+              <FilterButton
+                selectedHookupType={selectedHookupType}
+                onHookupTypeChange={setSelectedHookupType}
+              />
               <SearchBar
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onClear={handleClearSearch}
               />
-              <FilterButton
-                selectedHookupType={selectedHookupType}
-                onHookupTypeChange={setSelectedHookupType}
-              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleSuggestCampground}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add-circle" size={24} color="#4CAF50" />
+              </TouchableOpacity>
             </View>
           </View>
         </>
@@ -316,6 +348,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  addButton: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   locationButtonContainer: {
     position: 'absolute',

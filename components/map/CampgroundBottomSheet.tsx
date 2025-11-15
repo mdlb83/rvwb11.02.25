@@ -248,22 +248,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     });
   };
 
-  const handleSuggestCampground = () => {
-    const subject = encodeURIComponent('Suggest a New Campground');
-    const body = encodeURIComponent(
-      `I'd like to suggest adding the following campground:\n\n` +
-      `Campground Name:\n` +
-      `Location (City, State):\n` +
-      `Hookup Type (Full/Partial):\n` +
-      `Campground Website/Info:\n` +
-      `Nearby Bike Trails:\n` +
-      `Additional Notes:\n\n`
-    );
-    const emailUrl = `mailto:dcbc3705@gmail.com?subject=${subject}&body=${body}`;
-    Linking.openURL(emailUrl).catch((err) => {
-      console.error('Failed to open email:', err);
-    });
-  };
 
   const renderHtmlContent = (html: string) => {
     // Handle nested links by parsing with a stack to track nesting depth
@@ -526,12 +510,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                   onPress={handleReportProblem}
                 >
                   <Text style={styles.feedbackButtonText}>📧 Report a Problem</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.feedbackButton}
-                  onPress={handleSuggestCampground}
-                >
-                  <Text style={styles.feedbackButtonText}>➕ Suggest a Campground</Text>
                 </TouchableOpacity>
               </View>
             </View>
