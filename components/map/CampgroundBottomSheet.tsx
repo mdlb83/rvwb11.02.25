@@ -124,34 +124,55 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   };
 
   const handleOpenMapAfterInstructions = async () => {
-    if (!campground || !pendingMapApp || !pendingAction) return;
+    console.log('handleOpenMapAfterInstructions called', { pendingMapApp, pendingAction, campground: !!campground });
+    
+    // Store values before clearing state
+    const mapAppToUse = pendingMapApp;
+    const actionToUse = pendingAction;
+    const campgroundToUse = campground;
+    
+    if (!campgroundToUse || !mapAppToUse || !actionToUse) {
+      console.error('Missing required values:', { 
+        campground: !!campgroundToUse, 
+        mapApp: mapAppToUse, 
+        action: actionToUse,
+        pendingMapApp,
+        pendingAction 
+      });
+      setShowInstructions(false);
+      return;
+    }
 
+    console.log('Opening map app:', { mapApp: mapAppToUse, action: actionToUse });
     setShowInstructions(false);
     
     // Reload preference in case user checked "don't show again"
     const updatedPreference = await getDontShowInstructionsPreference();
     setDontShowInstructions(updatedPreference);
     
-    if (pendingAction === 'directions') {
-      const url = getMapAppUrl(pendingMapApp, 'directions', {
-        latitude: campground.latitude,
-        longitude: campground.longitude,
-        campgroundId: campgroundId,
-      });
-      Linking.openURL(url).catch((err) => {
-        console.error('Failed to open maps:', err);
-      });
-    } else if (pendingAction === 'search') {
-      const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
-      const url = getMapAppUrl(pendingMapApp, 'search', {
-        query: campgroundName,
-        campgroundId: campgroundId,
-      });
-      Linking.openURL(url).catch((err) => {
-        console.error('Failed to open maps:', err);
-      });
+    try {
+      if (actionToUse === 'directions') {
+        const url = getMapAppUrl(mapAppToUse, 'directions', {
+          latitude: campgroundToUse.latitude,
+          longitude: campgroundToUse.longitude,
+          campgroundId: campgroundId,
+        });
+        console.log('Opening directions URL:', url);
+        await Linking.openURL(url);
+      } else if (actionToUse === 'search') {
+        const campgroundName = campgroundToUse.campground?.name || `${campgroundToUse.city}, ${campgroundToUse.state}`;
+        const url = getMapAppUrl(mapAppToUse, 'search', {
+          query: campgroundName,
+          campgroundId: campgroundId,
+        });
+        console.log('Opening search URL:', url);
+        await Linking.openURL(url);
+      }
+    } catch (err) {
+      console.error('Failed to open maps:', err);
     }
 
+    // Clear state after opening map
     setPendingMapApp(null);
     setPendingAction(null);
   };
@@ -203,9 +224,14 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       
       // Show instructions for all map apps unless user has opted out
       if (!dontShow) {
-        setPendingMapApp(actualApp);
+        // Store both the original app and the resolved app
+        // We need to store the original app for getMapAppUrl to work correctly
+        setPendingMapApp(app); // Store original app, not actualApp
         setShowPicker(false);
-        setShowInstructions(true);
+        // Small delay to ensure state is set before showing modal
+        setTimeout(() => {
+          setShowInstructions(true);
+        }, 50);
         return;
       }
 
