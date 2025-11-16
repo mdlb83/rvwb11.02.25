@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MapApp, getAvailableMapApps, getMapAppName } from '../../utils/mapAppPreferences';
+import { MapApp, getAvailableMapApps } from '../../utils/mapAppPreferences';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 
 interface SettingsModalProps {
@@ -43,7 +43,7 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+              <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Map App Preference</Text>
                   <Text style={styles.sectionDescription}>
@@ -96,8 +96,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '80%',
-    paddingBottom: 20,
+    maxHeight: '90%',
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -117,6 +117,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   section: {
     padding: 20,
