@@ -651,6 +651,7 @@ export default function MapScreen() {
               backgroundColor: 'rgba(240, 255, 242, 0.7)', // Frosted glass with subtle green tint - more transparent
             }
           ]}
+          pointerEvents="box-none"
           onStartShouldSetResponder={() => false}
         >
           <View style={styles.searchRow}>
@@ -742,6 +743,7 @@ export default function MapScreen() {
                     bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 52,
                   },
                 ]}
+                pointerEvents="box-none"
               >
                 <LocationButton onPress={handleLocationPress} />
               </View>
@@ -757,6 +759,7 @@ export default function MapScreen() {
                     bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 52,
                   },
                 ]}
+                pointerEvents="box-none"
               >
                 <TouchableOpacity
                   style={styles.zoomButton}
@@ -795,6 +798,7 @@ export default function MapScreen() {
                       : (insets.bottom + 80),
                   },
                 ]}
+                pointerEvents="box-none"
               >
                 <LocationButton onPress={handleLocationPress} />
               </View>
@@ -807,6 +811,7 @@ export default function MapScreen() {
                       : (insets.bottom + 80),
                   },
                 ]}
+                pointerEvents="box-none"
               >
                 <TouchableOpacity
                   style={styles.zoomButton}
@@ -833,6 +838,8 @@ export default function MapScreen() {
                 bottom: keyboardHeight > 0 ? keyboardHeight : 0,
               },
             ]}
+            pointerEvents="box-none"
+            onStartShouldSetResponder={() => false}
           >
             <View style={styles.searchRow}>
               <FilterButton
@@ -897,7 +904,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 5,
+    elevation: 2, // Reduced from 5 to minimize Android 12 touch target expansion
   },
   searchRow: {
     flexDirection: 'row',

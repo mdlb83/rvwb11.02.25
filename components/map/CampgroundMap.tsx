@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Platform } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { CampgroundEntry } from '../../types/campground';
 import CampgroundMarker from './CampgroundMarker';
@@ -34,6 +34,15 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
         showsMyLocationButton={false}
         onPress={onMapPress}
         onRegionChangeComplete={onRegionChangeComplete}
+        // Android-specific optimizations for touch handling
+        {...(Platform.OS === 'android' && {
+          mapPadding: { top: 0, right: 0, bottom: 0, left: 0 },
+          // Ensure map can receive touch events properly on Android 12+
+          scrollEnabled: true,
+          zoomEnabled: true,
+          pitchEnabled: true,
+          rotateEnabled: true,
+        })}
       >
         {Array.isArray(campgrounds) && campgrounds
           .filter((campground) => 
