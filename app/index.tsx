@@ -65,6 +65,8 @@ export default function MapScreen() {
   const lastFilterStateRef = useRef<string>('');
   // Track if we're currently processing a zoom to prevent race conditions
   const isZoomingRef = useRef<boolean>(false);
+  // Track last keyboard height to detect significant changes
+  const lastKeyboardHeightRef = useRef<number>(0);
   
   // Check if we have active filters
   const safeSearchQueryForFilter = typeof searchQuery === 'string' ? searchQuery.trim() : '';
@@ -134,19 +136,42 @@ export default function MapScreen() {
         const coordinates = getCampgroundCoordinates(currentCampgrounds);
         
         if (coordinates.length > 0 && mapRef.current) {
-          // Use fitToCoordinates to zoom to all results
-          // Add padding to ensure markers aren't at the edge
           // Wrap in try-catch to prevent crashes during rapid typing
           try {
-            mapRef.current.fitToCoordinates(coordinates, {
-              edgePadding: {
-                top: 100,
-                right: 50,
-                bottom: 200,
-                left: 50,
-              },
-              animated: true,
-            });
+            // Special handling for single result: zoom out more and auto-select
+            if (coordinates.length === 1 && currentCampgrounds.length === 1) {
+              const singleCampground = currentCampgrounds[0];
+              
+              // Use animateToRegion with larger deltas for more zoomed-out view
+              mapRef.current.animateToRegion({
+                latitude: coordinates[0].latitude,
+                longitude: coordinates[0].longitude,
+                latitudeDelta: 2.0, // More zoomed out (was ~0.5-1.0 with fitToCoordinates)
+                longitudeDelta: 2.0,
+              }, 500);
+              
+              // Auto-select the single campground after zoom animation
+              setTimeout(() => {
+                setSelectedCampground(singleCampground);
+              }, 600); // Wait for zoom animation to complete
+            } else {
+              // Multiple results: use fitToCoordinates as before
+              const filtersContainerHeight = 60;
+              const extraBottomPadding = 20;
+              const bottomPadding = keyboardHeight > 0 
+                ? keyboardHeight + filtersContainerHeight + extraBottomPadding 
+                : 200;
+              
+              mapRef.current.fitToCoordinates(coordinates, {
+                edgePadding: {
+                  top: 100,
+                  right: 50,
+                  bottom: bottomPadding,
+                  left: 50,
+                },
+                animated: true,
+              });
+            }
           } catch (err) {
             console.error('Error fitting to coordinates:', err);
           } finally {
@@ -167,7 +192,7 @@ export default function MapScreen() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, loading, error]);
+  }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, loading, error, keyboardHeight]);
 
   // Handle deep links to restore campground when user returns from map app
   useEffect(() => {
@@ -241,6 +266,66 @@ export default function MapScreen() {
     };
   }, []);
 
+  // Re-zoom to results when keyboard appears/disappears if we have active filters
+  useEffect(() => {
+    // Only re-zoom if keyboard height actually changed and we have active filters
+    if (!hasActiveFilters || campgrounds.length === 0 || loading || error) {
+      lastKeyboardHeightRef.current = keyboardHeight;
+      return;
+    }
+
+    // Only re-zoom if keyboard height changed significantly (more than 50px difference)
+    const keyboardHeightChanged = Math.abs(keyboardHeight - lastKeyboardHeightRef.current) > 50;
+    if (!keyboardHeightChanged) {
+      return;
+    }
+
+    lastKeyboardHeightRef.current = keyboardHeight;
+
+    // Small delay to ensure keyboard animation completes
+    const timeoutId = setTimeout(() => {
+      if (mapRef.current && campgrounds.length > 0) {
+        try {
+          const coordinates = getCampgroundCoordinates(campgrounds);
+          if (coordinates.length > 0) {
+            // Special handling for single result: zoom out more
+            if (coordinates.length === 1 && campgrounds.length === 1) {
+              mapRef.current.animateToRegion({
+                latitude: coordinates[0].latitude,
+                longitude: coordinates[0].longitude,
+                latitudeDelta: 2.0,
+                longitudeDelta: 2.0,
+              }, 500);
+            } else {
+              // Multiple results: use fitToCoordinates
+              const filtersContainerHeight = 60;
+              const extraBottomPadding = 20;
+              const bottomPadding = keyboardHeight > 0 
+                ? keyboardHeight + filtersContainerHeight + extraBottomPadding 
+                : 200;
+              
+              mapRef.current.fitToCoordinates(coordinates, {
+                edgePadding: {
+                  top: 100,
+                  right: 50,
+                  bottom: bottomPadding,
+                  left: 50,
+                },
+                animated: true,
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Error re-zooming on keyboard change:', err);
+        }
+      }
+    }, 300); // Wait for keyboard animation
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [keyboardHeight, hasActiveFilters, campgrounds.length, loading, error]);
+
   // Show loading state
   if (loading) {
     return <LoadingState />;
@@ -305,16 +390,27 @@ export default function MapScreen() {
     const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
     return (
       <View style={styles.container}>
-        <EmptyState
-          title="No campgrounds found"
-          message={
-            safeSearchQuery.length > 0
-              ? `No campgrounds match "${safeSearchQuery}". Try adjusting your search or filters.`
-              : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
-          }
-          icon="map-outline"
-        />
-        <View style={[styles.filtersContainer, { paddingBottom: insets.bottom }]}>
+        <View style={styles.emptyStateWrapper}>
+          <EmptyState
+            title="No campgrounds found"
+            message={
+              safeSearchQuery.length > 0
+                ? `No campgrounds match "${safeSearchQuery}". Try adjusting your search or filters.`
+                : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
+            }
+            icon="map-outline"
+          />
+        </View>
+        <View 
+          style={[
+            styles.filtersContainer, 
+            { 
+              paddingBottom: keyboardHeight > 0 ? 0 : insets.bottom,
+              bottom: keyboardHeight > 0 ? keyboardHeight : 0,
+            }
+          ]}
+          onStartShouldSetResponder={() => false}
+        >
           <View style={styles.searchRow}>
             <FilterButton
               selectedHookupType={selectedHookupType}
@@ -324,6 +420,7 @@ export default function MapScreen() {
               value={typeof searchQuery === 'string' ? searchQuery : ''}
               onChangeText={handleSearchChange}
               onClear={handleClearSearch}
+              autoFocus={safeSearchQuery.length > 0}
             />
             <TouchableOpacity
               style={styles.addButton}
@@ -370,9 +467,6 @@ export default function MapScreen() {
           onMapPress={handleMapPress}
           mapRef={mapRef}
         />
-        {hasActiveFilters && campgrounds.length > 0 && (
-          <ResultCountBadge count={campgrounds.length} total={allCampgrounds.length} />
-        )}
         {!selectedCampground && (
           <TouchableOpacity
             style={[styles.settingsButton, { top: insets.top + 16 }]}
@@ -397,6 +491,13 @@ export default function MapScreen() {
           >
             <LocationButton onPress={handleLocationPress} />
           </View>
+          {hasActiveFilters && campgrounds.length > 0 && (
+            <ResultCountBadge 
+              count={campgrounds.length} 
+              total={allCampgrounds.length}
+              gpsButtonBottom={keyboardHeight > 0 ? keyboardHeight + 80 : (insets.bottom + 80)}
+            />
+          )}
           <View
             style={[
               styles.filtersContainer,
@@ -446,6 +547,10 @@ const styles = StyleSheet.create({
   mapWrapper: {
     flex: 1,
     // Allow touches to pass through to map, but children can still receive touches
+  },
+  emptyStateWrapper: {
+    flex: 1,
+    paddingBottom: 80, // Leave space for search bar at bottom
   },
   filtersContainer: {
     position: 'absolute',

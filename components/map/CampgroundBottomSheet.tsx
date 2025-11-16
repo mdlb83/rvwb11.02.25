@@ -473,6 +473,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       }}
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={styles.handleIndicator}
+      backgroundStyle={styles.bottomSheetBackground}
     >
       <BottomSheetScrollView 
         contentContainerStyle={styles.contentContainer}
@@ -597,6 +598,11 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     width: '100%',
     maxWidth: '100%',
+  },
+  bottomSheetBackground: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   handleIndicator: {
     backgroundColor: '#999',

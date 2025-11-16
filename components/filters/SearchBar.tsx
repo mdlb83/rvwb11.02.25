@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useRef, useEffect } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -7,6 +7,7 @@ interface SearchBarProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   onClear?: () => void;
+  autoFocus?: boolean;
 }
 
 function SearchBar({
@@ -14,9 +15,24 @@ function SearchBar({
   onChangeText,
   placeholder = 'Search campgrounds...',
   onClear,
+  autoFocus = false,
 }: SearchBarProps) {
+  const inputRef = useRef<TextInput>(null);
+  
   // Safely ensure value is always a string
   const safeValue = typeof value === 'string' ? value : '';
+  
+  // Keep focus when component remounts (e.g., when empty state appears)
+  // This prevents the keyboard from dismissing when the empty state shows
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      // Small delay to ensure component is fully mounted and keyboard stays visible
+      const timeoutId = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [autoFocus]);
   
   // Safely wrap onChangeText to prevent crashes
   const handleChangeText = (text: string) => {
@@ -33,6 +49,7 @@ function SearchBar({
     <View style={styles.container}>
       <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
       <TextInput
+        ref={inputRef}
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#999"
