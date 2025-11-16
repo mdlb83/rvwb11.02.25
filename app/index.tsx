@@ -128,7 +128,7 @@ export default function MapScreen() {
   
   // Check if we have active filters
   const safeSearchQueryForFilter = typeof searchQuery === 'string' ? searchQuery.trim() : '';
-  const hasActiveFilters = selectedHookupType !== 'all' || safeSearchQueryForFilter.length > 0;
+  const hasActiveFilters = selectedHookupType !== 'all' || safeSearchQueryForFilter.length > 0 || showBookmarked;
   const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
 
   // Hide splash screen once data is loaded (or error occurs)
@@ -147,13 +147,56 @@ export default function MapScreen() {
 
   // Zoom to search/filter results when they change
   useEffect(() => {
+    // If filters are cleared, zoom out to show all campgrounds
+    if (!hasActiveFilters && !loading && !error && allCampgrounds.length > 0) {
+      const currentFilterState = 'no-filters';
+      if (lastFilterStateRef.current === currentFilterState) {
+        return; // Already zoomed to show all
+      }
+      
+      // Debounce to prevent rapid zoom changes
+      const timeoutId = setTimeout(() => {
+        if (isZoomingRef.current) {
+          return;
+        }
+        
+        isZoomingRef.current = true;
+        lastFilterStateRef.current = currentFilterState;
+        
+        try {
+          const coordinates = getCampgroundCoordinates(allCampgrounds);
+          if (coordinates.length > 0 && mapRef.current) {
+            mapRef.current.fitToCoordinates(coordinates, {
+              edgePadding: {
+                top: 100,
+                right: 50,
+                bottom: 200,
+                left: 50,
+              },
+              animated: true,
+            });
+          }
+        } catch (err) {
+          console.error('Error zooming to all campgrounds:', err);
+        } finally {
+          setTimeout(() => {
+            isZoomingRef.current = false;
+          }, 100);
+        }
+      }, 300);
+      
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+    
     // Only zoom if filters are active, we have results, and the filter state has changed
     if (!hasActiveFilters || campgrounds.length === 0 || loading || error) {
       return;
     }
 
     const safeSearchQueryForZoom = typeof searchQuery === 'string' ? searchQuery.trim() : '';
-    const currentFilterState = `${selectedHookupType}-${safeSearchQueryForZoom}`;
+    const currentFilterState = `${selectedHookupType}-${safeSearchQueryForZoom}-${showBookmarked ? 'bookmarked' : 'all'}`;
     
     // Skip if we've already zoomed for this filter state
     if (lastFilterStateRef.current === currentFilterState) {
@@ -170,7 +213,7 @@ export default function MapScreen() {
 
       // Double-check filter state hasn't changed during debounce
       const latestSafeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
-      const latestFilterState = `${selectedHookupType}-${latestSafeSearchQuery}`;
+      const latestFilterState = `${selectedHookupType}-${latestSafeSearchQuery}-${showBookmarked ? 'bookmarked' : 'all'}`;
       if (lastFilterStateRef.current === latestFilterState) {
         return;
       }
@@ -271,7 +314,7 @@ export default function MapScreen() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, loading, error, keyboardHeight]);
+  }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, showBookmarked, loading, error, keyboardHeight, allCampgrounds]);
 
   // Handle deep links to restore campground when user returns from map app
   useEffect(() => {
@@ -611,34 +654,38 @@ export default function MapScreen() {
           }}
         />
         {!selectedCampground && (
-          <TouchableOpacity
-            style={[styles.settingsButton, { top: insets.top + 16 }]}
-            onPress={() => setShowSettings(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={[styles.settingsButton, { top: insets.top + 16 }]}
+              onPress={() => setShowSettings(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="settings-outline" size={24} color="#333" />
+            </TouchableOpacity>
+            <View
+              style={[
+                styles.locationButtonContainer,
+                {
+                  top: insets.top + 16 + 48 + 12, // Settings button top + height + gap
+                },
+              ]}
+            >
+              <LocationButton onPress={handleLocationPress} />
+            </View>
+          </>
         )}
       </View>
       {!selectedCampground && (
         <>
-          <View
-            style={[
-              styles.locationButtonContainer,
-              {
-                bottom: keyboardHeight > 0 
-                  ? keyboardHeight + 80 
-                  : (insets.bottom + 80),
-              },
-            ]}
-          >
-            <LocationButton onPress={handleLocationPress} />
-          </View>
           {hasActiveFilters && campgrounds.length > 0 && (
             <ResultCountBadge 
               count={campgrounds.length} 
               total={allCampgrounds.length}
-              gpsButtonBottom={keyboardHeight > 0 ? keyboardHeight + 80 : (insets.bottom + 80)}
+              gpsButtonBottom={
+                keyboardHeight > 0 
+                  ? keyboardHeight 
+                  : insets.bottom
+              }
             />
           )}
           <View
@@ -734,7 +781,7 @@ const styles = StyleSheet.create({
   },
   locationButtonContainer: {
     position: 'absolute',
-    left: 16,
+    right: 16,
     zIndex: 2,
   },
   settingsButton: {

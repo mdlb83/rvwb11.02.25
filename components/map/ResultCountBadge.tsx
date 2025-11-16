@@ -12,15 +12,12 @@ export default function ResultCountBadge({ count, total, gpsButtonBottom }: Resu
     return null; // Don't show badge when all results are visible
   }
 
-  // GPS button is 44px tall, so its center is at gpsButtonBottom + 22
-  // We want the badge center to align with GPS button center
-  // Badge approximate height: paddingVertical (6*2) + text (~20) = ~32px
-  // So badge center is at badgeBottom + 16
-  // To align centers: badgeBottom + 16 = gpsButtonBottom + 22
-  // Therefore: badgeBottom = gpsButtonBottom + 22 - 16 = gpsButtonBottom + 6
-  const gpsButtonCenter = gpsButtonBottom + 22; // GPS button height is 44, so center is at +22
-  const badgeApproxHeight = 32; // Approximate badge height (padding + text)
-  const badgeBottom = gpsButtonCenter - (badgeApproxHeight / 2);
+  // Position badge 12px above the filters container
+  // filtersContainer bottom is at gpsButtonBottom (which represents the container bottom)
+  // filtersContainer approximate height: ~60px (padding + button height)
+  // To position badge 12px above filters container top: badgeBottom = gpsButtonBottom + containerHeight + 12
+  const filtersContainerHeight = 60; // Approximate height of filters container
+  const badgeBottom = gpsButtonBottom + filtersContainerHeight + 12;
 
   return (
     <View 

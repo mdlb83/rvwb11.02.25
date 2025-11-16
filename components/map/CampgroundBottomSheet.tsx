@@ -564,9 +564,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             <View style={styles.infoText}>
               {renderHtmlContent(campground.campground.info || 'No information available.')}
             </View>
-            {campground.campground.notes && (
-              <Text style={styles.notesText}>{campground.campground.notes}</Text>
-            )}
           </View>
         )}
 
