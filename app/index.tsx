@@ -559,6 +559,70 @@ export default function MapScreen() {
     });
   };
 
+  const handleZoomIn = () => {
+    if (mapRef.current && currentRegionRef.current) {
+      const newLatitudeDelta = currentRegionRef.current.latitudeDelta * 0.5;
+      const newLongitudeDelta = currentRegionRef.current.longitudeDelta * 0.5;
+      
+      mapRef.current.getCamera().then((camera) => {
+        if (camera.center) {
+          mapRef.current?.animateToRegion({
+            latitude: camera.center.latitude,
+            longitude: camera.center.longitude,
+            latitudeDelta: newLatitudeDelta,
+            longitudeDelta: newLongitudeDelta,
+          }, 300);
+        }
+      }).catch(() => {
+        // Fallback: use current region if getCamera fails
+        if (currentRegionRef.current) {
+          mapRef.current?.getCamera().then((camera) => {
+            if (camera.center) {
+              mapRef.current?.animateToRegion({
+                latitude: camera.center.latitude,
+                longitude: camera.center.longitude,
+                latitudeDelta: newLatitudeDelta,
+                longitudeDelta: newLongitudeDelta,
+              }, 300);
+            }
+          });
+        }
+      });
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapRef.current && currentRegionRef.current) {
+      const newLatitudeDelta = currentRegionRef.current.latitudeDelta * 2;
+      const newLongitudeDelta = currentRegionRef.current.longitudeDelta * 2;
+      
+      mapRef.current.getCamera().then((camera) => {
+        if (camera.center) {
+          mapRef.current?.animateToRegion({
+            latitude: camera.center.latitude,
+            longitude: camera.center.longitude,
+            latitudeDelta: newLatitudeDelta,
+            longitudeDelta: newLongitudeDelta,
+          }, 300);
+        }
+      }).catch(() => {
+        // Fallback: use current region if getCamera fails
+        if (currentRegionRef.current) {
+          mapRef.current?.getCamera().then((camera) => {
+            if (camera.center) {
+              mapRef.current?.animateToRegion({
+                latitude: camera.center.latitude,
+                longitude: camera.center.longitude,
+                latitudeDelta: newLatitudeDelta,
+                longitudeDelta: newLongitudeDelta,
+              }, 300);
+            }
+          });
+        }
+      });
+    }
+  };
+
   // Show empty state when filters return no results
   if (hasNoResults) {
     // Safely get search query for display
@@ -584,7 +648,7 @@ export default function MapScreen() {
             { 
               paddingBottom: keyboardHeight > 0 ? 0 : insets.bottom,
               bottom: keyboardHeight > 0 ? keyboardHeight : 0,
-              backgroundColor: 'rgba(240, 255, 242, 0.9)', // Frosted glass with subtle green tint
+              backgroundColor: 'rgba(240, 255, 242, 0.7)', // Frosted glass with subtle green tint - more transparent
             }
           ]}
           onStartShouldSetResponder={() => false}
@@ -655,39 +719,111 @@ export default function MapScreen() {
           }}
         />
         {!selectedCampground && (
-          <>
-            <TouchableOpacity
-              style={[styles.settingsButton, { top: insets.top + 16 }]}
-              onPress={() => setShowSettings(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="settings-outline" size={24} color="#333" />
-            </TouchableOpacity>
-            <View
-              style={[
-                styles.locationButtonContainer,
-                {
-                  top: insets.top + 16 + 48 + 12, // Settings button top + height + gap
-                },
-              ]}
-            >
-              <LocationButton onPress={handleLocationPress} />
-            </View>
-          </>
+          <TouchableOpacity
+            style={[styles.settingsButton, { top: insets.top + 16 }]}
+            onPress={() => setShowSettings(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="settings-outline" size={24} color="#333" />
+          </TouchableOpacity>
         )}
       </View>
       {!selectedCampground && (
         <>
           {hasActiveFilters && campgrounds.length > 0 && (
-            <ResultCountBadge 
-              count={campgrounds.length} 
-              total={allCampgrounds.length}
-              gpsButtonBottom={
-                keyboardHeight > 0 
-                  ? keyboardHeight 
-                  : insets.bottom
-              }
-            />
+            <>
+              <View
+                style={[
+                  styles.locationButtonContainer,
+                  {
+                    // Badge bottom = filtersBottom + 60 + 12
+                    // Badge top = badgeBottom - 32 = filtersBottom + 60 + 12 - 32 = filtersBottom + 40
+                    // GPS button bottom = badgeTop + 12 = filtersBottom + 40 + 12 = filtersBottom + 52
+                    bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 52,
+                  },
+                ]}
+              >
+                <LocationButton onPress={handleLocationPress} />
+              </View>
+              <View
+                style={[
+                  styles.zoomButtonsContainer,
+                  {
+                    // Position minus button at same height as GPS button
+                    // GPS button bottom = filtersBottom + 52
+                    // Minus button center should align with GPS button center
+                    // GPS button is 44px tall, so center is at bottom - 22
+                    // Minus button is 44px tall, so bottom should be at GPS center + 22 = GPS bottom
+                    bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 52,
+                  },
+                ]}
+              >
+                <TouchableOpacity
+                  style={styles.zoomButton}
+                  onPress={handleZoomIn}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="add" size={20} color="#333" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.zoomButton}
+                  onPress={handleZoomOut}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="remove" size={20} color="#333" />
+                </TouchableOpacity>
+              </View>
+              <ResultCountBadge 
+                count={campgrounds.length} 
+                total={allCampgrounds.length}
+                gpsButtonBottom={
+                  keyboardHeight > 0 
+                    ? keyboardHeight 
+                    : insets.bottom
+                }
+              />
+            </>
+          )}
+          {(!hasActiveFilters || campgrounds.length === 0) && (
+            <>
+              <View
+                style={[
+                  styles.locationButtonContainer,
+                  {
+                    bottom: keyboardHeight > 0 
+                      ? keyboardHeight + 80 
+                      : (insets.bottom + 80),
+                  },
+                ]}
+              >
+                <LocationButton onPress={handleLocationPress} />
+              </View>
+              <View
+                style={[
+                  styles.zoomButtonsContainer,
+                  {
+                    bottom: keyboardHeight > 0 
+                      ? keyboardHeight + 80 
+                      : (insets.bottom + 80),
+                  },
+                ]}
+              >
+                <TouchableOpacity
+                  style={styles.zoomButton}
+                  onPress={handleZoomIn}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="add" size={20} color="#333" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.zoomButton}
+                  onPress={handleZoomOut}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="remove" size={20} color="#333" />
+                </TouchableOpacity>
+              </View>
+            </>
           )}
           <View
             style={[
@@ -750,7 +886,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(240, 255, 242, 0.9)', // Frosted glass with subtle green tint (light green + white)
+    backgroundColor: 'rgba(240, 255, 242, 0.7)', // Frosted glass with subtle green tint - more transparent
     zIndex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
@@ -782,8 +918,31 @@ const styles = StyleSheet.create({
   },
   locationButtonContainer: {
     position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  zoomButtonsContainer: {
+    position: 'absolute',
     right: 16,
     zIndex: 2,
+    flexDirection: 'column',
+    gap: 8,
+    alignItems: 'flex-end',
+  },
+  zoomButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   settingsButton: {
     position: 'absolute',

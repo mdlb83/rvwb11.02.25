@@ -12,7 +12,7 @@ module.exports = {
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#4CAF50"
+      backgroundColor: "#FFD700"
     },
     description: "Find RV campgrounds with easy access to paved bike trails across the United States. Discover 385+ campground locations with full and partial hookups, detailed trail information, and directions.",
     keywords: ["RV", "campground", "bike trails", "camping", "RVing", "bicycle", "trails", "full hookup", "partial hookup"],
