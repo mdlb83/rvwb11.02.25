@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   },
   locationButtonContainer: {
     position: 'absolute',
-    right: 16,
+    left: 16,
     zIndex: 2,
   },
 });
