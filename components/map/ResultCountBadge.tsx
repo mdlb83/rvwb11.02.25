@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     left: 16,
-    right: 16,
+    right: 80, // Leave space for settings icon (48px + 16px margin + 16px padding)
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 16,
     paddingVertical: 8,

@@ -73,25 +73,43 @@ export default function MapScreen() {
       return;
     }
 
-    // Update the ref to track this filter state
-    lastFilterStateRef.current = currentFilterState;
+    // Debounce zoom during rapid typing to prevent crashes
+    const timeoutId = setTimeout(() => {
+      // Double-check filter state hasn't changed during debounce
+      const latestFilterState = `${selectedHookupType}-${searchQuery.trim()}`;
+      if (lastFilterStateRef.current === latestFilterState) {
+        return;
+      }
 
-    // Get coordinates for filtered campgrounds
-    const coordinates = getCampgroundCoordinates(campgrounds);
-    
-    if (coordinates.length > 0 && mapRef.current) {
-      // Use fitToCoordinates to zoom to all results
-      // Add padding to ensure markers aren't at the edge
-      mapRef.current.fitToCoordinates(coordinates, {
-        edgePadding: {
-          top: 100,
-          right: 50,
-          bottom: 200,
-          left: 50,
-        },
-        animated: true,
-      });
-    }
+      // Update the ref to track this filter state
+      lastFilterStateRef.current = latestFilterState;
+
+      // Get coordinates for filtered campgrounds
+      const coordinates = getCampgroundCoordinates(campgrounds);
+      
+      if (coordinates.length > 0 && mapRef.current) {
+        // Use fitToCoordinates to zoom to all results
+        // Add padding to ensure markers aren't at the edge
+        // Wrap in try-catch to prevent crashes during rapid typing
+        try {
+          mapRef.current.fitToCoordinates(coordinates, {
+            edgePadding: {
+              top: 100,
+              right: 50,
+              bottom: 200,
+              left: 50,
+            },
+            animated: true,
+          });
+        } catch (err) {
+          console.error('Error fitting to coordinates:', err);
+        }
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, loading, error]);
 
   // Handle deep links to restore campground when user returns from map app
