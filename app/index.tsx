@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Keyboard, Alert, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -29,20 +29,46 @@ export default function MapScreen() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
-  const filters: CampgroundFilters = {
-    hookupType: selectedHookupType,
-    searchQuery: searchQuery.trim() || undefined,
-  };
+  // Safely ensure searchQuery is always a string
+  const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
+  
+  // Memoize filters object to prevent unnecessary recalculations in useCampgrounds
+  // Only create new object if values actually changed
+  // Only apply search filter if query is at least 2 characters to reduce rapid recalculations
+  const filters: CampgroundFilters = useMemo(() => {
+    const filterObj: CampgroundFilters = {
+      hookupType: selectedHookupType,
+    };
+    // Only filter by search if query is at least 2 characters
+    // This prevents rapid recalculations when typing single characters
+    if (safeSearchQuery.length >= 2) {
+      filterObj.searchQuery = safeSearchQuery;
+    }
+    return filterObj;
+  }, [selectedHookupType, safeSearchQuery]);
 
   const [retryKey, setRetryKey] = useState(0);
   const { campgrounds, loading, error, allCampgrounds } = useCampgrounds(filters, retryKey);
+  
+  // Debug logging for crashes
+  useEffect(() => {
+    if (error) {
+      console.error('Campgrounds error:', error);
+    }
+    if (!Array.isArray(campgrounds)) {
+      console.error('Campgrounds is not an array:', typeof campgrounds, campgrounds);
+    }
+  }, [campgrounds, error]);
   const [splashHidden, setSplashHidden] = useState(false);
   
   // Track the last filter state to avoid unnecessary zooms
   const lastFilterStateRef = useRef<string>('');
+  // Track if we're currently processing a zoom to prevent race conditions
+  const isZoomingRef = useRef<boolean>(false);
   
   // Check if we have active filters
-  const hasActiveFilters = selectedHookupType !== 'all' || searchQuery.trim().length > 0;
+  const safeSearchQueryForFilter = typeof searchQuery === 'string' ? searchQuery.trim() : '';
+  const hasActiveFilters = selectedHookupType !== 'all' || safeSearchQueryForFilter.length > 0;
   const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
 
   // Hide splash screen once data is loaded (or error occurs)
@@ -66,7 +92,8 @@ export default function MapScreen() {
       return;
     }
 
-    const currentFilterState = `${selectedHookupType}-${searchQuery.trim()}`;
+    const safeSearchQueryForZoom = typeof searchQuery === 'string' ? searchQuery.trim() : '';
+    const currentFilterState = `${selectedHookupType}-${safeSearchQueryForZoom}`;
     
     // Skip if we've already zoomed for this filter state
     if (lastFilterStateRef.current === currentFilterState) {
@@ -74,38 +101,68 @@ export default function MapScreen() {
     }
 
     // Debounce zoom during rapid typing to prevent crashes
+    // Increased debounce time to 500ms to better handle rapid typing
     const timeoutId = setTimeout(() => {
+      // Prevent multiple simultaneous zoom operations
+      if (isZoomingRef.current) {
+        return;
+      }
+
       // Double-check filter state hasn't changed during debounce
-      const latestFilterState = `${selectedHookupType}-${searchQuery.trim()}`;
+      const latestSafeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
+      const latestFilterState = `${selectedHookupType}-${latestSafeSearchQuery}`;
       if (lastFilterStateRef.current === latestFilterState) {
         return;
       }
 
+      // Set zooming flag
+      isZoomingRef.current = true;
+
       // Update the ref to track this filter state
       lastFilterStateRef.current = latestFilterState;
 
-      // Get coordinates for filtered campgrounds
-      const coordinates = getCampgroundCoordinates(campgrounds);
-      
-      if (coordinates.length > 0 && mapRef.current) {
-        // Use fitToCoordinates to zoom to all results
-        // Add padding to ensure markers aren't at the edge
-        // Wrap in try-catch to prevent crashes during rapid typing
-        try {
-          mapRef.current.fitToCoordinates(coordinates, {
-            edgePadding: {
-              top: 100,
-              right: 50,
-              bottom: 200,
-              left: 50,
-            },
-            animated: true,
-          });
-        } catch (err) {
-          console.error('Error fitting to coordinates:', err);
+      // Use current campgrounds from the closure, but also validate it's still valid
+      // Get fresh campgrounds from the current state to avoid stale closure issues
+      try {
+        // Get coordinates for filtered campgrounds - use current campgrounds array
+        const currentCampgrounds = campgrounds; // This will be captured, but we validate below
+        if (!currentCampgrounds || !Array.isArray(currentCampgrounds) || currentCampgrounds.length === 0) {
+          isZoomingRef.current = false;
+          return;
         }
+
+        const coordinates = getCampgroundCoordinates(currentCampgrounds);
+        
+        if (coordinates.length > 0 && mapRef.current) {
+          // Use fitToCoordinates to zoom to all results
+          // Add padding to ensure markers aren't at the edge
+          // Wrap in try-catch to prevent crashes during rapid typing
+          try {
+            mapRef.current.fitToCoordinates(coordinates, {
+              edgePadding: {
+                top: 100,
+                right: 50,
+                bottom: 200,
+                left: 50,
+              },
+              animated: true,
+            });
+          } catch (err) {
+            console.error('Error fitting to coordinates:', err);
+          } finally {
+            // Reset zooming flag after a short delay to allow animation to start
+            setTimeout(() => {
+              isZoomingRef.current = false;
+            }, 100);
+          }
+        } else {
+          isZoomingRef.current = false;
+        }
+      } catch (err) {
+        console.error('Error in zoom effect:', err);
+        isZoomingRef.current = false;
       }
-    }, 300); // 300ms debounce
+    }, 500); // Increased to 500ms debounce
 
     return () => {
       clearTimeout(timeoutId);
@@ -208,6 +265,19 @@ export default function MapScreen() {
     lastFilterStateRef.current = '';
   };
 
+  // Safely handle search query changes - ensure it's always a string
+  const handleSearchChange = (text: string) => {
+    try {
+      // Ensure text is always a string, default to empty string if not
+      const safeText = typeof text === 'string' ? text : '';
+      setSearchQuery(safeText);
+    } catch (err) {
+      console.error('Error in handleSearchChange:', err, { text });
+      // Set to empty string on error to prevent crash
+      setSearchQuery('');
+    }
+  };
+
   const handleMapPress = () => {
     Keyboard.dismiss();
   };
@@ -231,13 +301,15 @@ export default function MapScreen() {
 
   // Show empty state when filters return no results
   if (hasNoResults) {
+    // Safely get search query for display
+    const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
     return (
       <View style={styles.container}>
         <EmptyState
           title="No campgrounds found"
           message={
-            searchQuery.trim().length > 0
-              ? `No campgrounds match "${searchQuery}". Try adjusting your search or filters.`
+            safeSearchQuery.length > 0
+              ? `No campgrounds match "${safeSearchQuery}". Try adjusting your search or filters.`
               : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
           }
           icon="map-outline"
@@ -249,8 +321,8 @@ export default function MapScreen() {
               onHookupTypeChange={setSelectedHookupType}
             />
             <SearchBar
-              value={searchQuery}
-              onChangeText={setSearchQuery}
+              value={typeof searchQuery === 'string' ? searchQuery : ''}
+              onChangeText={handleSearchChange}
               onClear={handleClearSearch}
             />
             <TouchableOpacity
@@ -293,7 +365,7 @@ export default function MapScreen() {
     <View style={styles.container}>
       <View style={styles.mapWrapper} pointerEvents="box-none">
         <CampgroundMap
-          campgrounds={campgrounds}
+          campgrounds={Array.isArray(campgrounds) ? campgrounds : []}
           onMarkerPress={setSelectedCampground}
           onMapPress={handleMapPress}
           mapRef={mapRef}
@@ -340,8 +412,8 @@ export default function MapScreen() {
                 onHookupTypeChange={setSelectedHookupType}
               />
               <SearchBar
-                value={searchQuery}
-                onChangeText={setSearchQuery}
+                value={typeof searchQuery === 'string' ? searchQuery : ''}
+                onChangeText={handleSearchChange}
                 onClear={handleClearSearch}
               />
               <TouchableOpacity

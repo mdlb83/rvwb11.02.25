@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,12 +9,26 @@ interface SearchBarProps {
   onClear?: () => void;
 }
 
-export default function SearchBar({
+function SearchBar({
   value,
   onChangeText,
   placeholder = 'Search campgrounds...',
   onClear,
 }: SearchBarProps) {
+  // Safely ensure value is always a string
+  const safeValue = typeof value === 'string' ? value : '';
+  
+  // Safely wrap onChangeText to prevent crashes
+  const handleChangeText = (text: string) => {
+    try {
+      if (typeof onChangeText === 'function') {
+        onChangeText(text || '');
+      }
+    } catch (err) {
+      console.error('Error in SearchBar onChangeText:', err, { text });
+    }
+  };
+  
   return (
     <View style={styles.container}>
       <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
@@ -22,12 +36,13 @@ export default function SearchBar({
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#999"
-        value={value}
-        onChangeText={onChangeText}
+        value={safeValue}
+        onChangeText={handleChangeText}
         autoCapitalize="none"
         autoCorrect={false}
+        editable={true}
       />
-      {value.length > 0 && (
+      {safeValue.length > 0 && onClear && (
         <TouchableOpacity
           testID="clear-button"
           onPress={onClear}
@@ -68,4 +83,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 });
+
+// Memoize to prevent unnecessary re-renders
+export default memo(SearchBar);
 

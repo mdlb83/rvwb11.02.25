@@ -33,19 +33,29 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
         showsMyLocationButton={false}
         onPress={onMapPress}
       >
-        {campgrounds
+        {Array.isArray(campgrounds) && campgrounds
           .filter((campground) => 
+            campground &&
             campground.campground && 
-            campground.latitude && 
-            campground.longitude
+            typeof campground.latitude === 'number' &&
+            typeof campground.longitude === 'number' &&
+            !isNaN(campground.latitude) &&
+            !isNaN(campground.longitude)
           )
-          .map((campground, index) => (
-            <CampgroundMarker
-              key={`${campground.city}-${campground.state}-${index}`}
-              campground={campground}
-              onPress={() => onMarkerPress(campground)}
-            />
-          ))}
+          .map((campground, index) => {
+            try {
+              return (
+                <CampgroundMarker
+                  key={`${campground.city}-${campground.state}-${index}`}
+                  campground={campground}
+                  onPress={() => onMarkerPress(campground)}
+                />
+              );
+            } catch (err) {
+              console.error('Error rendering marker:', err, campground);
+              return null;
+            }
+          })}
       </MapView>
     </View>
   );
