@@ -31,29 +31,52 @@ export function filterCampgrounds(
     searchQuery?: string;
   }
 ): CampgroundEntry[] {
-  return entries.filter(entry => {
-    // Filter out entries with null campground data
-    if (!entry.campground) {
-      return false;
-    }
+  try {
+    return entries.filter(entry => {
+      try {
+        // Filter out entries with null campground data
+        if (!entry.campground) {
+          return false;
+        }
 
-    if (filters.state && entry.state !== filters.state) {
-      return false;
-    }
-    if (filters.hookupType && filters.hookupType !== 'all' && entry.hookup_type !== filters.hookupType) {
-      return false;
-    }
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      const matchesName = entry.campground?.name?.toLowerCase()?.includes(query) || false;
-      const matchesCity = entry.city?.toLowerCase()?.includes(query) || false;
-      const matchesState = entry.state?.toLowerCase()?.includes(query) || false;
-      if (!matchesName && !matchesCity && !matchesState) {
+        if (filters.state && entry.state !== filters.state) {
+          return false;
+        }
+        if (filters.hookupType && filters.hookupType !== 'all' && entry.hookup_type !== filters.hookupType) {
+          return false;
+        }
+        if (filters.searchQuery && typeof filters.searchQuery === 'string') {
+          const query = filters.searchQuery.trim().toLowerCase();
+          // Skip empty queries
+          if (query.length === 0) {
+            return true;
+          }
+          
+          // Safely check name, city, and state - ensure they're strings before calling toLowerCase
+          const name = typeof entry.campground?.name === 'string' ? entry.campground.name.toLowerCase() : '';
+          const city = typeof entry.city === 'string' ? entry.city.toLowerCase() : '';
+          const state = typeof entry.state === 'string' ? entry.state.toLowerCase() : '';
+          
+          const matchesName = name.includes(query);
+          const matchesCity = city.includes(query);
+          const matchesState = state.includes(query);
+          
+          if (!matchesName && !matchesCity && !matchesState) {
+            return false;
+          }
+        }
+        return true;
+      } catch (err) {
+        // Log error for debugging but don't crash - skip this entry
+        console.error('Error filtering campground entry:', err, entry);
         return false;
       }
-    }
-    return true;
-  });
+    });
+  } catch (err) {
+    // If filtering completely fails, return empty array instead of crashing
+    console.error('Error in filterCampgrounds:', err);
+    return [];
+  }
 }
 
 export function findCampgroundById(
