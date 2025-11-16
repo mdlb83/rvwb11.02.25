@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
 import * as Linking from 'expo-linking';
+import * as SplashScreen from 'expo-splash-screen';
 import { Ionicons } from '@expo/vector-icons';
 import { useCampgrounds, CampgroundFilters } from '../hooks/useCampgrounds';
 import { CampgroundEntry } from '../types/campground';
@@ -33,6 +34,7 @@ export default function MapScreen() {
 
   const [retryKey, setRetryKey] = useState(0);
   const { campgrounds, loading, error, allCampgrounds } = useCampgrounds(filters, retryKey);
+  const [splashHidden, setSplashHidden] = useState(false);
   
   // Track the last filter state to avoid unnecessary zooms
   const lastFilterStateRef = useRef<string>('');
@@ -40,6 +42,20 @@ export default function MapScreen() {
   // Check if we have active filters
   const hasActiveFilters = selectedHookupType !== 'all' || searchQuery.trim().length > 0;
   const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
+
+  // Hide splash screen once data is loaded (or error occurs)
+  useEffect(() => {
+    async function hideSplash() {
+      if (!loading && !splashHidden) {
+        // Data has finished loading (successfully or with error)
+        // Small delay to ensure smooth transition
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await SplashScreen.hideAsync();
+        setSplashHidden(true);
+      }
+    }
+    hideSplash();
+  }, [loading, splashHidden]);
 
   // Zoom to search/filter results when they change
   useEffect(() => {
