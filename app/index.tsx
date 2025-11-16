@@ -427,7 +427,7 @@ export default function MapScreen() {
               onPress={handleSuggestCampground}
               activeOpacity={0.7}
             >
-              <Ionicons name="add-circle" size={24} color="#4CAF50" />
+              <Ionicons name="add" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -522,7 +522,7 @@ export default function MapScreen() {
                 onPress={handleSuggestCampground}
                 activeOpacity={0.7}
               >
-                <Ionicons name="add-circle" size={24} color="#4CAF50" />
+                <Ionicons name="add" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
@@ -576,9 +576,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   addButton: {
-    padding: 4,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#4CAF50',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+    minWidth: 44, // Match filter button minimum width
   },
   locationButtonContainer: {
     position: 'absolute',
