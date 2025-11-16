@@ -584,6 +584,7 @@ export default function MapScreen() {
             { 
               paddingBottom: keyboardHeight > 0 ? 0 : insets.bottom,
               bottom: keyboardHeight > 0 ? keyboardHeight : 0,
+              backgroundColor: 'rgba(240, 255, 242, 0.9)', // Frosted glass with subtle green tint
             }
           ]}
           onStartShouldSetResponder={() => false}
@@ -749,17 +750,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(240, 255, 242, 0.9)', // Frosted glass with subtle green tint (light green + white)
     zIndex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    shadowColor: '#000',
+    borderTopColor: 'rgba(76, 175, 80, 0.2)', // Subtle green border at top
+    shadowColor: '#4CAF50', // Green shadow to match app theme
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
     elevation: 5,
   },
   searchRow: {
