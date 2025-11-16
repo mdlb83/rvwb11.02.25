@@ -9,9 +9,10 @@ interface CampgroundMapProps {
   onMarkerPress: (campground: CampgroundEntry) => void;
   onMapPress?: () => void;
   mapRef?: React.RefObject<MapView | null>;
+  onRegionChangeComplete?: (region: Region) => void;
 }
 
-export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef }: CampgroundMapProps) {
+export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegionChangeComplete }: CampgroundMapProps) {
   const internalMapRef = useRef<MapView>(null);
   const mapRefToUse = mapRef || internalMapRef;
 
@@ -32,6 +33,7 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
         showsUserLocation={true}
         showsMyLocationButton={false}
         onPress={onMapPress}
+        onRegionChangeComplete={onRegionChangeComplete}
       >
         {Array.isArray(campgrounds) && campgrounds
           .filter((campground) => 

@@ -67,6 +67,12 @@ export default function MapScreen() {
   const isZoomingRef = useRef<boolean>(false);
   // Track last keyboard height to detect significant changes
   const lastKeyboardHeightRef = useRef<number>(0);
+  // Track current map region to preserve zoom level
+  // Initialize with reasonable defaults to avoid zoom changes on first selection
+  const currentRegionRef = useRef<{ latitudeDelta: number; longitudeDelta: number } | null>({
+    latitudeDelta: 0.5,
+    longitudeDelta: 0.75,
+  });
   
   // Check if we have active filters
   const safeSearchQueryForFilter = typeof searchQuery === 'string' ? searchQuery.trim() : '';
@@ -326,6 +332,49 @@ export default function MapScreen() {
     };
   }, [keyboardHeight, hasActiveFilters, campgrounds.length, loading, error]);
 
+  // Center selected campground in top third of map without changing zoom
+  useEffect(() => {
+    if (!selectedCampground || !mapRef.current) {
+      return;
+    }
+
+    // Small delay to ensure map is ready and region ref is updated
+    const timeoutId = setTimeout(() => {
+      if (mapRef.current && selectedCampground) {
+        try {
+          // Get current region deltas - use ref value which should be updated from onRegionChangeComplete
+          // The ref is initialized with defaults, but will be updated as user interacts with map
+          if (!currentRegionRef.current) {
+            return; // Should not happen since we initialize it, but TypeScript safety check
+          }
+          const latitudeDelta = currentRegionRef.current.latitudeDelta;
+          const longitudeDelta = currentRegionRef.current.longitudeDelta;
+          
+          // To position campground in top third (33% from top of visible area):
+          // Map center Y, visible top = Y + latitudeDelta/2, visible bottom = Y - latitudeDelta/2
+          // We want campground at X to appear at 33% from top: X = Y + latitudeDelta/2 - latitudeDelta*0.33
+          // Solving for Y: Y = X - latitudeDelta*(0.5 - 0.33) = X - latitudeDelta*0.17
+          // Subtracting moves center south, which positions campground higher on screen
+          // Using a larger offset (0.25 instead of 0.17) to ensure it's clearly in the top third
+          const latitudeOffset = latitudeDelta * 0.25;
+          
+          mapRef.current.animateToRegion({
+            latitude: selectedCampground.latitude - latitudeOffset,
+            longitude: selectedCampground.longitude,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta,
+          }, 500);
+        } catch (err) {
+          console.error('Error centering campground:', err);
+        }
+      }
+    }, 200); // Delay to ensure region ref might be updated from any recent map movements
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [selectedCampground]);
+
   // Show loading state
   if (loading) {
     return <LoadingState />;
@@ -466,6 +515,13 @@ export default function MapScreen() {
           onMarkerPress={setSelectedCampground}
           onMapPress={handleMapPress}
           mapRef={mapRef}
+          onRegionChangeComplete={(region) => {
+            // Track current region to preserve zoom level when centering campgrounds
+            currentRegionRef.current = {
+              latitudeDelta: region.latitudeDelta,
+              longitudeDelta: region.longitudeDelta,
+            };
+          }}
         />
         {!selectedCampground && (
           <TouchableOpacity
