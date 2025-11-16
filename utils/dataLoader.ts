@@ -1,5 +1,16 @@
 import { CampgroundEntry, CampgroundDatabase } from '../types/campground';
 
+/**
+ * Generate a unique ID for a campground entry (same logic as in CampgroundBottomSheet)
+ */
+export function generateCampgroundIdFromEntry(entry: CampgroundEntry): string {
+  if (!entry) return '';
+  const name = entry.campground?.name || '';
+  const sanitizedName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const sanitizedCity = entry.city.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `${sanitizedCity}-${entry.state.toLowerCase()}-${sanitizedName}`;
+}
+
 let cachedData: CampgroundEntry[] | null = null;
 
 export async function loadCampgrounds(): Promise<CampgroundEntry[]> {
@@ -29,6 +40,8 @@ export function filterCampgrounds(
     state?: string;
     hookupType?: 'full' | 'partial' | 'all';
     searchQuery?: string;
+    bookmarked?: boolean;
+    bookmarkedIds?: string[]; // Array of bookmarked campground IDs
   }
 ): CampgroundEntry[] {
   try {
@@ -64,6 +77,14 @@ export function filterCampgrounds(
           if (!matchesName && !matchesCity && !matchesState) {
             return false;
           }
+        }
+        if (filters.bookmarked && filters.bookmarkedIds && filters.bookmarkedIds.length > 0) {
+          const campgroundId = generateCampgroundIdFromEntry(entry);
+          const isBookmarked = filters.bookmarkedIds.includes(campgroundId);
+          if (!isBookmarked) {
+            return false;
+          }
+          console.log('Found bookmarked campground:', campgroundId, entry.campground?.name);
         }
         return true;
       } catch (err) {

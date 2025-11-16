@@ -1,9 +1,11 @@
 import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { CampgroundEntry } from '../../types/campground';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
+import { isBookmarked, toggleBookmark } from '../../utils/bookmarks';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 
@@ -28,6 +30,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const [pendingAction, setPendingAction] = useState<'directions' | 'search' | null>(null);
   const [pendingMapApp, setPendingMapApp] = useState<MapApp | null>(null);
   const [dontShowInstructions, setDontShowInstructions] = useState(false);
+  const [isBookmarkedState, setIsBookmarkedState] = useState(false);
   // Use ref to store pending action immediately, avoiding React state update delays
   const pendingActionRef = useRef<PendingMapAction | null>(null);
 
@@ -48,6 +51,19 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     const sanitizedCity = campground.city.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     return `${sanitizedCity}-${campground.state.toLowerCase()}-${sanitizedName}`;
   }, [campground]);
+
+  // Load bookmark state when campground changes
+  useEffect(() => {
+    const loadBookmarkState = async () => {
+      if (campgroundId) {
+        const bookmarked = await isBookmarked(campgroundId);
+        setIsBookmarkedState(bookmarked);
+      } else {
+        setIsBookmarkedState(false);
+      }
+    };
+    loadBookmarkState();
+  }, [campgroundId]);
 
   // Determine initial snap index based on content
   // If campground has blog post, open at index 2 (90%) to show all content including buttons
@@ -308,6 +324,13 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     });
   };
 
+  const handleBookmark = async () => {
+    if (!campgroundId) return;
+    
+    const newBookmarkState = await toggleBookmark(campgroundId);
+    setIsBookmarkedState(newBookmarkState);
+  };
+
 
   const renderHtmlContent = (html: string) => {
     // Handle nested links by parsing with a stack to track nesting depth
@@ -482,29 +505,61 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         {campground ? (
           <>
             <View style={styles.header}>
+              <View
+                style={[
+                  styles.badge,
+                  styles.badgeTopRight,
+                  { backgroundColor: campground.hookup_type === 'full' ? '#4CAF50' : '#FF9800' },
+                ]}
+              >
+                <Text style={styles.badgeText}>
+                  {campground.hookup_type === 'full' ? 'Full Hookup' : 'Partial Hookup'}
+                </Text>
+              </View>
               <Text style={styles.title}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
-          <Text style={styles.subtitle}>
-            {campground.city}, {campground.state}
-          </Text>
-          <View style={styles.badgeContainer}>
-            <View
-              style={[
-                styles.badge,
-                { backgroundColor: campground.hookup_type === 'full' ? '#4CAF50' : '#FF9800' },
-              ]}
-            >
-              <Text style={styles.badgeText}>
-                {campground.hookup_type === 'full' ? 'Full Hookup' : 'Partial Hookup'}
+          <View style={styles.subtitleRow}>
+            <Text style={styles.subtitle}>
+              {campground.city}, {campground.state}
+            </Text>
+            {campground.contributor && (
+              <Text style={styles.contributorTextInline}>
+                📍 Submitted by {campground.contributor.name}
+                {campground.contributor.location && ` from ${campground.contributor.location}`}
               </Text>
-            </View>
-            {campground.campground?.type && (
-              <Text style={styles.typeText}>{campground.campground.type}</Text>
             )}
           </View>
         </View>
 
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.actionButton, styles.reportButton]} onPress={handleReportProblem}>
+            <Ionicons name="warning-outline" size={16} color="#dc3545" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[
+              styles.actionButton, 
+              styles.bookmarkButton,
+              isBookmarkedState && styles.bookmarkButtonFilled
+            ]} 
+            onPress={handleBookmark}
+          >
+            <Ionicons 
+              name={isBookmarkedState ? "bookmark" : "bookmark-outline"} 
+              size={16} 
+              color={isBookmarkedState ? "#fff" : "#333"} 
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, styles.directionsButton]} onPress={handleGetDirections}>
+            <Ionicons name="navigate" size={18} color="#fff" style={styles.buttonIcon} />
+            <Text style={styles.actionButtonText}>Directions</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, styles.openMapsButton]} onPress={handleOpenInMaps}>
+            <Ionicons name="map" size={18} color="#fff" style={styles.buttonIcon} />
+            <Text style={styles.actionButtonText}>Open in Maps</Text>
+          </TouchableOpacity>
+        </View>
+
         {campground.campground && (
-          <View style={styles.section}>
+          <View style={[styles.section, styles.firstSection]}>
             <Text style={styles.sectionTitle}>Campground Info</Text>
             <View style={styles.infoText}>
               {renderHtmlContent(campground.campground.info || 'No information available.')}
@@ -516,7 +571,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         )}
 
         {campground.trails.length > 0 && (
-          <View style={styles.section}>
+          <View style={[styles.section, styles.trailsSection]}>
             <Text style={styles.sectionTitle}>Bike Trails</Text>
             {campground.trails.map((trail, index) => (
               <View key={index} style={styles.trailCard}>
@@ -539,34 +594,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </View>
         )}
 
-        {campground.contributor && (
-          <View style={styles.section}>
-            <Text style={styles.contributorText}>
-              📍 Submitted by {campground.contributor.name}
-              {campground.contributor.location && ` from ${campground.contributor.location}`}
-            </Text>
-          </View>
-        )}
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.actionButton, styles.directionsButton]} onPress={handleGetDirections}>
-                <Text style={styles.actionButtonText}>Get Directions</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionButton, styles.openMapsButton]} onPress={handleOpenInMaps}>
-                <Text style={styles.actionButtonText}>Open in Maps</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.feedbackSection}>
-              <Text style={styles.feedbackTitle}>Help Improve This App</Text>
-              <View style={styles.feedbackButtons}>
-                <TouchableOpacity
-                  style={styles.feedbackButton}
-                  onPress={handleReportProblem}
-                >
-                  <Text style={styles.feedbackButtonText}>📧 Report a Problem</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           </>
         ) : null}
       </BottomSheetScrollView>
@@ -608,32 +635,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
   },
   header: {
-    marginBottom: 16,
+    marginBottom: 12,
+    position: 'relative',
+    paddingBottom: 0,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 4,
+    marginRight: 120,
     flexWrap: 'wrap',
     flexShrink: 1,
+  },
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 0,
+    flexWrap: 'wrap',
+    gap: 8,
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 12,
-    flexWrap: 'wrap',
     flexShrink: 1,
   },
   badgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexWrap: 'wrap',
+    marginTop: 0,
+    marginBottom: 0,
   },
   badge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+  },
+  badgeTopRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1,
   },
   badgeText: {
     color: '#fff',
@@ -650,6 +694,12 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 20,
     width: '100%',
+  },
+  firstSection: {
+    marginTop: 16,
+  },
+  trailsSection: {
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,
@@ -720,30 +770,75 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     flexShrink: 1,
   },
+  contributorTextInline: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+    flexWrap: 'wrap',
+    flexShrink: 1,
+  },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: 8,
+    marginTop: 0,
+    alignItems: 'center',
   },
   actionButton: {
     flex: 1,
-    padding: 16,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  reportButton: {
+    flex: 0,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#dc3545',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  bookmarkButton: {
+    flex: 0,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#333',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  bookmarkButtonFilled: {
+    backgroundColor: '#333',
+  },
+  buttonIcon: {
+    marginRight: 6,
   },
   directionsButton: {
     backgroundColor: '#2196F3',
+    paddingLeft: 16,
   },
   openMapsButton: {
     backgroundColor: '#4CAF50',
   },
   actionButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   feedbackSection: {
-    marginTop: 24,
+    marginTop: 12,
+    marginBottom: 0,
     paddingTop: 20,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',

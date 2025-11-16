@@ -5,15 +5,22 @@ import { Ionicons } from '@expo/vector-icons';
 interface FilterButtonProps {
   selectedHookupType: 'full' | 'partial' | 'all';
   onHookupTypeChange: (type: 'full' | 'partial' | 'all') => void;
+  showBookmarked?: boolean;
+  onBookmarkedChange?: (show: boolean) => void;
 }
 
 export default function FilterButton({
   selectedHookupType,
   onHookupTypeChange,
+  showBookmarked = false,
+  onBookmarkedChange,
 }: FilterButtonProps) {
   const [modalVisible, setModalVisible] = useState(false);
 
   const getFilterLabel = () => {
+    if (showBookmarked) {
+      return 'Bookmarked';
+    }
     switch (selectedHookupType) {
       case 'full':
         return 'Full';
@@ -24,8 +31,17 @@ export default function FilterButton({
     }
   };
 
+  const hasActiveFilter = selectedHookupType !== 'all' || showBookmarked;
+
   const handleSelect = (type: 'full' | 'partial' | 'all') => {
     onHookupTypeChange(type);
+    setModalVisible(false);
+  };
+
+  const handleBookmarkedToggle = () => {
+    if (onBookmarkedChange) {
+      onBookmarkedChange(!showBookmarked);
+    }
     setModalVisible(false);
   };
 
@@ -35,16 +51,16 @@ export default function FilterButton({
         testID="filter-button"
         style={[
           styles.filterButton,
-          selectedHookupType !== 'all' && styles.filterButtonActive,
+          hasActiveFilter && styles.filterButtonActive,
         ]}
         onPress={() => setModalVisible(true)}
       >
         <Ionicons
-          name="filter"
+          name={showBookmarked ? "bookmark" : "filter"}
           size={20}
-          color={selectedHookupType !== 'all' ? '#fff' : '#666'}
+          color={hasActiveFilter ? '#fff' : '#666'}
         />
-        {selectedHookupType !== 'all' && (
+        {hasActiveFilter && (
           <Text style={styles.filterButtonText}>{getFilterLabel()}</Text>
         )}
       </TouchableOpacity>
@@ -60,7 +76,9 @@ export default function FilterButton({
           onPress={() => setModalVisible(false)}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filter by Hookup Type</Text>
+            <Text style={styles.modalTitle}>Filters</Text>
+            
+            <Text style={styles.sectionTitle}>Hookup Type</Text>
             
             <TouchableOpacity
               style={[
@@ -121,6 +139,31 @@ export default function FilterButton({
                 <Ionicons name="checkmark" size={20} color="#4CAF50" />
               )}
             </TouchableOpacity>
+
+            {onBookmarkedChange && (
+              <>
+                <Text style={[styles.sectionTitle, styles.sectionTitleMargin]}>Bookmarks</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.option,
+                    showBookmarked && styles.optionActive,
+                  ]}
+                  onPress={handleBookmarkedToggle}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      showBookmarked && styles.optionTextActive,
+                    ]}
+                  >
+                    Show Bookmarked Only
+                  </Text>
+                  {showBookmarked && (
+                    <Ionicons name="checkmark" size={20} color="#333" />
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </Pressable>
       </Modal>
@@ -172,6 +215,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  sectionTitleMargin: {
+    marginTop: 16,
   },
   option: {
     flexDirection: 'row',

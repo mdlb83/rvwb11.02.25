@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, StyleSheet, Keyboard, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
@@ -18,6 +18,7 @@ import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
 import ResultCountBadge from '../components/map/ResultCountBadge';
 import { getCampgroundCoordinates } from '../utils/mapUtils';
+import { getBookmarks } from '../utils/bookmarks';
 import SettingsModal from '../components/settings/SettingsModal';
 
 export default function MapScreen() {
@@ -25,6 +26,8 @@ export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedHookupType, setSelectedHookupType] = useState<'full' | 'partial' | 'all'>('all');
+  const [showBookmarked, setShowBookmarked] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [selectedCampground, setSelectedCampground] = useState<CampgroundEntry | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -32,6 +35,44 @@ export default function MapScreen() {
   // Safely ensure searchQuery is always a string
   const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
   
+  // Load bookmarked IDs when showBookmarked changes
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      if (showBookmarked) {
+        const bookmarks = await getBookmarks();
+        console.log('Loaded bookmarks:', bookmarks);
+        setBookmarkedIds(bookmarks);
+      } else {
+        setBookmarkedIds([]);
+      }
+    };
+    loadBookmarks();
+  }, [showBookmarked]);
+
+  // Refresh bookmarks when app comes back to focus (e.g., after bookmarking)
+  useEffect(() => {
+    const refreshBookmarks = async () => {
+      if (showBookmarked) {
+        const bookmarks = await getBookmarks();
+        setBookmarkedIds(bookmarks);
+      }
+    };
+    
+    // Refresh immediately and also set up a focus listener
+    refreshBookmarks();
+    
+    // Listen for app state changes to refresh when app comes to foreground
+    const subscription = AppState.addEventListener('change', (nextAppState: string) => {
+      if (nextAppState === 'active' && showBookmarked) {
+        refreshBookmarks();
+      }
+    });
+    
+    return () => {
+      subscription?.remove();
+    };
+  }, [showBookmarked]);
+
   // Memoize filters object to prevent unnecessary recalculations in useCampgrounds
   // Only create new object if values actually changed
   // Only apply search filter if query is at least 2 characters to reduce rapid recalculations
@@ -44,8 +85,17 @@ export default function MapScreen() {
     if (safeSearchQuery.length >= 2) {
       filterObj.searchQuery = safeSearchQuery;
     }
+    if (showBookmarked && bookmarkedIds.length > 0) {
+      filterObj.bookmarked = true;
+      filterObj.bookmarkedIds = bookmarkedIds;
+      console.log('Filtering with bookmarkedIds:', bookmarkedIds, 'count:', bookmarkedIds.length);
+    } else if (showBookmarked && bookmarkedIds.length === 0) {
+      // Don't apply bookmark filter if we don't have any bookmarked IDs yet
+      // This prevents filtering out everything while bookmarks are loading
+      console.log('Bookmark filter enabled but no bookmarked IDs loaded yet');
+    }
     return filterObj;
-  }, [selectedHookupType, safeSearchQuery]);
+  }, [selectedHookupType, safeSearchQuery, showBookmarked, bookmarkedIds]);
 
   const [retryKey, setRetryKey] = useState(0);
   const { campgrounds, loading, error, allCampgrounds } = useCampgrounds(filters, retryKey);
@@ -476,7 +526,9 @@ export default function MapScreen() {
           <EmptyState
             title="No campgrounds found"
             message={
-              safeSearchQuery.length > 0
+              showBookmarked
+                ? 'No bookmarked campgrounds found. Bookmark campgrounds to see them here.'
+                : safeSearchQuery.length > 0
                 ? `No campgrounds match "${safeSearchQuery}". Try adjusting your search or filters.`
                 : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
             }
@@ -497,6 +549,8 @@ export default function MapScreen() {
             <FilterButton
               selectedHookupType={selectedHookupType}
               onHookupTypeChange={setSelectedHookupType}
+              showBookmarked={showBookmarked}
+              onBookmarkedChange={setShowBookmarked}
             />
             <SearchBar
               value={typeof searchQuery === 'string' ? searchQuery : ''}
@@ -600,6 +654,8 @@ export default function MapScreen() {
               <FilterButton
                 selectedHookupType={selectedHookupType}
                 onHookupTypeChange={setSelectedHookupType}
+                showBookmarked={showBookmarked}
+                onBookmarkedChange={setShowBookmarked}
               />
               <SearchBar
                 value={typeof searchQuery === 'string' ? searchQuery : ''}
