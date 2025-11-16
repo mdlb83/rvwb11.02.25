@@ -555,13 +555,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                 <Text style={styles.actionButtonText}>Open in Maps</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={() => setShowPicker(true)}
-            >
-              <Text style={styles.settingsButtonText}>⚙️ Change Map App</Text>
-            </TouchableOpacity>
-
             <View style={styles.feedbackSection}>
               <Text style={styles.feedbackTitle}>Help Improve This App</Text>
               <View style={styles.feedbackButtons}>
@@ -742,15 +735,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  settingsButton: {
-    marginTop: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  settingsButtonText: {
-    fontSize: 14,
-    color: '#666',
   },
   feedbackSection: {
     marginTop: 24,

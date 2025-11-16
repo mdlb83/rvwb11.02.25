@@ -18,6 +18,7 @@ import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
 import ResultCountBadge from '../components/map/ResultCountBadge';
 import { getCampgroundCoordinates } from '../utils/mapUtils';
+import SettingsModal from '../components/settings/SettingsModal';
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -26,6 +27,7 @@ export default function MapScreen() {
   const [selectedHookupType, setSelectedHookupType] = useState<'full' | 'partial' | 'all'>('all');
   const [selectedCampground, setSelectedCampground] = useState<CampgroundEntry | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
 
   const filters: CampgroundFilters = {
     hookupType: selectedHookupType,
@@ -281,6 +283,15 @@ export default function MapScreen() {
         {hasActiveFilters && campgrounds.length > 0 && (
           <ResultCountBadge count={campgrounds.length} total={allCampgrounds.length} />
         )}
+        {!selectedCampground && (
+          <TouchableOpacity
+            style={[styles.settingsButton, { top: insets.top + 16 }]}
+            onPress={() => setShowSettings(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="settings-outline" size={24} color="#333" />
+          </TouchableOpacity>
+        )}
       </View>
       {!selectedCampground && (
         <>
@@ -330,6 +341,10 @@ export default function MapScreen() {
         campground={selectedCampground}
         onClose={() => setSelectedCampground(null)}
       />
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </View>
   );
 }
@@ -374,6 +389,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     zIndex: 2,
+  },
+  settingsButton: {
+    position: 'absolute',
+    right: 16,
+    zIndex: 2,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
 
