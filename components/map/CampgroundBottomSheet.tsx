@@ -7,6 +7,12 @@ import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference 
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 
+interface PendingMapAction {
+  app: MapApp;
+  action: 'directions' | 'search';
+  campground: CampgroundEntry;
+}
+
 interface CampgroundBottomSheetProps {
   campground: CampgroundEntry | null;
   onClose: () => void;
@@ -22,6 +28,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const [pendingAction, setPendingAction] = useState<'directions' | 'search' | null>(null);
   const [pendingMapApp, setPendingMapApp] = useState<MapApp | null>(null);
   const [dontShowInstructions, setDontShowInstructions] = useState(false);
+  // Use ref to store pending action immediately, avoiding React state update delays
+  const pendingActionRef = useRef<PendingMapAction | null>(null);
 
   // Load the "don't show instructions" preference on mount
   useEffect(() => {
@@ -101,6 +109,12 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     
     // Show instructions for all map apps unless user has opted out
     if (!dontShowInstructions) {
+      // Store in ref immediately (synchronous) to avoid React state update delays
+      pendingActionRef.current = {
+        app: mapApp,
+        action: 'directions',
+        campground: campground,
+      };
       setPendingMapApp(actualApp);
       setPendingAction('directions');
       setShowInstructions(true);
@@ -124,12 +138,18 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   };
 
   const handleOpenMapAfterInstructions = async () => {
-    console.log('handleOpenMapAfterInstructions called', { pendingMapApp, pendingAction, campground: !!campground });
+    console.log('handleOpenMapAfterInstructions called', { 
+      pendingMapApp, 
+      pendingAction, 
+      campground: !!campground,
+      pendingActionRef: pendingActionRef.current 
+    });
     
-    // Store values before clearing state
-    const mapAppToUse = pendingMapApp;
-    const actionToUse = pendingAction;
-    const campgroundToUse = campground;
+    // Use ref first (immediately available), fallback to state
+    const pending = pendingActionRef.current;
+    const mapAppToUse = pending?.app || pendingMapApp;
+    const actionToUse = pending?.action || pendingAction;
+    const campgroundToUse = pending?.campground || campground;
     
     if (!campgroundToUse || !mapAppToUse || !actionToUse) {
       console.error('Missing required values:', { 
@@ -137,7 +157,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         mapApp: mapAppToUse, 
         action: actionToUse,
         pendingMapApp,
-        pendingAction 
+        pendingAction,
+        pendingRef: pendingActionRef.current
       });
       setShowInstructions(false);
       return;
@@ -172,9 +193,10 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       console.error('Failed to open maps:', err);
     }
 
-    // Clear state after opening map
+    // Clear state and ref after opening map
     setPendingMapApp(null);
     setPendingAction(null);
+    pendingActionRef.current = null;
   };
 
   const handleOpenInMaps = async () => {
@@ -192,6 +214,12 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     
     // Show instructions for all map apps unless user has opted out
     if (!dontShowInstructions) {
+      // Store in ref immediately (synchronous) to avoid React state update delays
+      pendingActionRef.current = {
+        app: mapApp,
+        action: 'search',
+        campground: campground,
+      };
       setPendingMapApp(actualApp);
       setPendingAction('search');
       setShowInstructions(true);
@@ -224,14 +252,17 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       
       // Show instructions for all map apps unless user has opted out
       if (!dontShow) {
-        // Store both the original app and the resolved app
-        // We need to store the original app for getMapAppUrl to work correctly
-        setPendingMapApp(app); // Store original app, not actualApp
+        // Store in ref immediately (synchronous) to avoid React state update delays
+        pendingActionRef.current = {
+          app: app,
+          action: pendingAction,
+          campground: campground,
+        };
+        // Also update state for display purposes
+        setPendingMapApp(app);
         setShowPicker(false);
-        // Small delay to ensure state is set before showing modal
-        setTimeout(() => {
-          setShowInstructions(true);
-        }, 50);
+        // Show instructions modal immediately - ref ensures values are available
+        setShowInstructions(true);
         return;
       }
 
@@ -552,6 +583,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         onClose={() => {
           setShowPicker(false);
           setPendingAction(null);
+          pendingActionRef.current = null;
         }}
       />
       <MapReturnInstructionsModal
