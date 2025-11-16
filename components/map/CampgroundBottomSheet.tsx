@@ -548,10 +548,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               color={isBookmarkedState ? "#fff" : "#333"} 
             />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.directionsButton]} onPress={handleGetDirections}>
-            <Ionicons name="navigate" size={18} color="#fff" style={styles.buttonIcon} />
-            <Text style={styles.actionButtonText}>Directions</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={[styles.actionButton, styles.openMapsButton]} onPress={handleOpenInMaps}>
             <Ionicons name="map" size={18} color="#fff" style={styles.buttonIcon} />
             <Text style={styles.actionButtonText}>Open in Maps</Text>
@@ -820,12 +816,8 @@ const styles = StyleSheet.create({
   buttonIcon: {
     marginRight: 6,
   },
-  directionsButton: {
-    backgroundColor: '#2196F3',
-    paddingLeft: 16,
-  },
   openMapsButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#2196F3', // Blue color
   },
   actionButtonText: {
     color: '#fff',

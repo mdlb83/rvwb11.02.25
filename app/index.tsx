@@ -744,6 +744,8 @@ export default function MapScreen() {
                   },
                 ]}
                 pointerEvents="box-none"
+                collapsable={false}
+                removeClippedSubviews={false}
               >
                 <LocationButton onPress={handleLocationPress} />
               </View>
@@ -760,6 +762,8 @@ export default function MapScreen() {
                   },
                 ]}
                 pointerEvents="box-none"
+                collapsable={false}
+                removeClippedSubviews={false}
               >
                 <TouchableOpacity
                   style={styles.zoomButton}
@@ -799,6 +803,8 @@ export default function MapScreen() {
                   },
                 ]}
                 pointerEvents="box-none"
+                collapsable={false}
+                removeClippedSubviews={false}
               >
                 <LocationButton onPress={handleLocationPress} />
               </View>
@@ -812,6 +818,8 @@ export default function MapScreen() {
                   },
                 ]}
                 pointerEvents="box-none"
+                collapsable={false}
+                removeClippedSubviews={false}
               >
                 <TouchableOpacity
                   style={styles.zoomButton}
@@ -929,6 +937,8 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     zIndex: 2,
+    // Ensure container doesn't create touch-blocking area on Android 12
+    backgroundColor: 'transparent',
   },
   zoomButtonsContainer: {
     position: 'absolute',
