@@ -73,6 +73,8 @@ export default function MapScreen() {
     latitudeDelta: 0.5,
     longitudeDelta: 0.75,
   });
+  // Track if we're auto-selecting from a single search result to skip the selectedCampground effect
+  const isAutoSelectingRef = useRef<boolean>(false);
   
   // Check if we have active filters
   const safeSearchQueryForFilter = typeof searchQuery === 'string' ? searchQuery.trim() : '';
@@ -144,21 +146,42 @@ export default function MapScreen() {
         if (coordinates.length > 0 && mapRef.current) {
           // Wrap in try-catch to prevent crashes during rapid typing
           try {
-            // Special handling for single result: zoom out more and auto-select
+            // Special handling for single result: zoom out more, position in top third, and auto-select
             if (coordinates.length === 1 && currentCampgrounds.length === 1) {
               const singleCampground = currentCampgrounds[0];
               
+              // Calculate offset to position in top third (25% offset like selectedCampground)
+              const latitudeDelta = 2.0; // More zoomed out (was ~0.5-1.0 with fitToCoordinates)
+              const longitudeDelta = 2.0;
+              const latitudeOffset = latitudeDelta * 0.25;
+              
+              // Update region ref immediately with the deltas we're about to use
+              // This ensures the selectedCampground effect uses the correct values
+              currentRegionRef.current = {
+                latitudeDelta: latitudeDelta,
+                longitudeDelta: longitudeDelta,
+              };
+              
+              // Mark that we're auto-selecting to skip the selectedCampground effect
+              isAutoSelectingRef.current = true;
+              
               // Use animateToRegion with larger deltas for more zoomed-out view
+              // Position in top third by subtracting latitude offset
               mapRef.current.animateToRegion({
-                latitude: coordinates[0].latitude,
+                latitude: coordinates[0].latitude - latitudeOffset,
                 longitude: coordinates[0].longitude,
-                latitudeDelta: 2.0, // More zoomed out (was ~0.5-1.0 with fitToCoordinates)
-                longitudeDelta: 2.0,
+                latitudeDelta: latitudeDelta,
+                longitudeDelta: longitudeDelta,
               }, 500);
               
-              // Auto-select the single campground after zoom animation
+              // Auto-select the single campground after zoom animation completes
+              // Reset the auto-selecting flag after a delay to allow selectedCampground effect to skip
               setTimeout(() => {
                 setSelectedCampground(singleCampground);
+                // Reset flag after selectedCampground effect has had a chance to check it
+                setTimeout(() => {
+                  isAutoSelectingRef.current = false;
+                }, 100);
               }, 600); // Wait for zoom animation to complete
             } else {
               // Multiple results: use fitToCoordinates as before
@@ -294,15 +317,19 @@ export default function MapScreen() {
         try {
           const coordinates = getCampgroundCoordinates(campgrounds);
           if (coordinates.length > 0) {
-            // Special handling for single result: zoom out more
-            if (coordinates.length === 1 && campgrounds.length === 1) {
-              mapRef.current.animateToRegion({
-                latitude: coordinates[0].latitude,
-                longitude: coordinates[0].longitude,
-                latitudeDelta: 2.0,
-                longitudeDelta: 2.0,
-              }, 500);
-            } else {
+                 // Special handling for single result: zoom out more and position in top third
+                 if (coordinates.length === 1 && campgrounds.length === 1) {
+                   const latitudeDelta = 2.0;
+                   const longitudeDelta = 2.0;
+                   const latitudeOffset = latitudeDelta * 0.25;
+                   
+                   mapRef.current.animateToRegion({
+                     latitude: coordinates[0].latitude - latitudeOffset,
+                     longitude: coordinates[0].longitude,
+                     latitudeDelta: latitudeDelta,
+                     longitudeDelta: longitudeDelta,
+                   }, 500);
+                 } else {
               // Multiple results: use fitToCoordinates
               const filtersContainerHeight = 60;
               const extraBottomPadding = 20;
@@ -335,6 +362,12 @@ export default function MapScreen() {
   // Center selected campground in top third of map without changing zoom
   useEffect(() => {
     if (!selectedCampground || !mapRef.current) {
+      return;
+    }
+
+    // Skip this effect if we're auto-selecting from a single search result
+    // The search zoom effect already positioned it correctly
+    if (isAutoSelectingRef.current) {
       return;
     }
 
