@@ -299,7 +299,7 @@ export default function PhotoViewerModal({
         {photos[currentIndex]?.attribution && (
           <View style={styles.footer}>
             <Text style={styles.attribution} numberOfLines={2}>
-              {photos[currentIndex].attribution}
+              Photo by {photos[currentIndex].attribution}
             </Text>
           </View>
         )}
