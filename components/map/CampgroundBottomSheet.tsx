@@ -1057,6 +1057,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           placeId={googleMapsData.placeId}
           getPhotoUrl={getPhotoUrl}
           onClose={() => setPhotoViewerVisible(false)}
+          onLoadMorePhotos={loadMorePhotos}
+          hasLoadedMorePhotos={hasLoadedMorePhotos}
         />
       )}
     </BottomSheet>
