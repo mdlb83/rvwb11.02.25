@@ -87,7 +87,9 @@ module.exports = {
       router: {},
       eas: {
         projectId: "50d44783-aa41-470d-ba07-94e784f0272a"
-      }
+      },
+      // Expose API keys in extra for runtime access
+      googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY || process.env.GOOGLE_MAPS_ANDROID_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""
     },
     owner: "mikemakesapps"
   }

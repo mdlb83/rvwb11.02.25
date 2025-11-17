@@ -56,7 +56,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     // Use Places API (New) photo endpoint
     // Format: places/{place_id}/photos/{photo_reference}/media
     const apiKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey || 
-                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || '';
+                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || 
+                   Constants.expoConfig?.extra?.googleMapsApiKey || '';
     
     if (!apiKey || !placeId) {
       // Fallback: return null if no API key or placeId
@@ -89,10 +90,19 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     if (!googleMapsData?.placeId || loadingMorePhotos) return;
 
     const apiKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey || 
-                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || '';
+                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || 
+                   Constants.expoConfig?.extra?.googleMapsApiKey || '';
+    
+    console.log('🔑 API Key check:', {
+      iosKey: !!Constants.expoConfig?.ios?.config?.googleMapsApiKey,
+      androidKey: !!Constants.expoConfig?.android?.config?.googleMaps?.apiKey,
+      extraKey: !!Constants.expoConfig?.extra?.googleMapsApiKey,
+      hasApiKey: !!apiKey,
+      placeId: googleMapsData.placeId
+    });
     
     if (!apiKey) {
-      Alert.alert('Error', 'API key not configured');
+      Alert.alert('Error', 'API key not configured. Please ensure GOOGLE_MAPS_IOS_API_KEY or GOOGLE_MAPS_ANDROID_API_KEY is set as an EAS secret.');
       return;
     }
 
