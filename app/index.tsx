@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
@@ -759,13 +759,33 @@ export default function MapScreen() {
           }}
         />
         {!selectedCampground && (
-          <TouchableOpacity
-            style={[styles.settingsButton, { top: insets.top + 16 }]}
-            onPress={() => setShowSettings(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={[styles.settingsButton, { top: insets.top + 16 }]}
+              onPress={() => setShowSettings(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="settings-outline" size={24} color="#333" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.logoButton, { top: insets.top + 16 + 48 + 16, right: 16 }]}
+              onPress={() => Linking.openURL('https://chambersontheroad.com').catch(err => {
+                console.error('Failed to open URL:', err);
+                Alert.alert('Error', 'Could not open the website.');
+              })}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={require('../assets/chambers-logo.png')}
+                style={styles.logoImage}
+                resizeMode="cover"
+                onError={(error) => {
+                  console.error('Failed to load chambers logo:', error);
+                  // Fallback to icon if logo fails to load
+                }}
+              />
+            </TouchableOpacity>
+          </>
         )}
       </View>
       {!selectedCampground && (
@@ -1016,7 +1036,7 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 2,
     flexDirection: 'column',
-    gap: 8,
+    gap: 16,
     alignItems: 'flex-end',
   },
   zoomButton: {
@@ -1031,6 +1051,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
+  },
+  logoButton: {
+    position: 'absolute',
+    zIndex: 2,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 48,
+    height: 48,
   },
   settingsButton: {
     position: 'absolute',
