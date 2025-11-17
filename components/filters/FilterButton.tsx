@@ -64,9 +64,6 @@ export default function FilterButton({
             color={hasActiveFilter ? '#fff' : '#666'}
           />
         )}
-        {hasActiveFilter && (
-          <Text style={styles.filterButtonText}>{getFilterLabel()}</Text>
-        )}
       </TouchableOpacity>
 
       <Modal
