@@ -277,7 +277,7 @@ async function processCampground(entry, campgroundId, existingData) {
   const googleMapsData = {
     campgroundId,
     placeId,
-    editorialSummary: details.editorialSummary?.overview || undefined,
+    editorialSummary: details.editorialSummary?.text || undefined,
     rating: details.rating || undefined,
     userRatingCount: details.userRatingCount || undefined,
     reviewSummary: reviewSummary || undefined,

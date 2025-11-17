@@ -28,6 +28,7 @@ export default function MapScreen() {
   const [selectedHookupType, setSelectedHookupType] = useState<'full' | 'partial' | 'all'>('all');
   const [showBookmarked, setShowBookmarked] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const [hasBookmarks, setHasBookmarks] = useState(false);
   const [selectedCampground, setSelectedCampground] = useState<CampgroundEntry | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -35,6 +36,22 @@ export default function MapScreen() {
   // Safely ensure searchQuery is always a string
   const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
   
+  // Check if user has any bookmarks on mount and when app comes to foreground
+  useEffect(() => {
+    const checkBookmarks = async () => {
+      const bookmarks = await getBookmarks();
+      setHasBookmarks(bookmarks.length > 0);
+      if (showBookmarked && bookmarks.length > 0) {
+        setBookmarkedIds(bookmarks);
+      } else if (showBookmarked && bookmarks.length === 0) {
+        // If filtering by bookmarks but no bookmarks exist, turn off the filter
+        setShowBookmarked(false);
+        setBookmarkedIds([]);
+      }
+    };
+    checkBookmarks();
+  }, []);
+
   // Load bookmarked IDs when showBookmarked changes
   useEffect(() => {
     const loadBookmarks = async () => {
@@ -42,6 +59,7 @@ export default function MapScreen() {
         const bookmarks = await getBookmarks();
         console.log('Loaded bookmarks:', bookmarks);
         setBookmarkedIds(bookmarks);
+        setHasBookmarks(bookmarks.length > 0);
       } else {
         setBookmarkedIds([]);
       }
@@ -52,9 +70,14 @@ export default function MapScreen() {
   // Refresh bookmarks when app comes back to focus (e.g., after bookmarking)
   useEffect(() => {
     const refreshBookmarks = async () => {
+      const bookmarks = await getBookmarks();
+      setHasBookmarks(bookmarks.length > 0);
       if (showBookmarked) {
-        const bookmarks = await getBookmarks();
         setBookmarkedIds(bookmarks);
+        // If filtering by bookmarks but no bookmarks exist, turn off the filter
+        if (bookmarks.length === 0) {
+          setShowBookmarked(false);
+        }
       }
     };
     
@@ -63,7 +86,7 @@ export default function MapScreen() {
     
     // Listen for app state changes to refresh when app comes to foreground
     const subscription = AppState.addEventListener('change', (nextAppState: string) => {
-      if (nextAppState === 'active' && showBookmarked) {
+      if (nextAppState === 'active') {
         refreshBookmarks();
       }
     });
@@ -658,9 +681,25 @@ export default function MapScreen() {
             <FilterButton
               selectedHookupType={selectedHookupType}
               onHookupTypeChange={setSelectedHookupType}
-              showBookmarked={showBookmarked}
-              onBookmarkedChange={setShowBookmarked}
+              showBookmarked={false}
+              onBookmarkedChange={() => {}}
             />
+            {hasBookmarks && (
+              <TouchableOpacity
+                style={[
+                  styles.bookmarkFilterButton,
+                  showBookmarked && styles.bookmarkFilterButtonActive,
+                ]}
+                onPress={() => setShowBookmarked(!showBookmarked)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={showBookmarked ? "bookmark" : "bookmark-outline"}
+                  size={20}
+                  color={showBookmarked ? '#fff' : '#666'}
+                />
+              </TouchableOpacity>
+            )}
             <SearchBar
               value={typeof searchQuery === 'string' ? searchQuery : ''}
               onChangeText={handleSearchChange}
@@ -853,9 +892,25 @@ export default function MapScreen() {
               <FilterButton
                 selectedHookupType={selectedHookupType}
                 onHookupTypeChange={setSelectedHookupType}
-                showBookmarked={showBookmarked}
-                onBookmarkedChange={setShowBookmarked}
+                showBookmarked={false}
+                onBookmarkedChange={() => {}}
               />
+              {hasBookmarks && (
+                <TouchableOpacity
+                  style={[
+                    styles.bookmarkFilterButton,
+                    showBookmarked && styles.bookmarkFilterButtonActive,
+                  ]}
+                  onPress={() => setShowBookmarked(!showBookmarked)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={showBookmarked ? "bookmark" : "bookmark-outline"}
+                    size={20}
+                    color={showBookmarked ? '#fff' : '#666'}
+                  />
+                </TouchableOpacity>
+              )}
               <SearchBar
                 value={typeof searchQuery === 'string' ? searchQuery : ''}
                 onChangeText={handleSearchChange}
@@ -918,6 +973,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  bookmarkFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    minWidth: 44,
+  },
+  bookmarkFilterButtonActive: {
+    backgroundColor: '#333',
+    borderColor: '#333',
   },
   addButton: {
     flexDirection: 'row',

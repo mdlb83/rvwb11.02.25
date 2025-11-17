@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import ToiletIcon from '../icons/ToiletIcon';
 
 interface FilterButtonProps {
   selectedHookupType: 'full' | 'partial' | 'all';
@@ -18,9 +19,6 @@ export default function FilterButton({
   const [modalVisible, setModalVisible] = useState(false);
 
   const getFilterLabel = () => {
-    if (showBookmarked) {
-      return 'Bookmarked';
-    }
     switch (selectedHookupType) {
       case 'full':
         return 'Full';
@@ -31,17 +29,10 @@ export default function FilterButton({
     }
   };
 
-  const hasActiveFilter = selectedHookupType !== 'all' || showBookmarked;
+  const hasActiveFilter = selectedHookupType !== 'all';
 
   const handleSelect = (type: 'full' | 'partial' | 'all') => {
     onHookupTypeChange(type);
-    setModalVisible(false);
-  };
-
-  const handleBookmarkedToggle = () => {
-    if (onBookmarkedChange) {
-      onBookmarkedChange(!showBookmarked);
-    }
     setModalVisible(false);
   };
 
@@ -55,11 +46,24 @@ export default function FilterButton({
         ]}
         onPress={() => setModalVisible(true)}
       >
-        <Ionicons
-          name={showBookmarked ? "bookmark" : "filter"}
-          size={20}
-          color={hasActiveFilter ? '#fff' : '#666'}
-        />
+        {selectedHookupType === 'full' ? (
+          <ToiletIcon
+            size={20}
+            color={hasActiveFilter ? '#fff' : '#666'}
+          />
+        ) : selectedHookupType === 'partial' ? (
+          <Ionicons
+            name="flash-outline"
+            size={20}
+            color={hasActiveFilter ? '#fff' : '#666'}
+          />
+        ) : (
+          <Ionicons
+            name="filter"
+            size={20}
+            color={hasActiveFilter ? '#fff' : '#666'}
+          />
+        )}
         {hasActiveFilter && (
           <Text style={styles.filterButtonText}>{getFilterLabel()}</Text>
         )}
@@ -87,14 +91,17 @@ export default function FilterButton({
               ]}
               onPress={() => handleSelect('all')}
             >
-              <Text
-                style={[
-                  styles.optionText,
-                  selectedHookupType === 'all' && styles.optionTextActive,
-                ]}
-              >
-                All
-              </Text>
+              <View style={styles.optionContent}>
+                <Ionicons name="filter" size={20} color={selectedHookupType === 'all' ? '#4CAF50' : '#666'} />
+                <Text
+                  style={[
+                    styles.optionText,
+                    selectedHookupType === 'all' && styles.optionTextActive,
+                  ]}
+                >
+                  All
+                </Text>
+              </View>
               {selectedHookupType === 'all' && (
                 <Ionicons name="checkmark" size={20} color="#4CAF50" />
               )}
@@ -107,14 +114,17 @@ export default function FilterButton({
               ]}
               onPress={() => handleSelect('full')}
             >
-              <Text
-                style={[
-                  styles.optionText,
-                  selectedHookupType === 'full' && styles.optionTextActive,
-                ]}
-              >
-                Full Hookup
-              </Text>
+              <View style={styles.optionContent}>
+                <ToiletIcon size={20} color={selectedHookupType === 'full' ? '#4CAF50' : '#666'} />
+                <Text
+                  style={[
+                    styles.optionText,
+                    selectedHookupType === 'full' && styles.optionTextActive,
+                  ]}
+                >
+                  Full Hookup
+                </Text>
+              </View>
               {selectedHookupType === 'full' && (
                 <Ionicons name="checkmark" size={20} color="#4CAF50" />
               )}
@@ -127,43 +137,22 @@ export default function FilterButton({
               ]}
               onPress={() => handleSelect('partial')}
             >
-              <Text
-                style={[
-                  styles.optionText,
-                  selectedHookupType === 'partial' && styles.optionTextActive,
-                ]}
-              >
-                Partial Hookup
-              </Text>
+              <View style={styles.optionContent}>
+                <Ionicons name="flash-outline" size={20} color={selectedHookupType === 'partial' ? '#4CAF50' : '#666'} />
+                <Text
+                  style={[
+                    styles.optionText,
+                    selectedHookupType === 'partial' && styles.optionTextActive,
+                  ]}
+                >
+                  Partial Hookup
+                </Text>
+              </View>
               {selectedHookupType === 'partial' && (
                 <Ionicons name="checkmark" size={20} color="#4CAF50" />
               )}
             </TouchableOpacity>
 
-            {onBookmarkedChange && (
-              <>
-                <Text style={[styles.sectionTitle, styles.sectionTitleMargin]}>Bookmarks</Text>
-                <TouchableOpacity
-                  style={[
-                    styles.option,
-                    showBookmarked && styles.optionActive,
-                  ]}
-                  onPress={handleBookmarkedToggle}
-                >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      showBookmarked && styles.optionTextActive,
-                    ]}
-                  >
-                    Show Bookmarked Only
-                  </Text>
-                  {showBookmarked && (
-                    <Ionicons name="checkmark" size={20} color="#333" />
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
           </View>
         </Pressable>
       </Modal>
@@ -235,6 +224,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
     backgroundColor: '#f9f9f9',
+  },
+  optionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   optionActive: {
     backgroundColor: '#e8f5e9',

@@ -13,6 +13,88 @@ import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
 
+/**
+ * Calculate if a place is currently open based on weekdayText hours
+ */
+function calculateOpenNow(weekdayText: string[]): boolean | undefined {
+  if (!weekdayText || weekdayText.length === 0) {
+    return undefined;
+  }
+
+  const now = new Date();
+  const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
+
+  // Map day names to day numbers (Sunday = 0)
+  const dayNameMap: { [key: string]: number } = {
+    'sunday': 0,
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5,
+    'saturday': 6,
+  };
+
+  // Find today's hours
+  const todayEntry = weekdayText.find(entry => {
+    const dayName = entry.split(':')[0]?.trim().toLowerCase() || '';
+    const dayNumber = dayNameMap[dayName];
+    return dayNumber === currentDay;
+  });
+
+  if (!todayEntry) {
+    return undefined; // No hours listed for today
+  }
+
+  // Parse hours (format: "Monday: 8:00 AM – 6:00 PM" or "Monday: Closed")
+  const parts = todayEntry.split(':');
+  if (parts.length < 2) {
+    return undefined;
+  }
+
+  const hoursStr = parts.slice(1).join(':').trim();
+  
+  // Check if closed
+  if (hoursStr.toLowerCase().includes('closed')) {
+    return false;
+  }
+
+  // Parse time range (e.g., "8:00 AM – 6:00 PM")
+  const timeRangeMatch = hoursStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)\s*[–-]\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!timeRangeMatch) {
+    return undefined; // Can't parse format
+  }
+
+  const [, openHour, openMin, openPeriod, closeHour, closeMin, closePeriod] = timeRangeMatch;
+
+  // Convert to 24-hour format
+  const parseTime = (hour: string, min: string, period: string): number => {
+    let h = parseInt(hour, 10);
+    const m = parseInt(min, 10);
+    
+    if (period.toUpperCase() === 'PM' && h !== 12) {
+      h += 12;
+    } else if (period.toUpperCase() === 'AM' && h === 12) {
+      h = 0;
+    }
+    
+    return h * 60 + m;
+  };
+
+  const openTime = parseTime(openHour, openMin, openPeriod);
+  const closeTime = parseTime(closeHour, closeMin, closePeriod);
+
+  // Handle overnight hours (e.g., 10 PM – 2 AM)
+  if (closeTime < openTime) {
+    // Overnight: open until next day
+    return currentTime >= openTime || currentTime <= closeTime;
+  } else {
+    // Same day: open between openTime and closeTime
+    return currentTime >= openTime && currentTime <= closeTime;
+  }
+}
+
 interface PendingMapAction {
   app: MapApp;
   action: 'directions' | 'search';
@@ -26,8 +108,21 @@ interface CampgroundBottomSheetProps {
 
 export default function CampgroundBottomSheet({ campground, onClose }: CampgroundBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  // Adjusted snap points to ensure buttons are visible: 30% peek, 65% default (shows buttons), 90% expanded
-  const snapPoints = useMemo(() => ['30%', '65%', '90%'], []);
+  const contentBeforeSeparatorRef = useRef<View>(null);
+  const [contentHeight, setContentHeight] = useState<number | null>(null);
+  
+  // Calculate snap points dynamically based on content height
+  // Default snap points: 30% peek, calculated default (to show separator just below), 90% expanded
+  const snapPoints = useMemo(() => {
+    if (contentHeight && campground) {
+      const screenHeight = Dimensions.get('window').height;
+      // Calculate percentage to show content up to separator (add small buffer)
+      const percentage = Math.min(90, Math.max(50, (contentHeight / screenHeight) * 100 + 2));
+      return ['30%', `${percentage}%`, '90%'];
+    }
+    // Fallback to default snap points
+    return ['30%', '65%', '90%'];
+  }, [contentHeight, campground]);
   const { preference, loading, savePreference } = useMapAppPreference();
   const [showPicker, setShowPicker] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -331,17 +426,23 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     loadGoogleMapsData();
   }, [campground]);
 
-  // Determine initial snap index based on content
-  // If campground has blog post, open at index 2 (90%) to show all content including buttons
-  // Otherwise open at index 1 (65%) which should show buttons for most content
+  // Determine initial snap index to position separator just below screen
+  // Always use index 1 (the middle snap point) which will be calculated dynamically
   const initialSnapIndex = useMemo(() => {
     if (!campground) return -1;
-    // If there's a blog post, open at 90% to ensure buttons are visible
-    if (campground.blog_post) {
-      return 2; // 90%
-    }
-    return 1; // 65% - should show buttons for most content
+    // Always open at index 1 (middle snap point) which positions the separator just below the visible area
+    return 1;
   }, [campground]);
+
+  // Update bottom sheet position when content height is measured
+  useEffect(() => {
+    if (contentHeight && campground && bottomSheetRef.current) {
+      // Small delay to ensure snap points have updated
+      setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(1);
+      }, 100);
+    }
+  }, [contentHeight, campground]);
 
   // Determine if bottom sheet should be visible (index -1 = closed)
   const sheetIndex = useMemo(() => (campground ? initialSnapIndex : -1), [campground, initialSnapIndex]);
@@ -770,7 +871,17 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       >
         {campground ? (
           <>
-            <View style={styles.header}>
+            <View 
+              ref={contentBeforeSeparatorRef}
+              onLayout={(event) => {
+                const { height } = event.nativeEvent.layout;
+                if (height > 0 && campground) {
+                  setContentHeight(height);
+                }
+              }}
+              collapsable={false}
+            >
+              <View style={styles.header}>
               <View
                 style={[
                   styles.badge,
@@ -815,8 +926,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionButton, styles.openMapsButton]} onPress={handleOpenInMaps}>
-            <Ionicons name="map" size={18} color="#fff" style={styles.buttonIcon} />
-            <Text style={styles.actionButtonText}>Open in Maps</Text>
+            <Ionicons name="map" size={18} color="#2196F3" style={styles.buttonIcon} />
+            <Text style={styles.openMapsButtonText}>Open in Maps</Text>
           </TouchableOpacity>
         </View>
 
@@ -844,23 +955,51 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </View>
         )}
 
-        {campground.blog_post && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Related Blog Post</Text>
-            <View style={styles.blogPostContainer}>
-              {renderHtmlContent(campground.blog_post)}
+        {campground.blog_post && (() => {
+          // Extract URL and link text from blog_post HTML
+          const urlMatch = campground.blog_post.match(/<a\s+href=['"]([^'"]+)['"][^>]*>(.*?)<\/a>/i);
+          const blogPostUrl = urlMatch ? urlMatch[1] : null;
+          const blogPostTitle = urlMatch ? urlMatch[2].replace(/<[^>]*>/g, '').trim() : null;
+          
+          if (!blogPostUrl) return null;
+          
+          return (
+            <TouchableOpacity 
+              style={styles.blogPostButton}
+              onPress={() => {
+                Linking.openURL(blogPostUrl).catch(err => {
+                  console.error('Failed to open blog post URL:', err);
+                  Alert.alert('Error', 'Could not open the blog post link.');
+                });
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="document-text" size={24} color="#fff" style={styles.blogPostButtonIcon} />
+              <Text style={styles.blogPostButtonLabel}>Read blog post</Text>
+              <View style={styles.blogPostButtonDivider} />
+              <Text style={styles.blogPostButtonText} numberOfLines={2}>
+                {blogPostTitle || 'Related Blog Post'}
+              </Text>
+            </TouchableOpacity>
+          );
+        })()}
             </View>
-          </View>
-        )}
 
         {/* ============================================
             GOOGLE MAPS DATA SECTION
             Easy to remove: Delete this entire block
             ============================================ */}
         {googleMapsData && googleMapsData.syncStatus === 'success' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Google Maps Information</Text>
+          <>
+            <View style={styles.googleMapsSeparator} />
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Google Maps Information</Text>
             
+            {/* Editorial Summary */}
+            {googleMapsData.editorialSummary && (
+              <Text style={styles.editorialSummaryText}>{googleMapsData.editorialSummary}</Text>
+            )}
+
             {/* Rating Card */}
             {(googleMapsData.rating || googleMapsData.userRatingCount) && (
               <View style={styles.ratingCard}>
@@ -875,13 +1014,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                     {googleMapsData.userRatingCount.toLocaleString()} reviews
                   </Text>
                 )}
-              </View>
-            )}
-
-            {/* Editorial Summary */}
-            {googleMapsData.editorialSummary && (
-              <View style={styles.summaryCard}>
-                <Text style={styles.editorialSummary}>{googleMapsData.editorialSummary}</Text>
               </View>
             )}
 
@@ -1044,26 +1176,62 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             )}
 
             {/* Opening Hours Card */}
-            {googleMapsData.openingHours && (googleMapsData.openingHours.weekdayText || googleMapsData.openingHours.weekdayDescriptions) && (
-              <View style={styles.hoursCard}>
-                <View style={styles.hoursHeader}>
-                  <Ionicons name="time-outline" size={18} color="#333" />
-                  <Text style={styles.hoursLabel}>Hours</Text>
-                  {googleMapsData.openingHours.openNow !== undefined && (
-                    <View style={[styles.openNowBadge, { backgroundColor: googleMapsData.openingHours.openNow ? '#E8F5E9' : '#FFEBEE' }]}>
-                      <Text style={[styles.openNowText, { color: googleMapsData.openingHours.openNow ? '#4CAF50' : '#dc3545' }]}>
-                        {googleMapsData.openingHours.openNow ? 'Open Now' : 'Closed'}
-                      </Text>
-                    </View>
-                  )}
+            {googleMapsData.openingHours && googleMapsData.openingHours.weekdayText && googleMapsData.openingHours.weekdayText.length > 0 && (() => {
+              // Calculate openNow dynamically based on current time
+              const calculatedOpenNow = calculateOpenNow(googleMapsData.openingHours.weekdayText);
+              const isOpenNow = calculatedOpenNow !== undefined ? calculatedOpenNow : googleMapsData.openingHours.openNow;
+              
+              return (
+                <View style={[
+                  styles.hoursCard,
+                  isOpenNow === true && styles.hoursCardOpen
+                ]}>
+                  <View style={styles.hoursHeader}>
+                    <Ionicons 
+                      name={isOpenNow ? "checkmark-circle" : "time-outline"} 
+                      size={20} 
+                      color={isOpenNow ? "#4CAF50" : "#333"} 
+                    />
+                    <Text style={styles.hoursLabel}>Open Hours</Text>
+                    {isOpenNow !== undefined && (
+                      <View style={[
+                        styles.openNowBadge, 
+                        { 
+                          backgroundColor: isOpenNow ? '#4CAF50' : '#dc3545',
+                          borderWidth: isOpenNow ? 2 : 0,
+                          borderColor: isOpenNow ? '#2E7D32' : 'transparent',
+                        }
+                      ]}>
+                        <Ionicons 
+                          name={isOpenNow ? "checkmark-circle" : "close-circle"} 
+                          size={16} 
+                          color="#fff" 
+                          style={styles.openNowIcon}
+                        />
+                        <Text style={styles.openNowText}>
+                          {isOpenNow ? 'Open Now' : 'Currently Closed'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.hoursList}>
+                    {googleMapsData.openingHours.weekdayText.map((day, index) => {
+                      // Split day and hours (format is usually "Monday: 8:00 AM – 6:00 PM")
+                      const parts = day.split(':');
+                      const dayName = parts[0]?.trim() || '';
+                      const hours = parts.slice(1).join(':').trim();
+                      
+                      return (
+                        <Text key={index} style={styles.hoursText}>
+                          <Text style={styles.hoursDayText}>{dayName}</Text>
+                          {hours && <Text> {hours}</Text>}
+                        </Text>
+                      );
+                    })}
+                  </View>
                 </View>
-                <View style={styles.hoursList}>
-                  {(googleMapsData.openingHours.weekdayText || googleMapsData.openingHours.weekdayDescriptions || []).map((day, index) => (
-                    <Text key={index} style={styles.hoursText}>{day}</Text>
-                  ))}
-                </View>
-              </View>
-            )}
+              );
+            })()}
 
             {/* Contact Links */}
             {(googleMapsData.websiteUri || googleMapsData.nationalPhoneNumber) && (
@@ -1089,11 +1257,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               </View>
             )}
           </View>
+          </>
         )}
         {/* ============================================
             END GOOGLE MAPS DATA SECTION
             ============================================ */}
-
           </>
         ) : null}
       </BottomSheetScrollView>
@@ -1211,7 +1379,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   trailsSection: {
-    marginBottom: 8,
+    marginBottom: 0,
   },
   sectionTitle: {
     fontSize: 18,
@@ -1272,8 +1440,45 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     flexShrink: 1,
   },
-  blogPostContainer: {
-    marginTop: 4,
+  blogPostButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 0,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  blogPostButtonIcon: {
+    marginRight: 10,
+  },
+  blogPostButtonLabel: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    marginRight: 12,
+  },
+  blogPostButtonDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginRight: 12,
+  },
+  blogPostButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    flex: 1,
+    flexWrap: 'wrap',
   },
   contributorText: {
     fontSize: 13,
@@ -1336,13 +1541,28 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   openMapsButton: {
-    backgroundColor: '#2196F3', // Blue color
+    backgroundColor: '#fff', // White background
+    borderWidth: 2,
+    borderColor: '#2196F3', // Blue outline
+  },
+  openMapsButtonText: {
+    color: '#2196F3', // Blue text
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   actionButtonText: {
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
     letterSpacing: 0.3,
+  },
+  googleMapsSeparator: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginTop: 0,
+    marginBottom: 16,
+    marginHorizontal: 0,
   },
   feedbackSection: {
     marginTop: 12,
@@ -1400,16 +1620,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  summaryCard: {
-    backgroundColor: '#F5F5F5',
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  editorialSummary: {
-    fontSize: 14,
-    color: '#333',
+  editorialSummaryText: {
+    fontSize: 15,
+    color: '#666',
     lineHeight: 22,
+    marginTop: 0,
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
   photosContainer: {
     marginBottom: 16,
@@ -1626,6 +1843,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
   },
+  hoursCardOpen: {
+    backgroundColor: '#E8F5E9',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
   hoursHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1639,21 +1861,39 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   openNowBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  openNowIcon: {
+    marginRight: 0,
   },
   openNowText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
   },
   hoursList: {
     gap: 4,
   },
   hoursText: {
-    fontSize: 14,
+    fontSize: 22,
+    fontWeight: '500',
     color: '#666',
-    lineHeight: 20,
+    lineHeight: 32,
+  },
+  hoursDayText: {
+    color: '#4CAF50',
+    fontWeight: '500',
+    fontSize: 22,
   },
   contactContainer: {
     flexDirection: 'row',

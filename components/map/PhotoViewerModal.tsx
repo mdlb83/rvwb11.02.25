@@ -62,6 +62,14 @@ export default function PhotoViewerModal({
   const savedTranslateY = useRef(0);
   const wasZoomedRef = useRef(false);
   
+  // Update currentIndex when initialIndex changes (when user taps a different photo)
+  useEffect(() => {
+    if (initialIndex !== currentIndex) {
+      setCurrentIndex(initialIndex);
+      currentIndexRef.current = initialIndex;
+    }
+  }, [initialIndex, currentIndex]);
+  
   // Keep ref in sync with state
   useEffect(() => {
     currentIndexRef.current = currentIndex;
@@ -429,16 +437,18 @@ export default function PhotoViewerModal({
       console.log('📱 Modal opened, current dimensions:', currentDimensions);
       
       if (scrollViewRef.current) {
-        // Scroll to initial photo when modal opens
+        // Scroll to the selected photo when modal opens
+        // Use initialIndex to ensure we scroll to the correct photo that was tapped
+        const targetIndex = initialIndex !== undefined ? initialIndex : currentIndex;
         setTimeout(() => {
           scrollViewRef.current?.scrollTo({
-            x: currentIndex * currentDimensions.width,
+            x: targetIndex * currentDimensions.width,
             animated: false,
           });
         }, 100);
       }
     }
-  }, [visible, currentIndex]);
+  }, [visible, initialIndex, currentIndex]);
 
   const handleScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
