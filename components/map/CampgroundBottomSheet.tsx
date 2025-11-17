@@ -55,17 +55,33 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const getPhotoUrl = useCallback((photoReference: string, placeId?: string) => {
     // Use Places API (New) photo endpoint
     // Format: places/{place_id}/photos/{photo_reference}/media
-    const apiKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey || 
-                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || 
-                   Constants.expoConfig?.extra?.googleMapsApiKey || '';
+    const iosKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey;
+    const androidKey = Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+    const extraKey = Constants.expoConfig?.extra?.googleMapsApiKey;
+    const apiKey = iosKey || androidKey || extraKey || '';
+    
+    console.log('🖼️ getPhotoUrl called:', {
+      photoReference: photoReference?.substring(0, 30) + '...',
+      placeId,
+      hasIosKey: !!iosKey,
+      hasAndroidKey: !!androidKey,
+      hasExtraKey: !!extraKey,
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey.length
+    });
     
     if (!apiKey || !placeId) {
-      // Fallback: return null if no API key or placeId
+      console.warn('⚠️ getPhotoUrl returning null:', {
+        noApiKey: !apiKey,
+        noPlaceId: !placeId
+      });
       return null;
     }
     
     // Places API (New) photo URL format
-    return `https://places.googleapis.com/v1/places/${placeId}/photos/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
+    const photoUrl = `https://places.googleapis.com/v1/places/${placeId}/photos/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
+    console.log('✅ Generated photo URL:', photoUrl.substring(0, 100) + '...');
+    return photoUrl;
   }, []);
 
   // Fetch additional photos from Google Places API
@@ -917,6 +933,15 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                                       source={{ uri: photoUrl }} 
                                       style={styles.stackPhotoImage}
                                       resizeMode="cover"
+                                      onError={(error) => {
+                                        console.error('❌ Stack image load error:', {
+                                          photoUrl: photoUrl.substring(0, 100),
+                                          error: error.nativeEvent?.error
+                                        });
+                                      }}
+                                      onLoad={() => {
+                                        console.log('✅ Stack image loaded successfully');
+                                      }}
                                     />
                                   ) : (
                                     <View style={styles.photoPlaceholderContainer}>
@@ -951,6 +976,15 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                             source={{ uri: photoUrl }} 
                             style={styles.featuredPhotoImage}
                             resizeMode="cover"
+                            onError={(error) => {
+                              console.error('❌ Image load error:', {
+                                photoUrl: photoUrl.substring(0, 100),
+                                error: error.nativeEvent?.error
+                              });
+                            }}
+                            onLoad={() => {
+                              console.log('✅ Image loaded successfully');
+                            }}
                           />
                         ) : (
                           <View style={styles.photoPlaceholderContainer}>
