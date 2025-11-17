@@ -429,34 +429,38 @@ export default function PhotoViewerModal({
     };
   }, [visible]);
 
+  // Scroll to initial photo when modal opens or initialIndex changes
   useEffect(() => {
-    if (visible) {
-      // Force refresh dimensions when modal opens
+    if (visible && scrollViewRef.current) {
       const currentDimensions = Dimensions.get('window');
-      setDimensions(currentDimensions);
-      console.log('📱 Modal opened, current dimensions:', currentDimensions);
+      const targetIndex = initialIndex !== undefined ? initialIndex : 0;
       
-      if (scrollViewRef.current) {
-        // Scroll to the selected photo when modal opens
-        // Use initialIndex to ensure we scroll to the correct photo that was tapped
-        const targetIndex = initialIndex !== undefined ? initialIndex : currentIndex;
+      // Only scroll if we're not already at the target index
+      if (targetIndex !== currentIndex) {
         setTimeout(() => {
           scrollViewRef.current?.scrollTo({
             x: targetIndex * currentDimensions.width,
             animated: false,
           });
+          setCurrentIndex(targetIndex);
         }, 100);
       }
     }
-  }, [visible, initialIndex, currentIndex]);
+  }, [visible, initialIndex]); // Removed currentIndex from dependencies to prevent re-scrolling on user swipes
 
   const handleScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / dimensions.width);
-    setCurrentIndex(index);
+    const newIndex = Math.round(offsetX / dimensions.width);
+    
+    // Only update index if it actually changed to prevent unnecessary re-renders
+    // Use ref to avoid stale closure issues
+    if (newIndex !== currentIndexRef.current && newIndex >= 0 && newIndex < photos.length) {
+      setCurrentIndex(newIndex);
+      currentIndexRef.current = newIndex;
+    }
     
     // Auto-load more photos when user reaches the last photo
-    if (index === photos.length - 1 && onLoadMorePhotos && !hasLoadedMorePhotos && !isLoadingMoreRef.current) {
+    if (newIndex === photos.length - 1 && onLoadMorePhotos && !hasLoadedMorePhotos && !isLoadingMoreRef.current) {
       console.log('📸 Reached last photo, auto-loading more...');
       isLoadingMoreRef.current = true;
       onLoadMorePhotos();
@@ -510,11 +514,12 @@ export default function PhotoViewerModal({
     });
   
   // Pan gesture for moving zoomed image (only when zoomed)
-  // Use activeOffsetY to require vertical movement, allowing pure horizontal swipes to pass through to ScrollView
+  // Use failOffsetX to fail on horizontal swipes, allowing ScrollView to handle them
   const panGesture = Gesture.Pan()
     .minPointers(1)
     .maxPointers(1)
-    .activeOffsetY([-5, 5]) // Require 5px vertical movement to activate (allows horizontal swipes to ScrollView)
+    .failOffsetX([-15, 15]) // Fail if horizontal movement exceeds 15px (allows ScrollView to handle horizontal swipes)
+    .activeOffsetY([-10, 10]) // Require 10px vertical movement to activate
     .onUpdate((event) => {
       // Only allow panning when zoomed in
       if (scale.value > 1.1) {
@@ -540,9 +545,8 @@ export default function PhotoViewerModal({
       }
     });
   
-  // Combine gestures - only apply pan when zoomed, otherwise let ScrollView handle swipes
-  // Use Simultaneous for pinch+pan, Race for tap vs pan
-  // Note: panGesture only activates when zoomed (checked in onUpdate), so horizontal swipes pass through to ScrollView
+  // Combine gestures - use Simultaneous for pinch+pan, Race for tap vs pan
+  // The pan gesture fails on horizontal movement, allowing ScrollView to handle horizontal swipes
   const composedGesture = Gesture.Simultaneous(
     pinchGesture,
     Gesture.Race(tapGesture, panGesture)
@@ -599,10 +603,26 @@ export default function PhotoViewerModal({
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={handleScroll}
+          onScrollBeginDrag={() => {
+            // Reset zoom/pan when user starts scrolling horizontally (only if zoomed)
+            // Use a ref check to avoid state updates during scroll
+            if (wasZoomedRef.current) {
+              scale.value = 1;
+              translateX.value = 0;
+              translateY.value = 0;
+              savedScale.current = 1;
+              savedTranslateX.current = 0;
+              savedTranslateY.current = 0;
+              wasZoomedRef.current = false;
+              setIsZoomed(false);
+            }
+          }}
           scrollEventThrottle={16}
           style={styles.scrollView}
           contentContainerStyle={{ width: dimensions.width * photos.length, height: dimensions.height }}
-          scrollEnabled={!isZoomed}
+          scrollEnabled={true} // Always allow scrolling - gestures handle zoom blocking
+          bounces={true}
+          decelerationRate="fast"
         >
           {photos.map((photo, index) => {
             if (!photo.photoReference) return null;
