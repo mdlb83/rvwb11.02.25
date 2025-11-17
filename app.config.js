@@ -31,7 +31,19 @@ module.exports = {
       infoPlist: {
         NSLocationWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map.",
         NSLocationAlwaysAndWhenInUseUsageDescription: "Allow RVing with Bikes to use your location to show nearby campgrounds on the map.",
-        ITSAppUsesNonExemptEncryption: false
+        NSMotionUsageDescription: "This app uses motion data to detect device orientation changes for photo viewing.",
+        ITSAppUsesNonExemptEncryption: false,
+        UISupportedInterfaceOrientations: [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
       }
     },
     android: {

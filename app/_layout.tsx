@@ -11,13 +11,16 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 // Prevent the splash screen from auto-hiding before we're ready
 SplashScreen.preventAutoHideAsync();
 
-// Lock app to portrait by default (can be overridden in photo viewer)
-ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {
-  // Ignore if not supported
-});
-
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
+
+  // Lock app to portrait by default (can be overridden in photo viewer)
+  useEffect(() => {
+    // Lock to portrait when app loads, but allow it to be overridden
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {
+      // Ignore if not supported
+    });
+  }, []);
 
   useEffect(() => {
     async function prepare() {
