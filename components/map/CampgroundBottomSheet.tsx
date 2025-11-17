@@ -1,13 +1,17 @@
 import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, Alert, Image, ScrollView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { CampgroundEntry } from '../../types/campground';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
 import { isBookmarked, toggleBookmark } from '../../utils/bookmarks';
+import { getGoogleMapsDataForEntry } from '../../utils/googleMapsDataLoader';
+import { GoogleMapsData, GoogleMapsPhoto } from '../../types/googleMapsData';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
+import PhotoViewerModal from './PhotoViewerModal';
 
 interface PendingMapAction {
   app: MapApp;
@@ -31,8 +35,212 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const [pendingMapApp, setPendingMapApp] = useState<MapApp | null>(null);
   const [dontShowInstructions, setDontShowInstructions] = useState(false);
   const [isBookmarkedState, setIsBookmarkedState] = useState(false);
+  const [googleMapsData, setGoogleMapsData] = useState<GoogleMapsData | undefined>(undefined);
+  const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [additionalPhotos, setAdditionalPhotos] = useState<GoogleMapsPhoto[]>([]);
+  const [loadingMorePhotos, setLoadingMorePhotos] = useState(false);
+  const [hasLoadedMorePhotos, setHasLoadedMorePhotos] = useState(false); // Track if Load More has been clicked
+  // Use a ref to track additional photos count to avoid stale closure issues
+  const additionalPhotosRef = useRef<GoogleMapsPhoto[]>([]);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    additionalPhotosRef.current = additionalPhotos;
+  }, [additionalPhotos]);
   // Use ref to store pending action immediately, avoiding React state update delays
   const pendingActionRef = useRef<PendingMapAction | null>(null);
+  
+  // Get Google Places API key for photo URLs
+  const getPhotoUrl = useCallback((photoReference: string, placeId?: string) => {
+    // Use Places API (New) photo endpoint
+    // Format: places/{place_id}/photos/{photo_reference}/media
+    const apiKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey || 
+                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || '';
+    
+    if (!apiKey || !placeId) {
+      // Fallback: return null if no API key or placeId
+      return null;
+    }
+    
+    // Places API (New) photo URL format
+    return `https://places.googleapis.com/v1/places/${placeId}/photos/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
+  }, []);
+
+  // Fetch additional photos from Google Places API
+  // Helper function to normalize photo references for comparison
+  const normalizePhotoRef = useCallback((photoRef: string | undefined | null): string => {
+    if (!photoRef) return '';
+    // Remove any whitespace and convert to string
+    const normalized = String(photoRef).trim();
+    // If it contains /photos/, extract just the reference part
+    if (normalized.includes('/photos/')) {
+      return normalized.split('/photos/')[1];
+    }
+    // If it's a full path, get the last segment
+    if (normalized.includes('/')) {
+      return normalized.split('/').pop() || normalized;
+    }
+    // Otherwise return as-is
+    return normalized;
+  }, []);
+
+  const loadMorePhotos = useCallback(async () => {
+    if (!googleMapsData?.placeId || loadingMorePhotos) return;
+
+    const apiKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey || 
+                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || '';
+    
+    if (!apiKey) {
+      Alert.alert('Error', 'API key not configured');
+      return;
+    }
+
+    setLoadingMorePhotos(true);
+    try {
+      // Request all photos - the API should return all available photos
+      const url = `https://places.googleapis.com/v1/places/${googleMapsData.placeId}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'photos' // This should return all photos
+        }
+      });
+      
+      console.log('🔍 API Request:', {
+        url,
+        placeId: googleMapsData.placeId,
+        fieldMask: 'photos'
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Use ref to get the latest count (avoids stale closure)
+      const currentAdditionalCount = additionalPhotosRef.current.length;
+      
+      console.log('🔍 Full API response structure:', {
+        hasPhotos: !!data.photos,
+        photosIsArray: Array.isArray(data.photos),
+        photosLength: data.photos?.length,
+        additionalPhotosLength: currentAdditionalCount,
+        additionalPhotosLengthFromState: additionalPhotos.length,
+        hasNextPageToken: !!data.nextPageToken,
+        responseKeys: Object.keys(data)
+      });
+      
+      // Check if there's pagination (though Places API New might not support it for photos)
+      if (data.nextPageToken) {
+        console.log('📄 Found nextPageToken - pagination available:', data.nextPageToken);
+      }
+      
+      if (data.photos && Array.isArray(data.photos)) {
+        const totalPhotosFromAPI = data.photos.length;
+        console.log(`📸 API returned ${totalPhotosFromAPI} total photos`);
+        console.log(`📸 Current additionalPhotos.length (from ref): ${currentAdditionalCount}`);
+        console.log(`📸 Current additionalPhotos.length (from state): ${additionalPhotos.length}`);
+        
+        // NOTE: Google Places API (New) may limit photos returned per request
+        // If totalPhotosFromAPI is 10, that's likely the API limit, not the actual total
+        if (totalPhotosFromAPI === 10) {
+          console.log(`⚠️ API returned exactly 10 photos - this may be the API limit, not the actual total`);
+        }
+        
+        // Calculate how many photos we've already loaded
+        // First 4 are synced, then we have additionalPhotos.length already loaded
+        // Use ref to avoid stale closure issues
+        const alreadyLoadedCount = 4 + currentAdditionalCount;
+        console.log(`📸 Already loaded: ${alreadyLoadedCount} photos (4 synced + ${currentAdditionalCount} additional)`);
+        console.log(`📸 Will start from index ${alreadyLoadedCount} (photo #${alreadyLoadedCount + 1})`);
+        
+        // Check if we've loaded all available photos from this API response
+        if (alreadyLoadedCount >= totalPhotosFromAPI) {
+          console.log(`⚠️ All photos from API response loaded! (${alreadyLoadedCount} >= ${totalPhotosFromAPI})`);
+          if (totalPhotosFromAPI === 10) {
+            Alert.alert(
+              'Info', 
+              `Loaded all available photos (${totalPhotosFromAPI} shown). The Google Places API may limit results to 10 photos per place.`
+            );
+          } else {
+            Alert.alert('Info', `All available photos have been loaded (${totalPhotosFromAPI} total)`);
+          }
+          return;
+        }
+        
+        // Skip photos we've already seen and start from the next one
+        // Load all remaining photos (not just a batch) to avoid hitting limits
+        const startIndex = alreadyLoadedCount;
+        const photosToProcess = data.photos.slice(startIndex);
+        
+        console.log(`📸 Processing photos starting from index ${startIndex} (${photosToProcess.length} photos remaining)`);
+        console.log(`📸 Total photos from API: ${totalPhotosFromAPI}, Already loaded: ${alreadyLoadedCount}, Remaining: ${photosToProcess.length}`);
+        
+        if (photosToProcess.length === 0) {
+          console.log(`⚠️ No photos to process! startIndex=${startIndex}, total=${totalPhotosFromAPI}, alreadyLoaded=${alreadyLoadedCount}`);
+          Alert.alert('Info', `All available photos have been loaded (${totalPhotosFromAPI} total)`);
+          return;
+        }
+        
+        // Extract photo references from the API response
+        // Photo name format: "places/ChIJN1t_tDeuEmsRUsoyG83frY4/photos/AW..."
+        const newPhotos: GoogleMapsPhoto[] = photosToProcess.map((photo: any, index: number) => {
+          const photoName = photo.name || '';
+          const photoRef = normalizePhotoRef(photoName);
+          console.log(`  📷 Photo ${startIndex + index + 1}: ${photoRef.substring(0, 30)}...`);
+          
+          return {
+            photoReference: photoRef,
+            width: photo.widthPx,
+            height: photo.heightPx,
+            attribution: photo.authorAttributions?.[0]?.displayName
+          };
+        });
+
+        console.log(`✅ Extracted ${newPhotos.length} new photos`);
+        
+        if (newPhotos.length > 0) {
+          setAdditionalPhotos(prev => {
+            const updated = [...prev, ...newPhotos];
+            console.log(`✅ Updated additionalPhotos from ${prev.length} to ${updated.length}`);
+            return updated;
+          });
+          
+          // Mark that we've loaded more photos (hide button after first load)
+          setHasLoadedMorePhotos(true);
+          
+          // Check if there are more photos available after this batch
+          const remainingPhotos = totalPhotosFromAPI - (alreadyLoadedCount + newPhotos.length);
+          console.log(`📸 ${remainingPhotos} more photos available after this batch`);
+        } else {
+          console.log(`⚠️ No new photos extracted!`);
+          Alert.alert('Info', 'No additional photos available');
+        }
+      } else {
+        console.log('⚠️ No photos array in API response:', data);
+        Alert.alert('Info', 'No photos found in API response');
+      }
+    } catch (error) {
+      console.error('Error loading more photos:', error);
+      Alert.alert('Error', 'Failed to load more photos');
+    } finally {
+      setLoadingMorePhotos(false);
+    }
+  }, [googleMapsData, additionalPhotos, loadingMorePhotos, normalizePhotoRef]);
+
+  // Combine synced photos with additional photos
+  const allPhotos = useMemo(() => {
+    return [...(googleMapsData?.photos || []), ...additionalPhotos];
+  }, [googleMapsData?.photos, additionalPhotos]);
+
+  // Reset additional photos and Load More state when campground changes
+  useEffect(() => {
+    setAdditionalPhotos([]);
+    setHasLoadedMorePhotos(false);
+  }, [campground]);
 
   // Load the "don't show instructions" preference on mount
   useEffect(() => {
@@ -64,6 +272,19 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     };
     loadBookmarkState();
   }, [campgroundId]);
+
+  // Load Google Maps data when campground changes
+  useEffect(() => {
+    const loadGoogleMapsData = async () => {
+      if (campground) {
+        const data = await getGoogleMapsDataForEntry(campground);
+        setGoogleMapsData(data);
+      } else {
+        setGoogleMapsData(undefined);
+      }
+    };
+    loadGoogleMapsData();
+  }, [campground]);
 
   // Determine initial snap index based on content
   // If campground has blog post, open at index 2 (90%) to show all content including buttons
@@ -587,6 +808,229 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </View>
         )}
 
+        {/* ============================================
+            GOOGLE MAPS DATA SECTION
+            Easy to remove: Delete this entire block
+            ============================================ */}
+        {googleMapsData && googleMapsData.syncStatus === 'success' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Google Maps Information</Text>
+            
+            {/* Rating Card */}
+            {(googleMapsData.rating || googleMapsData.userRatingCount) && (
+              <View style={styles.ratingCard}>
+                {googleMapsData.rating && (
+                  <View style={styles.ratingContainer}>
+                    <Ionicons name="star" size={20} color="#FFA500" />
+                    <Text style={styles.ratingText}>{googleMapsData.rating.toFixed(1)}</Text>
+                  </View>
+                )}
+                {googleMapsData.userRatingCount && (
+                  <Text style={styles.reviewCountText}>
+                    {googleMapsData.userRatingCount.toLocaleString()} reviews
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {/* Editorial Summary */}
+            {googleMapsData.editorialSummary && (
+              <View style={styles.summaryCard}>
+                <Text style={styles.editorialSummary}>{googleMapsData.editorialSummary}</Text>
+              </View>
+            )}
+
+            {/* Photos */}
+            {googleMapsData.photos && googleMapsData.photos.length > 0 && (
+              <View style={styles.photosContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.photosScrollContent}
+                  style={styles.photosScrollView}
+                  snapToInterval={0}
+                  decelerationRate="fast"
+                >
+                  <View style={styles.photosLayout}>
+                  {/* Pattern: Large, Stack(2 small), Large, Stack(2 small), ... */}
+                  {allPhotos.map((photo, index) => {
+                    if (!photo.photoReference) return null;
+                    
+                    // Pattern repeats every 3 photos: 0 (large), 1-2 (stack), 3 (large), 4-5 (stack), etc.
+                    const positionInPattern = index % 3;
+                    
+                    // If position is 1 or 2, it's part of a stack - handle separately
+                    if (positionInPattern === 1 || positionInPattern === 2) {
+                      // Only render the first photo of the stack (position 1)
+                      // Position 2 will be rendered within the same stack
+                      if (positionInPattern === 1) {
+                        const stackPhotos = allPhotos.slice(index, index + 2).filter(p => p.photoReference);
+                        if (stackPhotos.length === 0) return null;
+                        
+                        return (
+                          <View key={`stack-${index}`} style={styles.photosStack}>
+                            {stackPhotos.map((stackPhoto, stackIndex) => {
+                              const photoUrl = getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
+                              const actualIndex = index + stackIndex;
+                              
+                              return (
+                                <TouchableOpacity
+                                  key={actualIndex}
+                                  style={styles.stackPhoto}
+                                  activeOpacity={0.9}
+                                  onPress={() => {
+                                    setSelectedPhotoIndex(actualIndex);
+                                    setPhotoViewerVisible(true);
+                                  }}
+                                >
+                                  {photoUrl ? (
+                                    <Image 
+                                      source={{ uri: photoUrl }} 
+                                      style={styles.stackPhotoImage}
+                                      resizeMode="cover"
+                                    />
+                                  ) : (
+                                    <View style={styles.photoPlaceholderContainer}>
+                                      <Ionicons name="image-outline" size={20} color="#999" />
+                                    </View>
+                                  )}
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                        );
+                      }
+                      // Skip position 2 as it's rendered in the stack above
+                      return null;
+                    }
+                    
+                    // Position 0 or 3, 6, 9... (multiples of 3) - large photo
+                    const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
+                    
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.featuredPhoto}
+                        activeOpacity={0.9}
+                        onPress={() => {
+                          setSelectedPhotoIndex(index);
+                          setPhotoViewerVisible(true);
+                        }}
+                      >
+                        {photoUrl ? (
+                          <Image 
+                            source={{ uri: photoUrl }} 
+                            style={styles.featuredPhotoImage}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View style={styles.photoPlaceholderContainer}>
+                            <Ionicons name="image-outline" size={40} color="#999" />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                  
+                    {/* Load More button column on the right - only show if we haven't loaded more photos yet */}
+                    {googleMapsData.placeId && !hasLoadedMorePhotos && (
+                      <View style={styles.loadMoreColumn}>
+                        <TouchableOpacity
+                          style={styles.loadMorePhoto}
+                          activeOpacity={0.9}
+                          onPress={loadMorePhotos}
+                          disabled={loadingMorePhotos}
+                        >
+                          {loadingMorePhotos ? (
+                            <View style={styles.loadMoreContent}>
+                              <Text style={styles.loadMoreText}>Loading...</Text>
+                            </View>
+                          ) : (
+                            <View style={styles.loadMoreContent}>
+                              <Ionicons name="add-circle-outline" size={32} color="#2196F3" />
+                              <Text style={styles.loadMoreText}>Load More</Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Review Topics */}
+            {googleMapsData.reviewTopics && googleMapsData.reviewTopics.length > 0 && (
+              <View style={styles.topicsContainer}>
+                <View style={styles.topicsGrid}>
+                  {googleMapsData.reviewTopics.map((topic, index) => (
+                    <View key={index} style={styles.topicTag}>
+                      <Text style={styles.topicText}>{topic}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Review Summary */}
+            {googleMapsData.reviewSummary?.text && (
+              <View style={styles.reviewSummaryCard}>
+                <Text style={styles.reviewSummaryLabel}>What People Say</Text>
+                <Text style={styles.reviewSummaryText}>{googleMapsData.reviewSummary.text}</Text>
+              </View>
+            )}
+
+            {/* Opening Hours Card */}
+            {googleMapsData.openingHours && (googleMapsData.openingHours.weekdayText || googleMapsData.openingHours.weekdayDescriptions) && (
+              <View style={styles.hoursCard}>
+                <View style={styles.hoursHeader}>
+                  <Ionicons name="time-outline" size={18} color="#333" />
+                  <Text style={styles.hoursLabel}>Hours</Text>
+                  {googleMapsData.openingHours.openNow !== undefined && (
+                    <View style={[styles.openNowBadge, { backgroundColor: googleMapsData.openingHours.openNow ? '#E8F5E9' : '#FFEBEE' }]}>
+                      <Text style={[styles.openNowText, { color: googleMapsData.openingHours.openNow ? '#4CAF50' : '#dc3545' }]}>
+                        {googleMapsData.openingHours.openNow ? 'Open Now' : 'Closed'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.hoursList}>
+                  {(googleMapsData.openingHours.weekdayText || googleMapsData.openingHours.weekdayDescriptions || []).map((day, index) => (
+                    <Text key={index} style={styles.hoursText}>{day}</Text>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Contact Links */}
+            {(googleMapsData.websiteUri || googleMapsData.nationalPhoneNumber) && (
+              <View style={styles.contactContainer}>
+                {googleMapsData.websiteUri && (
+                  <TouchableOpacity
+                    style={styles.contactButton}
+                    onPress={() => Linking.openURL(googleMapsData.websiteUri!).catch(() => Alert.alert('Error', 'Could not open website'))}
+                  >
+                    <Ionicons name="globe-outline" size={18} color="#2196F3" />
+                    <Text style={styles.contactButtonText}>Website</Text>
+                  </TouchableOpacity>
+                )}
+                {googleMapsData.nationalPhoneNumber && (
+                  <TouchableOpacity
+                    style={styles.contactButton}
+                    onPress={() => Linking.openURL(`tel:${googleMapsData.nationalPhoneNumber}`).catch(() => Alert.alert('Error', 'Could not make phone call'))}
+                  >
+                    <Ionicons name="call-outline" size={18} color="#2196F3" />
+                    <Text style={styles.contactButtonText}>{googleMapsData.nationalPhoneNumber}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+        )}
+        {/* ============================================
+            END GOOGLE MAPS DATA SECTION
+            ============================================ */}
+
           </>
         ) : null}
       </BottomSheetScrollView>
@@ -605,6 +1049,16 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         mapAppName={pendingMapApp ? getMapAppName(pendingMapApp) : ''}
         onClose={handleOpenMapAfterInstructions}
       />
+      {googleMapsData && allPhotos.length > 0 && (
+        <PhotoViewerModal
+          visible={photoViewerVisible}
+          photos={allPhotos}
+          initialIndex={selectedPhotoIndex}
+          placeId={googleMapsData.placeId}
+          getPhotoUrl={getPhotoUrl}
+          onClose={() => setPhotoViewerVisible(false)}
+        />
+      )}
     </BottomSheet>
   );
 }
@@ -857,5 +1311,308 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
   },
+  // Google Maps Data Styles - Easy to remove: Delete all styles below
+  ratingCard: {
+    backgroundColor: '#FFF9E6',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  ratingText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+  },
+  reviewCountText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  summaryCard: {
+    backgroundColor: '#F5F5F5',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  editorialSummary: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 22,
+  },
+  photosContainer: {
+    marginBottom: 16,
+  },
+  photosLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  photosScrollView: {
+    marginLeft: -16, // Extend to left edge
+    marginRight: -16 - (Dimensions.get('window').width * 0.2), // Extend beyond right edge by 20% of screen width
+  },
+  photosScrollContent: {
+    paddingLeft: 16,
+    paddingRight: 16 + (Dimensions.get('window').width * 0.2), // Extra padding on right
+  },
+  photosLayout: {
+    flexDirection: 'row',
+    gap: 8,
+    height: 200,
+  },
+  featuredPhoto: {
+    width: 160 + (Dimensions.get('window').width * 0.1), // 10% wider
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  featuredPhotoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  middlePhoto: {
+    width: 80 + (Dimensions.get('window').width * 0.05), // 5% wider
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  middlePhotoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  photosStack: {
+    width: 80 + (Dimensions.get('window').width * 0.05), // 5% wider
+    flexDirection: 'column',
+    gap: 8,
+  },
+  loadMoreColumn: {
+    width: 80 + (Dimensions.get('window').width * 0.05), // 5% wider
+    flexDirection: 'column',
+  },
+  stackPhoto: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  stackPhotoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  gridPhotoAttribution: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    fontSize: 7,
+    color: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 2,
+    textAlign: 'center',
+  },
+  seeMorePhoto: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  seeMoreOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  seeMoreText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  loadMorePhoto: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E3F2FD',
+    borderRadius: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#BBDEFB',
+    borderStyle: 'dashed',
+  },
+  loadMoreContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  loadMoreText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1976D2',
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  photoPlaceholderContainer: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  photoPlaceholder: {
+    fontSize: 10,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  photoAttribution: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    fontSize: 8,
+    color: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 4,
+    textAlign: 'center',
+  },
+  topicsContainer: {
+    marginBottom: 16,
+  },
+  topicsLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  topicsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  topicTag: {
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#BBDEFB',
+  },
+  topicText: {
+    fontSize: 13,
+    color: '#1976D2',
+    fontWeight: '500',
+  },
+  reviewSummaryCard: {
+    backgroundColor: '#F5F5F5',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  reviewSummaryLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  reviewSummaryText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 22,
+  },
+  hoursCard: {
+    backgroundColor: '#F5F5F5',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  hoursHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  hoursLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+  },
+  openNowBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  openNowText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  hoursList: {
+    gap: 4,
+  },
+  hoursText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  contactContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 8,
+  },
+  contactButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E3F2FD',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BBDEFB',
+  },
+  contactButtonText: {
+    fontSize: 14,
+    color: '#1976D2',
+    fontWeight: '600',
+  },
+  // End Google Maps Data Styles
 });
 

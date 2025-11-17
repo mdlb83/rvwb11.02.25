@@ -628,29 +628,6 @@
       "city": "Carbondale",
       "state": "CO",
       "campground": {
-        "name": "Carbondale – Crystal River KOA",
-        "type": "This is NOT a FHU campground; however, the campground does offer (for a fee) a honeywagon service",
-        "info": "Carbondale – Crystal River KOA. This is NOT a FHU campground; however, the campground does offer (for a fee) a honeywagon service.",
-        "notes": ""
-      },
-      "trails": [
-        {
-          "description": "<a href=\"https://www.carbondale.com/destination/crystal-valley-trail/\">The Crystal Valley Trail</a> runs right through the campground. <a href=\"https://www.rfta.com/trail-information/\">The Crystal Valley Trail connects with the Rio Grande Trail</a>. <a href=\"https://www.alltrails.com/ar/trail/us/colorado/blue-river-bikeway\">The Rio Grande Trail</a> is a 42 mile, hard-surfaced multi-use trail.",
-          "name": "Rio Grande Trail",
-          "distance": "42 mile",
-          "surface": "paved"
-        }
-      ],
-      "blog_post": null,
-      "hookup_type": "full",
-      "contributor": null,
-      "latitude": 39.4022054,
-      "longitude": -107.2111628
-    },
-    {
-      "city": "Carbondale",
-      "state": "CO",
-      "campground": {
         "name": "Gateway RV Park",
         "type": "RV Park",
         "info": "<a href=\"https://www.gateway-rv-park.com/\">Gateway RV Park. RV Park</a>.",
@@ -1642,7 +1619,12 @@
     {
       "city": "Hartford",
       "state": "IL",
-      "campground": null,
+      "campground": {
+        "name": "Hartford Campground",
+        "type": "Campground",
+        "info": "Campground in Hartford, IL",
+        "notes": ""
+      },
       "trails": [],
       "blog_post": null,
       "hookup_type": "full",
@@ -1651,9 +1633,14 @@
       "longitude": -90.09594
     },
     {
-      "city": "Campground: 5 Diamonds Campground. RV Park. 429 Confluence Tower Dr. Hartford",
+      "city": "Hartford",
       "state": "IL",
-      "campground": null,
+      "campground": {
+        "name": "5 Diamonds Campground",
+        "type": "RV Park",
+        "info": "5 Diamonds Campground. RV Park. 429 Confluence Tower Dr. Hartford",
+        "notes": ""
+      },
       "trails": [
         {
           "description": "<a href=\"https://www.mcttrails.org/\">Madison County Transit Confluence Trail</a>. This paved or limestone trail is 20.5 miles.",
@@ -5804,7 +5791,7 @@
       "city": "Port Townsend",
       "state": "WA",
       "campground": {
-        "name": "Fort Worden Historical State Park",
+        "name": "Fort Worden Historical State Park - Beach Campground",
         "type": "Beach Campground",
         "info": "<a href=\"https://parks.wa.gov/find-parks/state-parks/fort-worden-historical-state-park\">Fort Worden Historical State Park</a>. Beach Campground.",
         "notes": ""
@@ -8564,7 +8551,7 @@
       "city": "Port Townsend",
       "state": "WA",
       "campground": {
-        "name": "Fort Worden Historical State Park",
+        "name": "Fort Worden Historical State Park - Upper Forest Campground",
         "type": "Upper Forest Campground",
         "info": "<a href=\"https://parks.wa.gov/find-parks/state-parks/fort-worden-historical-state-park\">Fort Worden Historical State Park</a>. Upper Forest Campground.",
         "notes": ""

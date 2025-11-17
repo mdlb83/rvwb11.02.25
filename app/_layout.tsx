@@ -4,11 +4,17 @@ import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { isFirstLaunch, setHasLaunched } from '../utils/firstLaunch';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 // Prevent the splash screen from auto-hiding before we're ready
 SplashScreen.preventAutoHideAsync();
+
+// Lock app to portrait by default (can be overridden in photo viewer)
+ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {
+  // Ignore if not supported
+});
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);

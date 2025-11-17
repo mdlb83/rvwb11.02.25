@@ -6,7 +6,7 @@ module.exports = {
     name: "RVing with Bikes",
     slug: "rving-with-bikes",
     version: "1.0.0",
-    orientation: "portrait",
+    orientation: "default", // Allow rotation - we'll control it per screen
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     splash: {
@@ -65,6 +65,9 @@ module.exports = {
       ],
       [
         "expo-router"
+      ],
+      [
+        "expo-screen-orientation"
       ]
     ],
     scheme: "rvingwithbikes",
