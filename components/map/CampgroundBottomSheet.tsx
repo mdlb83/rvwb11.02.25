@@ -125,10 +125,20 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+        throw new Error(`API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('✅ API Response received:', {
+        hasPhotos: !!data.photos,
+        photosCount: data.photos?.length || 0
+      });
       
       // Use ref to get the latest count (avoids stale closure)
       const currentAdditionalCount = additionalPhotosRef.current.length;
@@ -234,8 +244,17 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         Alert.alert('Info', 'No photos found in API response');
       }
     } catch (error) {
-      console.error('Error loading more photos:', error);
-      Alert.alert('Error', 'Failed to load more photos');
+      console.error('❌ Error loading more photos:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Full error details:', {
+        message: errorMessage,
+        error: error,
+        placeId: googleMapsData?.placeId
+      });
+      Alert.alert(
+        'Error Loading Photos', 
+        `Failed to load more photos: ${errorMessage}\n\nPlease check:\n1. API key has Places API (New) enabled\n2. API key has photo access permissions\n3. Check console logs for details`
+      );
     } finally {
       setLoadingMorePhotos(false);
     }
