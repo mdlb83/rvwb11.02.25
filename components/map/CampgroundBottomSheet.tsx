@@ -108,7 +108,7 @@ interface CampgroundBottomSheetProps {
 }
 
 export default function CampgroundBottomSheet({ campground, onClose }: CampgroundBottomSheetProps) {
-  const { theme } = useTheme();
+  const { theme, resolvedThemeMode } = useTheme();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
@@ -1202,7 +1202,13 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                 <View style={[
                   styles.hoursCard,
                   { backgroundColor: theme.surfaceSecondary },
-                  isOpenNow === true && styles.hoursCardOpen
+                  isOpenNow === true && {
+                    backgroundColor: resolvedThemeMode === 'dark' 
+                      ? 'rgba(102, 187, 106, 0.15)' 
+                      : 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 2,
+                    borderColor: theme.success,
+                  }
                 ]}>
                   <View style={styles.hoursHeader}>
                     <Ionicons 
