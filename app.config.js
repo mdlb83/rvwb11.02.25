@@ -8,7 +8,7 @@ module.exports = {
     version: "1.0.0",
     orientation: "default", // Allow rotation - we'll control it per screen
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
@@ -53,6 +53,7 @@ module.exports = {
       },
       package: "com.rvingwithbikes.app",
       versionCode: 1,
+      userInterfaceStyle: "automatic",
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""

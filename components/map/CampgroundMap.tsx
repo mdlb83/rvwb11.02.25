@@ -15,7 +15,7 @@ interface CampgroundMapProps {
 }
 
 export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegionChangeComplete }: CampgroundMapProps) {
-  const { themeMode } = useTheme();
+  const { resolvedThemeMode } = useTheme();
   const internalMapRef = useRef<MapView>(null);
   const mapRefToUse = mapRef || internalMapRef;
 
@@ -27,7 +27,7 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
   };
 
   // Use dark map style when dark mode is enabled
-  const mapStyle = themeMode === 'dark' ? darkMapStyle : lightMapStyle;
+  const mapStyle = resolvedThemeMode === 'dark' ? darkMapStyle : lightMapStyle;
 
   return (
     <View style={styles.container}>

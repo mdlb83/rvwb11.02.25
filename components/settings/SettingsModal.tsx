@@ -19,13 +19,19 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
-  const { theme, themeMode, toggleTheme } = useTheme();
+  const { theme, themeMode, setThemeMode } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
   const availableApps = getAvailableMapApps();
 
   const handleAppSelect = async (app: MapApp) => {
     await savePreference(app);
   };
+
+  const themeOptions = [
+    { value: 'system' as const, label: 'System', icon: 'phone-portrait-outline' },
+    { value: 'light' as const, label: 'Light', icon: 'sunny' },
+    { value: 'dark' as const, label: 'Dark', icon: 'moon' },
+  ];
 
   return (
     <Modal
@@ -52,29 +58,42 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                     Choose your preferred theme
                   </Text>
                   
-                  <TouchableOpacity
-                    style={[
-                      styles.option,
-                      { backgroundColor: theme.surfaceSecondary },
-                    ]}
-                    onPress={toggleTheme}
-                  >
-                    <View style={styles.optionContent}>
-                      <Ionicons 
-                        name={themeMode === 'dark' ? 'moon' : 'sunny'} 
-                        size={20} 
-                        color={theme.primary} 
-                      />
-                      <Text style={[styles.optionText, { color: theme.text }]}>
-                        {themeMode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                      </Text>
-                    </View>
-                    <Ionicons 
-                      name={themeMode === 'dark' ? 'toggle' : 'toggle-outline'} 
-                      size={24} 
-                      color={theme.primary} 
-                    />
-                  </TouchableOpacity>
+                  {themeOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.option,
+                        { backgroundColor: theme.surfaceSecondary },
+                        themeMode === option.value && {
+                          backgroundColor: theme.surfaceSecondary,
+                          borderWidth: 2,
+                          borderColor: theme.primary,
+                        },
+                      ]}
+                      onPress={() => setThemeMode(option.value)}
+                    >
+                      <View style={styles.optionContent}>
+                        <Ionicons 
+                          name={option.icon as any} 
+                          size={20} 
+                          color={themeMode === option.value ? theme.primary : theme.iconSecondary} 
+                        />
+                        <Text style={[
+                          styles.optionText,
+                          { color: theme.text },
+                          themeMode === option.value && {
+                            color: theme.primary,
+                            fontWeight: '600',
+                          },
+                        ]}>
+                          {option.label}
+                        </Text>
+                      </View>
+                      {themeMode === option.value && (
+                        <Ionicons name="checkmark" size={20} color={theme.primary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
                 </View>
 
                 <View style={styles.section}>
