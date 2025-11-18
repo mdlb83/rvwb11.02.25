@@ -925,7 +925,10 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               styles.actionButton, 
               styles.bookmarkButton,
               { borderColor: theme.text },
-              isBookmarkedState && { backgroundColor: theme.text }
+              isBookmarkedState && { 
+                backgroundColor: theme.primary,
+                borderColor: theme.primary 
+              }
             ]} 
             onPress={handleBookmark}
           >
