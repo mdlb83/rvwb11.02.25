@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ResultCountBadgeProps {
   count: number;
@@ -8,6 +9,8 @@ interface ResultCountBadgeProps {
 }
 
 export default function ResultCountBadge({ count, total, gpsButtonBottom }: ResultCountBadgeProps) {
+  const { theme } = useTheme();
+  
   if (count === total) {
     return null; // Don't show badge when all results are visible
   }
@@ -29,8 +32,14 @@ export default function ResultCountBadge({ count, total, gpsButtonBottom }: Resu
       ]} 
       pointerEvents="none"
     >
-      <View style={styles.container}>
-        <Text style={styles.text}>
+      <View style={[
+        styles.container,
+        {
+          backgroundColor: theme.surface,
+          shadowColor: theme.shadow,
+        }
+      ]}>
+        <Text style={[styles.text, { color: theme.text }]}>
           {count} {count === 1 ? 'campground' : 'campgrounds'}
           {count < total && ` of ${total}`}
         </Text>
@@ -48,13 +57,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   container: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -63,7 +70,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
   },
 });
 

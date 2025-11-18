@@ -12,6 +12,7 @@ import { GoogleMapsData, GoogleMapsPhoto } from '../../types/googleMapsData';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
@@ -107,6 +108,7 @@ interface CampgroundBottomSheetProps {
 }
 
 export default function CampgroundBottomSheet({ campground, onClose }: CampgroundBottomSheetProps) {
+  const { theme } = useTheme();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
@@ -780,7 +782,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     // Now build the final elements using only outermost links
     if (linkRanges.length === 0) {
       // No links found, return plain text
-      return <Text style={styles.htmlText}>{html.replace(/<[^>]*>/g, '')}</Text>;
+      return <Text style={[styles.htmlText, { color: theme.text }]}>{html.replace(/<[^>]*>/g, '')}</Text>;
     }
     
     // Sort ranges by start position and filter to only outermost (depth 0)
@@ -827,11 +829,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     
     // If no links were processed, fall back to stripping all HTML
     if (finalElements.length === 0) {
-      return <Text style={styles.htmlText}>{html.replace(/<[^>]*>/g, '')}</Text>;
+      return <Text style={[styles.htmlText, { color: theme.text }]}>{html.replace(/<[^>]*>/g, '')}</Text>;
     }
 
     return (
-      <Text style={styles.htmlText}>
+      <Text style={[styles.htmlText, { color: theme.text }]}>
         {finalElements.map((item, index) => {
           if (typeof item === 'string') {
             return item;
@@ -839,7 +841,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           return (
             <Text
               key={index}
-              style={styles.link}
+              style={[styles.link, { color: theme.primary }]}
               onPress={() => Linking.openURL(item.url)}
             >
               {item.text}
@@ -862,8 +864,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         }
       }}
       backdropComponent={renderBackdrop}
-      handleIndicatorStyle={styles.handleIndicator}
-      backgroundStyle={styles.bottomSheetBackground}
+      handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: theme.bottomSheetHandle }]}
+      backgroundStyle={[styles.bottomSheetBackground, { backgroundColor: theme.bottomSheetBackground }]}
     >
       <BottomSheetScrollView 
         contentContainerStyle={styles.contentContainer}
@@ -886,20 +888,20 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                 style={[
                   styles.badge,
                   styles.badgeTopRight,
-                  { backgroundColor: campground.hookup_type === 'full' ? '#4CAF50' : '#FF9800' },
+                  { backgroundColor: campground.hookup_type === 'full' ? theme.primary : theme.warning },
                 ]}
               >
-                <Text style={styles.badgeText}>
+                <Text style={[styles.badgeText, { color: theme.buttonText }]}>
                   {campground.hookup_type === 'full' ? 'Full Hookup' : 'Partial Hookup'}
                 </Text>
               </View>
-              <Text style={styles.title}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
+              <Text style={[styles.title, { color: theme.text }]}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
           <View style={styles.subtitleRow}>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               {campground.city}, {campground.state}
             </Text>
             {campground.contributor && (
-              <Text style={styles.contributorTextInline}>
+              <Text style={[styles.contributorTextInline, { color: theme.textSecondary }]}>
                 📍 Submitted by {campground.contributor.name}
                 {campground.contributor.location && ` from ${campground.contributor.location}`}
               </Text>
@@ -908,32 +910,47 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.actionButton, styles.reportButton]} onPress={handleReportProblem}>
-            <Ionicons name="warning-outline" size={16} color="#dc3545" />
+          <TouchableOpacity 
+            style={[
+              styles.actionButton, 
+              styles.reportButton,
+              { borderColor: theme.error }
+            ]} 
+            onPress={handleReportProblem}
+          >
+            <Ionicons name="warning-outline" size={16} color={theme.error} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={[
               styles.actionButton, 
               styles.bookmarkButton,
-              isBookmarkedState && styles.bookmarkButtonFilled
+              { borderColor: theme.text },
+              isBookmarkedState && { backgroundColor: theme.text }
             ]} 
             onPress={handleBookmark}
           >
             <Ionicons 
               name={isBookmarkedState ? "bookmark" : "bookmark-outline"} 
               size={16} 
-              color={isBookmarkedState ? "#fff" : "#333"} 
+              color={isBookmarkedState ? theme.buttonText : theme.text} 
             />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.openMapsButton]} onPress={handleOpenInMaps}>
-            <Ionicons name="map" size={18} color="#2196F3" style={styles.buttonIcon} />
-            <Text style={styles.openMapsButtonText}>Open in Maps</Text>
+          <TouchableOpacity 
+            style={[
+              styles.actionButton, 
+              styles.openMapsButton,
+              { backgroundColor: theme.surface, borderColor: theme.primary }
+            ]} 
+            onPress={handleOpenInMaps}
+          >
+            <Ionicons name="map" size={18} color={theme.primary} style={styles.buttonIcon} />
+            <Text style={[styles.openMapsButtonText, { color: theme.primary }]}>Open in Maps</Text>
           </TouchableOpacity>
         </View>
 
         {campground.campground && (
           <View style={[styles.section, styles.firstSection]}>
-            <Text style={styles.sectionTitle}>Campground Info</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Campground Info</Text>
             <View style={styles.infoText}>
               {renderHtmlContent(campground.campground.info || 'No information available.')}
             </View>
@@ -942,11 +959,11 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
 
         {campground.trails.length > 0 && (
           <View style={[styles.section, styles.trailsSection]}>
-            <Text style={styles.sectionTitle}>Bike Trails</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Bike Trails</Text>
             {campground.trails.map((trail, index) => (
-              <View key={index} style={styles.trailCard}>
-                {trail.name && <Text style={styles.trailName}>{trail.name}</Text>}
-                <Text style={styles.trailInfo}>
+              <View key={index} style={[styles.trailCard, { backgroundColor: theme.surfaceSecondary }]}>
+                {trail.name && <Text style={[styles.trailName, { color: theme.text }]}>{trail.name}</Text>}
+                <Text style={[styles.trailInfo, { color: theme.textSecondary }]}>
                   {trail.distance} • {trail.surface}
                 </Text>
                 {renderHtmlContent(trail.description)}
@@ -965,7 +982,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           
           return (
             <TouchableOpacity 
-              style={styles.blogPostButton}
+              style={[styles.blogPostButton, { backgroundColor: theme.primary, shadowColor: theme.shadow }]}
               onPress={() => {
                 Linking.openURL(blogPostUrl).catch(err => {
                   console.error('Failed to open blog post URL:', err);
@@ -974,10 +991,10 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               }}
               activeOpacity={0.8}
             >
-              <Ionicons name="document-text" size={24} color="#fff" style={styles.blogPostButtonIcon} />
-              <Text style={styles.blogPostButtonLabel}>Read blog post</Text>
-              <View style={styles.blogPostButtonDivider} />
-              <Text style={styles.blogPostButtonText} numberOfLines={2}>
+              <Ionicons name="document-text" size={24} color={theme.buttonText} style={styles.blogPostButtonIcon} />
+              <Text style={[styles.blogPostButtonLabel, { color: theme.buttonText }]}>Read blog post</Text>
+              <View style={[styles.blogPostButtonDivider, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }]} />
+              <Text style={[styles.blogPostButtonText, { color: theme.buttonText }]} numberOfLines={2}>
                 {blogPostTitle || 'Related Blog Post'}
               </Text>
             </TouchableOpacity>
@@ -991,26 +1008,26 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             ============================================ */}
         {googleMapsData && googleMapsData.syncStatus === 'success' && (
           <>
-            <View style={styles.googleMapsSeparator} />
+            <View style={[styles.googleMapsSeparator, { backgroundColor: theme.border }]} />
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Google Maps Information</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Google Maps Information</Text>
             
             {/* Editorial Summary */}
             {googleMapsData.editorialSummary && (
-              <Text style={styles.editorialSummaryText}>{googleMapsData.editorialSummary}</Text>
+              <Text style={[styles.editorialSummaryText, { color: theme.textSecondary }]}>{googleMapsData.editorialSummary}</Text>
             )}
 
             {/* Rating Card */}
             {(googleMapsData.rating || googleMapsData.userRatingCount) && (
-              <View style={styles.ratingCard}>
+              <View style={[styles.ratingCard, { backgroundColor: theme.surfaceSecondary }]}>
                 {googleMapsData.rating && (
                   <View style={styles.ratingContainer}>
                     <Ionicons name="star" size={20} color="#FFA500" />
-                    <Text style={styles.ratingText}>{googleMapsData.rating.toFixed(1)}</Text>
+                    <Text style={[styles.ratingText, { color: theme.text }]}>{googleMapsData.rating.toFixed(1)}</Text>
                   </View>
                 )}
                 {googleMapsData.userRatingCount && (
-                  <Text style={styles.reviewCountText}>
+                  <Text style={[styles.reviewCountText, { color: theme.textSecondary }]}>
                     {googleMapsData.userRatingCount.toLocaleString()} reviews
                   </Text>
                 )}
@@ -1077,7 +1094,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                                     />
                                   ) : (
                                     <View style={styles.photoPlaceholderContainer}>
-                                      <Ionicons name="image-outline" size={20} color="#999" />
+                                      <Ionicons name="image-outline" size={20} color={theme.textTertiary} />
                                     </View>
                                   )}
                                 </TouchableOpacity>
@@ -1120,7 +1137,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                           />
                         ) : (
                           <View style={styles.photoPlaceholderContainer}>
-                            <Ionicons name="image-outline" size={40} color="#999" />
+                            <Ionicons name="image-outline" size={40} color={theme.textTertiary} />
                           </View>
                         )}
                       </TouchableOpacity>
@@ -1138,12 +1155,12 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                         >
                           {loadingMorePhotos ? (
                             <View style={styles.loadMoreContent}>
-                              <Text style={styles.loadMoreText}>Loading...</Text>
+                              <Text style={[styles.loadMoreText, { color: theme.textSecondary }]}>Loading...</Text>
                             </View>
                           ) : (
                             <View style={styles.loadMoreContent}>
-                              <Ionicons name="add-circle-outline" size={32} color="#2196F3" />
-                              <Text style={styles.loadMoreText}>Load More</Text>
+                              <Ionicons name="add-circle-outline" size={32} color={theme.primary} />
+                              <Text style={[styles.loadMoreText, { color: theme.textSecondary }]}>Load More</Text>
                             </View>
                           )}
                         </TouchableOpacity>
@@ -1159,8 +1176,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               <View style={styles.topicsContainer}>
                 <View style={styles.topicsGrid}>
                   {googleMapsData.reviewTopics.map((topic, index) => (
-                    <View key={index} style={styles.topicTag}>
-                      <Text style={styles.topicText}>{topic}</Text>
+                    <View key={index} style={[styles.topicTag, { backgroundColor: theme.surfaceSecondary }]}>
+                      <Text style={[styles.topicText, { color: theme.text }]}>{topic}</Text>
                     </View>
                   ))}
                 </View>
@@ -1169,9 +1186,9 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
 
             {/* Review Summary */}
             {googleMapsData.reviewSummary?.text && (
-              <View style={styles.reviewSummaryCard}>
-                <Text style={styles.reviewSummaryLabel}>What People Say</Text>
-                <Text style={styles.reviewSummaryText}>{googleMapsData.reviewSummary.text}</Text>
+              <View style={[styles.reviewSummaryCard, { backgroundColor: theme.surfaceSecondary }]}>
+                <Text style={[styles.reviewSummaryLabel, { color: theme.text }]}>What People Say</Text>
+                <Text style={[styles.reviewSummaryText, { color: theme.textSecondary }]}>{googleMapsData.reviewSummary.text}</Text>
               </View>
             )}
 
@@ -1184,31 +1201,32 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               return (
                 <View style={[
                   styles.hoursCard,
+                  { backgroundColor: theme.surfaceSecondary },
                   isOpenNow === true && styles.hoursCardOpen
                 ]}>
                   <View style={styles.hoursHeader}>
                     <Ionicons 
                       name={isOpenNow ? "checkmark-circle" : "time-outline"} 
                       size={20} 
-                      color={isOpenNow ? "#4CAF50" : "#333"} 
+                      color={isOpenNow ? theme.primary : theme.icon} 
                     />
-                    <Text style={styles.hoursLabel}>Open Hours</Text>
+                    <Text style={[styles.hoursLabel, { color: theme.text }]}>Open Hours</Text>
                     {isOpenNow !== undefined && (
                       <View style={[
                         styles.openNowBadge, 
                         { 
-                          backgroundColor: isOpenNow ? '#4CAF50' : '#dc3545',
+                          backgroundColor: isOpenNow ? theme.primary : theme.error,
                           borderWidth: isOpenNow ? 2 : 0,
-                          borderColor: isOpenNow ? '#2E7D32' : 'transparent',
+                          borderColor: isOpenNow ? theme.primaryDark : 'transparent',
                         }
                       ]}>
                         <Ionicons 
                           name={isOpenNow ? "checkmark-circle" : "close-circle"} 
                           size={16} 
-                          color="#fff" 
+                          color={theme.buttonText} 
                           style={styles.openNowIcon}
                         />
-                        <Text style={styles.openNowText}>
+                        <Text style={[styles.openNowText, { color: theme.buttonText }]}>
                           {isOpenNow ? 'Open Now' : 'Currently Closed'}
                         </Text>
                       </View>
@@ -1222,8 +1240,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                       const hours = parts.slice(1).join(':').trim();
                       
                       return (
-                        <Text key={index} style={styles.hoursText}>
-                          <Text style={styles.hoursDayText}>{dayName}</Text>
+                        <Text key={index} style={[styles.hoursText, { color: theme.textSecondary }]}>
+                          <Text style={[styles.hoursDayText, { color: theme.text }]}>{dayName}</Text>
                           {hours && <Text> {hours}</Text>}
                         </Text>
                       );
@@ -1238,20 +1256,20 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               <View style={styles.contactContainer}>
                 {googleMapsData.websiteUri && (
                   <TouchableOpacity
-                    style={styles.contactButton}
+                    style={[styles.contactButton, { backgroundColor: theme.surfaceSecondary }]}
                     onPress={() => Linking.openURL(googleMapsData.websiteUri!).catch(() => Alert.alert('Error', 'Could not open website'))}
                   >
-                    <Ionicons name="globe-outline" size={18} color="#2196F3" />
-                    <Text style={styles.contactButtonText}>Website</Text>
+                    <Ionicons name="globe-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.contactButtonText, { color: theme.primary }]}>Website</Text>
                   </TouchableOpacity>
                 )}
                 {googleMapsData.nationalPhoneNumber && (
                   <TouchableOpacity
-                    style={styles.contactButton}
+                    style={[styles.contactButton, { backgroundColor: theme.surfaceSecondary }]}
                     onPress={() => Linking.openURL(`tel:${googleMapsData.nationalPhoneNumber}`).catch(() => Alert.alert('Error', 'Could not make phone call'))}
                   >
-                    <Ionicons name="call-outline" size={18} color="#2196F3" />
-                    <Text style={styles.contactButtonText}>{googleMapsData.nationalPhoneNumber}</Text>
+                    <Ionicons name="call-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.contactButtonText, { color: theme.primary }]}>{googleMapsData.nationalPhoneNumber}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -1307,12 +1325,11 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   bottomSheetBackground: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   handleIndicator: {
-    backgroundColor: '#999',
+    // Color set dynamically
   },
   header: {
     marginBottom: 12,
@@ -1322,7 +1339,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 4,
     marginRight: 120,
     flexWrap: 'wrap',
@@ -1337,7 +1353,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
     flexShrink: 1,
   },
   badgeContainer: {
@@ -1360,13 +1375,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   badgeText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '600',
   },
   typeText: {
     fontSize: 14,
-    color: '#666',
     fontStyle: 'italic',
     flexWrap: 'wrap',
     flexShrink: 1,
@@ -1384,19 +1397,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   infoText: {
     fontSize: 14,
-    color: '#555',
     lineHeight: 20,
     width: '100%',
     flexWrap: 'wrap',
   },
   htmlText: {
     fontSize: 14,
-    color: '#555',
     lineHeight: 20,
     flexWrap: 'wrap',
     flexShrink: 1,
@@ -1405,14 +1415,12 @@ const styles = StyleSheet.create({
   },
   notesText: {
     fontSize: 13,
-    color: '#666',
     marginTop: 8,
     fontStyle: 'italic',
     flexWrap: 'wrap',
     flexShrink: 1,
   },
   trailCard: {
-    backgroundColor: '#f5f5f5',
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
@@ -1423,25 +1431,21 @@ const styles = StyleSheet.create({
   trailName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 4,
     flexWrap: 'wrap',
     flexShrink: 1,
   },
   trailInfo: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 6,
     flexWrap: 'wrap',
     flexShrink: 1,
   },
   link: {
-    color: '#2196F3',
     textDecorationLine: 'underline',
     flexShrink: 1,
   },
   blogPostButton: {
-    backgroundColor: '#4CAF50',
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -1450,7 +1454,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 0,
     marginBottom: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -1460,7 +1463,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   blogPostButtonLabel: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.3,
@@ -1469,11 +1471,9 @@ const styles = StyleSheet.create({
   blogPostButtonDivider: {
     width: 1,
     height: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     marginRight: 12,
   },
   blogPostButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.3,
@@ -1482,14 +1482,12 @@ const styles = StyleSheet.create({
   },
   contributorText: {
     fontSize: 13,
-    color: '#666',
     fontStyle: 'italic',
     flexWrap: 'wrap',
     flexShrink: 1,
   },
   contributorTextInline: {
     fontSize: 12,
-    color: '#666',
     fontStyle: 'italic',
     flexWrap: 'wrap',
     flexShrink: 1,
@@ -1508,7 +1506,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -1520,7 +1517,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#dc3545',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -1530,36 +1526,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#333',
     shadowOpacity: 0,
     elevation: 0,
   },
   bookmarkButtonFilled: {
-    backgroundColor: '#333',
+    // Background color set dynamically
   },
   buttonIcon: {
     marginRight: 6,
   },
   openMapsButton: {
-    backgroundColor: '#fff', // White background
     borderWidth: 2,
-    borderColor: '#2196F3', // Blue outline
   },
   openMapsButtonText: {
-    color: '#2196F3', // Blue text
     fontSize: 15,
     fontWeight: '600',
     letterSpacing: 0.3,
   },
   actionButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
     letterSpacing: 0.3,
   },
   googleMapsSeparator: {
     height: 1,
-    backgroundColor: '#e0e0e0',
     marginTop: 0,
     marginBottom: 16,
     marginHorizontal: 0,
@@ -1569,12 +1559,10 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   feedbackTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -1586,19 +1574,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderRadius: 8,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
   },
   feedbackButtonText: {
     fontSize: 13,
-    color: '#333',
     textAlign: 'center',
   },
   // Google Maps Data Styles - Easy to remove: Delete all styles below
   ratingCard: {
-    backgroundColor: '#FFF9E6',
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -1614,15 +1598,12 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#333',
   },
   reviewCountText: {
     fontSize: 14,
-    color: '#666',
   },
   editorialSummaryText: {
     fontSize: 15,
-    color: '#666',
     lineHeight: 22,
     marginTop: 0,
     marginBottom: 16,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { setDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface MapReturnInstructionsModalProps {
   visible: boolean;
@@ -14,6 +15,7 @@ export default function MapReturnInstructionsModal({
   mapAppName,
   onClose,
 }: MapReturnInstructionsModalProps) {
+  const { theme } = useTheme();
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const isIOS = Platform.OS === 'ios';
   const instructions = isIOS
@@ -42,22 +44,22 @@ export default function MapReturnInstructionsModal({
       animationType="fade"
       onRequestClose={handleClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContent}>
+      <View style={[styles.overlay, { backgroundColor: theme.overlay }]}>
+        <View style={[styles.modalContent, { backgroundColor: theme.modalBackground }]}>
           <View style={styles.iconContainer}>
-            <Ionicons name="map-outline" size={48} color="#4CAF50" />
+            <Ionicons name="map-outline" size={48} color={theme.primary} />
           </View>
           
-          <Text style={styles.title}>Opening {mapAppName}</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Opening {mapAppName}</Text>
           
-          <Text style={styles.instructionText}>
+          <Text style={[styles.instructionText, { color: theme.textSecondary }]}>
             {instructions}
           </Text>
 
           {isIOS && (
-            <View style={styles.hintContainer}>
-              <Ionicons name="arrow-up" size={20} color="#666" />
-              <Text style={styles.hintText}>Swipe up from bottom</Text>
+            <View style={[styles.hintContainer, { backgroundColor: theme.surfaceSecondary }]}>
+              <Ionicons name="arrow-up" size={20} color={theme.iconSecondary} />
+              <Text style={[styles.hintText, { color: theme.textSecondary }]}>Swipe up from bottom</Text>
             </View>
           )}
 
@@ -66,16 +68,26 @@ export default function MapReturnInstructionsModal({
             onPress={() => setDontShowAgain(!dontShowAgain)}
             activeOpacity={0.7}
           >
-            <View style={[styles.checkbox, dontShowAgain && styles.checkboxChecked]}>
+            <View style={[
+              styles.checkbox,
+              {
+                borderColor: theme.border,
+                backgroundColor: dontShowAgain ? theme.primary : theme.surface,
+              },
+              dontShowAgain && { borderColor: theme.primary }
+            ]}>
               {dontShowAgain && (
-                <Ionicons name="checkmark" size={16} color="#fff" />
+                <Ionicons name="checkmark" size={16} color={theme.buttonText} />
               )}
             </View>
-            <Text style={styles.checkboxLabel}>Don't show this message again</Text>
+            <Text style={[styles.checkboxLabel, { color: theme.textSecondary }]}>Don't show this message again</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={handleClose}>
-            <Text style={styles.buttonText}>Got it</Text>
+          <TouchableOpacity 
+            style={[styles.button, { backgroundColor: theme.primary }]} 
+            onPress={handleClose}
+          >
+            <Text style={[styles.buttonText, { color: theme.buttonText }]}>Got it</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -86,13 +98,11 @@ export default function MapReturnInstructionsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -105,13 +115,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 16,
     textAlign: 'center',
   },
   instructionText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 20,
@@ -119,7 +127,6 @@ const styles = StyleSheet.create({
   hintContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 12,
     borderRadius: 8,
     marginBottom: 20,
@@ -127,10 +134,8 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 14,
-    color: '#666',
   },
   button: {
-    backgroundColor: '#4CAF50',
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,
@@ -138,7 +143,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -153,19 +157,12 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#666',
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  checkboxChecked: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
   },
   checkboxLabel: {
     fontSize: 14,
-    color: '#666',
     flex: 1,
   },
 });

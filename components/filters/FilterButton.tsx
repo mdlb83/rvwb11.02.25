@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ToiletIcon from '../icons/ToiletIcon';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface FilterButtonProps {
   selectedHookupType: 'full' | 'partial' | 'all';
@@ -16,6 +17,7 @@ export default function FilterButton({
   showBookmarked = false,
   onBookmarkedChange,
 }: FilterButtonProps) {
+  const { theme } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
 
   const getFilterLabel = () => {
@@ -42,26 +44,29 @@ export default function FilterButton({
         testID="filter-button"
         style={[
           styles.filterButton,
-          hasActiveFilter && styles.filterButtonActive,
+          {
+            backgroundColor: hasActiveFilter ? theme.primary : theme.surfaceSecondary,
+            borderColor: hasActiveFilter ? theme.primary : theme.border,
+          },
         ]}
         onPress={() => setModalVisible(true)}
       >
         {selectedHookupType === 'full' ? (
           <ToiletIcon
             size={20}
-            color={hasActiveFilter ? '#fff' : '#666'}
+            color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
           />
         ) : selectedHookupType === 'partial' ? (
           <Ionicons
             name="flash-outline"
             size={20}
-            color={hasActiveFilter ? '#fff' : '#666'}
+            color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
           />
         ) : (
           <Ionicons
             name="filter"
             size={20}
-            color={hasActiveFilter ? '#fff' : '#666'}
+            color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
           />
         )}
       </TouchableOpacity>
@@ -73,80 +78,95 @@ export default function FilterButton({
         onRequestClose={() => setModalVisible(false)}
       >
         <Pressable
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}
           onPress={() => setModalVisible(false)}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filters</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.modalBackground, shadowColor: theme.shadow }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>Filters</Text>
             
-            <Text style={styles.sectionTitle}>Hookup Type</Text>
+            <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Hookup Type</Text>
             
             <TouchableOpacity
               style={[
                 styles.option,
-                selectedHookupType === 'all' && styles.optionActive,
+                {
+                  backgroundColor: selectedHookupType === 'all' ? theme.surfaceSecondary : theme.surfaceSecondary,
+                },
               ]}
               onPress={() => handleSelect('all')}
             >
               <View style={styles.optionContent}>
-                <Ionicons name="filter" size={20} color={selectedHookupType === 'all' ? '#4CAF50' : '#666'} />
+                <Ionicons name="filter" size={20} color={selectedHookupType === 'all' ? theme.primary : theme.iconSecondary} />
                 <Text
                   style={[
                     styles.optionText,
-                    selectedHookupType === 'all' && styles.optionTextActive,
+                    {
+                      color: selectedHookupType === 'all' ? theme.primary : theme.text,
+                      fontWeight: selectedHookupType === 'all' ? '600' : '400',
+                    },
                   ]}
                 >
                   All
                 </Text>
               </View>
               {selectedHookupType === 'all' && (
-                <Ionicons name="checkmark" size={20} color="#4CAF50" />
+                <Ionicons name="checkmark" size={20} color={theme.primary} />
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.option,
-                selectedHookupType === 'full' && styles.optionActive,
+                {
+                  backgroundColor: selectedHookupType === 'full' ? theme.surfaceSecondary : theme.surfaceSecondary,
+                },
               ]}
               onPress={() => handleSelect('full')}
             >
               <View style={styles.optionContent}>
-                <ToiletIcon size={20} color={selectedHookupType === 'full' ? '#4CAF50' : '#666'} />
+                <ToiletIcon size={20} color={selectedHookupType === 'full' ? theme.primary : theme.iconSecondary} />
                 <Text
                   style={[
                     styles.optionText,
-                    selectedHookupType === 'full' && styles.optionTextActive,
+                    {
+                      color: selectedHookupType === 'full' ? theme.primary : theme.text,
+                      fontWeight: selectedHookupType === 'full' ? '600' : '400',
+                    },
                   ]}
                 >
                   Full Hookup
                 </Text>
               </View>
               {selectedHookupType === 'full' && (
-                <Ionicons name="checkmark" size={20} color="#4CAF50" />
+                <Ionicons name="checkmark" size={20} color={theme.primary} />
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.option,
-                selectedHookupType === 'partial' && styles.optionActive,
+                {
+                  backgroundColor: selectedHookupType === 'partial' ? theme.surfaceSecondary : theme.surfaceSecondary,
+                },
               ]}
               onPress={() => handleSelect('partial')}
             >
               <View style={styles.optionContent}>
-                <Ionicons name="flash-outline" size={20} color={selectedHookupType === 'partial' ? '#4CAF50' : '#666'} />
+                <Ionicons name="flash-outline" size={20} color={selectedHookupType === 'partial' ? theme.primary : theme.iconSecondary} />
                 <Text
                   style={[
                     styles.optionText,
-                    selectedHookupType === 'partial' && styles.optionTextActive,
+                    {
+                      color: selectedHookupType === 'partial' ? theme.primary : theme.text,
+                      fontWeight: selectedHookupType === 'partial' ? '600' : '400',
+                    },
                   ]}
                 >
                   Partial Hookup
                 </Text>
               </View>
               {selectedHookupType === 'partial' && (
-                <Ionicons name="checkmark" size={20} color="#4CAF50" />
+                <Ionicons name="checkmark" size={20} color={theme.primary} />
               )}
             </TouchableOpacity>
 
@@ -164,33 +184,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#f5f5f5',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     gap: 6,
-  },
-  filterButtonActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
-  },
-  filterButtonText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     width: '80%',
     maxWidth: 300,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -199,13 +205,11 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
     marginTop: 8,
     marginBottom: 8,
   },
@@ -220,23 +224,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     marginBottom: 8,
-    backgroundColor: '#f9f9f9',
   },
   optionContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  optionActive: {
-    backgroundColor: '#e8f5e9',
-  },
   optionText: {
     fontSize: 16,
-    color: '#333',
-  },
-  optionTextActive: {
-    color: '#4CAF50',
-    fontWeight: '600',
   },
 });
 

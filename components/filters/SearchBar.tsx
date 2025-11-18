@@ -1,6 +1,7 @@
 import React, { memo, useRef, useEffect } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface SearchBarProps {
   value: string;
@@ -17,6 +18,7 @@ function SearchBar({
   onClear,
   autoFocus = false,
 }: SearchBarProps) {
+  const { theme } = useTheme();
   const inputRef = useRef<TextInput>(null);
   
   // Safely ensure value is always a string
@@ -46,13 +48,13 @@ function SearchBar({
   };
   
   return (
-    <View style={styles.container}>
-      <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+    <View style={[styles.container, { backgroundColor: theme.surface, shadowColor: theme.shadow }]}>
+      <Ionicons name="search" size={20} color={theme.iconSecondary} style={styles.searchIcon} />
       <TextInput
         ref={inputRef}
-        style={styles.input}
+        style={[styles.input, { color: theme.text }]}
         placeholder={placeholder}
-        placeholderTextColor="#999"
+        placeholderTextColor={theme.textTertiary}
         value={safeValue}
         onChangeText={handleChangeText}
         autoCapitalize="none"
@@ -65,7 +67,7 @@ function SearchBar({
           onPress={onClear}
           style={styles.clearButton}
         >
-          <Ionicons name="close-circle" size={20} color="#999" />
+          <Ionicons name="close-circle" size={20} color={theme.textTertiary} />
         </TouchableOpacity>
       )}
     </View>
@@ -77,11 +79,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -93,7 +93,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
   },
   clearButton: {
     marginLeft: 8,

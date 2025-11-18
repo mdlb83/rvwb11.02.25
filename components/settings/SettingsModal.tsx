@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { MapApp, getAvailableMapApps } from '../../utils/mapAppPreferences';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -18,6 +19,7 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
+  const { theme, themeMode, toggleTheme } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
   const availableApps = getAvailableMapApps();
 
@@ -33,45 +35,85 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, { backgroundColor: theme.overlay }]}>
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-            <View style={styles.modalContent}>
-              <View style={styles.header}>
-                <Text style={styles.title}>Settings</Text>
+            <View style={[styles.modalContent, { backgroundColor: theme.modalBackground }]}>
+              <View style={[styles.header, { borderBottomColor: theme.border }]}>
+                <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={24} color="#333" />
+                  <Ionicons name="close" size={24} color={theme.icon} />
                 </TouchableOpacity>
               </View>
 
               <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Map App Preference</Text>
-                  <Text style={styles.sectionDescription}>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>Appearance</Text>
+                  <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
+                    Choose your preferred theme
+                  </Text>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      { backgroundColor: theme.surfaceSecondary },
+                    ]}
+                    onPress={toggleTheme}
+                  >
+                    <View style={styles.optionContent}>
+                      <Ionicons 
+                        name={themeMode === 'dark' ? 'moon' : 'sunny'} 
+                        size={20} 
+                        color={theme.primary} 
+                      />
+                      <Text style={[styles.optionText, { color: theme.text }]}>
+                        {themeMode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                      </Text>
+                    </View>
+                    <Ionicons 
+                      name={themeMode === 'dark' ? 'toggle' : 'toggle-outline'} 
+                      size={24} 
+                      color={theme.primary} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>Map App Preference</Text>
+                  <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
                     Choose your preferred map app for directions and searches
                   </Text>
 
                   {loading ? (
-                    <Text style={styles.loadingText}>Loading...</Text>
+                    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading...</Text>
                   ) : (
                     availableApps.map((app) => (
                       <TouchableOpacity
                         key={app.value}
                         style={[
                           styles.option,
-                          (preference || 'default') === app.value && styles.selectedOption,
+                          { backgroundColor: theme.surfaceSecondary },
+                          (preference || 'default') === app.value && {
+                            backgroundColor: theme.surfaceSecondary,
+                            borderWidth: 2,
+                            borderColor: theme.primary,
+                          },
                         ]}
                         onPress={() => handleAppSelect(app.value)}
                       >
                         <Text
                           style={[
                             styles.optionText,
-                            (preference || 'default') === app.value && styles.selectedOptionText,
+                            { color: theme.text },
+                            (preference || 'default') === app.value && {
+                              color: theme.primary,
+                              fontWeight: '600',
+                            },
                           ]}
                         >
                           {app.label}
                         </Text>
                         {(preference || 'default') === app.value && (
-                          <Ionicons name="checkmark" size={20} color="#2196F3" />
+                          <Ionicons name="checkmark" size={20} color={theme.primary} />
                         )}
                       </TouchableOpacity>
                     ))
@@ -89,11 +131,9 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '90%',
@@ -105,12 +145,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
   },
   closeButton: {
     padding: 4,
@@ -128,18 +166,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 16,
     lineHeight: 20,
   },
   loadingText: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
     padding: 20,
   },
@@ -150,20 +185,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    backgroundColor: '#f5f5f5',
   },
-  selectedOption: {
-    backgroundColor: '#e3f2fd',
-    borderWidth: 2,
-    borderColor: '#2196F3',
+  optionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   optionText: {
     fontSize: 16,
-    color: '#333',
-  },
-  selectedOptionText: {
-    color: '#2196F3',
-    fontWeight: '600',
   },
 });
 

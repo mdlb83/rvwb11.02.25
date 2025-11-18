@@ -20,8 +20,10 @@ import ResultCountBadge from '../components/map/ResultCountBadge';
 import { getCampgroundCoordinates } from '../utils/mapUtils';
 import { getBookmarks } from '../utils/bookmarks';
 import SettingsModal from '../components/settings/SettingsModal';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function MapScreen() {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -671,7 +673,9 @@ export default function MapScreen() {
             { 
               paddingBottom: keyboardHeight > 0 ? 0 : insets.bottom,
               bottom: keyboardHeight > 0 ? keyboardHeight : 0,
-              backgroundColor: 'rgba(240, 255, 242, 0.7)', // Frosted glass with subtle green tint - more transparent
+              backgroundColor: theme.filterBarBackground,
+              borderTopColor: theme.filterBarBorder,
+              shadowColor: theme.primary,
             }
           ]}
           pointerEvents="box-none"
@@ -688,7 +692,10 @@ export default function MapScreen() {
               <TouchableOpacity
                 style={[
                   styles.bookmarkFilterButton,
-                  showBookmarked && styles.bookmarkFilterButtonActive,
+                  {
+                    backgroundColor: showBookmarked ? theme.text : theme.surface,
+                    borderColor: showBookmarked ? theme.text : theme.border,
+                  },
                 ]}
                 onPress={() => setShowBookmarked(!showBookmarked)}
                 activeOpacity={0.7}
@@ -696,7 +703,7 @@ export default function MapScreen() {
                 <Ionicons
                   name={showBookmarked ? "bookmark" : "bookmark-outline"}
                   size={20}
-                  color={showBookmarked ? '#fff' : '#666'}
+                  color={showBookmarked ? theme.buttonText : theme.iconSecondary}
                 />
               </TouchableOpacity>
             )}
@@ -707,11 +714,11 @@ export default function MapScreen() {
               autoFocus={safeSearchQuery.length > 0}
             />
             <TouchableOpacity
-              style={styles.addButton}
+              style={[styles.addButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
               onPress={handleSuggestCampground}
               activeOpacity={0.7}
             >
-              <Ionicons name="add" size={20} color="#fff" />
+              <Ionicons name="add" size={20} color={theme.buttonText} />
             </TouchableOpacity>
           </View>
         </View>
@@ -761,14 +768,29 @@ export default function MapScreen() {
         {!selectedCampground && (
           <>
             <TouchableOpacity
-              style={[styles.settingsButton, { top: insets.top + 16 }]}
+              style={[
+                styles.settingsButton, 
+                { 
+                  top: insets.top + 16,
+                  backgroundColor: theme.mapControlBackground,
+                  shadowColor: theme.shadow,
+                }
+              ]}
               onPress={() => setShowSettings(true)}
               activeOpacity={0.7}
             >
-              <Ionicons name="settings-outline" size={24} color="#333" />
+              <Ionicons name="settings-outline" size={24} color={theme.mapControlIcon} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.logoButton, { top: insets.top + 16 + 48 + 16, right: 16 }]}
+              style={[
+                styles.logoButton, 
+                { 
+                  top: insets.top + 16 + 48 + 16, 
+                  right: 16,
+                  backgroundColor: theme.mapControlBackground,
+                  shadowColor: theme.shadow,
+                }
+              ]}
               onPress={() => Linking.openURL('https://chambersontheroad.com').catch(err => {
                 console.error('Failed to open URL:', err);
                 Alert.alert('Error', 'Could not open the website.');
@@ -825,18 +847,30 @@ export default function MapScreen() {
                 removeClippedSubviews={false}
               >
                 <TouchableOpacity
-                  style={styles.zoomButton}
+                  style={[
+                    styles.zoomButton,
+                    {
+                      backgroundColor: theme.mapControlBackground,
+                      shadowColor: theme.shadow,
+                    }
+                  ]}
                   onPress={handleZoomIn}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="add" size={20} color="#333" />
+                  <Ionicons name="add" size={20} color={theme.mapControlIcon} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.zoomButton}
+                  style={[
+                    styles.zoomButton,
+                    {
+                      backgroundColor: theme.mapControlBackground,
+                      shadowColor: theme.shadow,
+                    }
+                  ]}
                   onPress={handleZoomOut}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="remove" size={20} color="#333" />
+                  <Ionicons name="remove" size={20} color={theme.mapControlIcon} />
                 </TouchableOpacity>
               </View>
               <ResultCountBadge 
@@ -881,18 +915,30 @@ export default function MapScreen() {
                 removeClippedSubviews={false}
               >
                 <TouchableOpacity
-                  style={styles.zoomButton}
+                  style={[
+                    styles.zoomButton,
+                    {
+                      backgroundColor: theme.mapControlBackground,
+                      shadowColor: theme.shadow,
+                    }
+                  ]}
                   onPress={handleZoomIn}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="add" size={20} color="#333" />
+                  <Ionicons name="add" size={20} color={theme.mapControlIcon} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.zoomButton}
+                  style={[
+                    styles.zoomButton,
+                    {
+                      backgroundColor: theme.mapControlBackground,
+                      shadowColor: theme.shadow,
+                    }
+                  ]}
                   onPress={handleZoomOut}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="remove" size={20} color="#333" />
+                  <Ionicons name="remove" size={20} color={theme.mapControlIcon} />
                 </TouchableOpacity>
               </View>
             </>
@@ -903,6 +949,9 @@ export default function MapScreen() {
               {
                 paddingBottom: keyboardHeight > 0 ? 0 : insets.bottom,
                 bottom: keyboardHeight > 0 ? keyboardHeight : 0,
+                backgroundColor: theme.filterBarBackground,
+                borderTopColor: theme.filterBarBorder,
+                shadowColor: theme.primary,
               },
             ]}
             pointerEvents="box-none"
@@ -919,7 +968,10 @@ export default function MapScreen() {
                 <TouchableOpacity
                   style={[
                     styles.bookmarkFilterButton,
-                    showBookmarked && styles.bookmarkFilterButtonActive,
+                    {
+                      backgroundColor: showBookmarked ? theme.text : theme.surface,
+                      borderColor: showBookmarked ? theme.text : theme.border,
+                    },
                   ]}
                   onPress={() => setShowBookmarked(!showBookmarked)}
                   activeOpacity={0.7}
@@ -927,7 +979,7 @@ export default function MapScreen() {
                   <Ionicons
                     name={showBookmarked ? "bookmark" : "bookmark-outline"}
                     size={20}
-                    color={showBookmarked ? '#fff' : '#666'}
+                    color={showBookmarked ? theme.buttonText : theme.iconSecondary}
                   />
                 </TouchableOpacity>
               )}
@@ -937,11 +989,11 @@ export default function MapScreen() {
                 onClear={handleClearSearch}
               />
               <TouchableOpacity
-                style={styles.addButton}
+                style={[styles.addButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
                 onPress={handleSuggestCampground}
                 activeOpacity={0.7}
               >
-                <Ionicons name="add" size={20} color="#fff" />
+                <Ionicons name="add" size={20} color={theme.buttonText} />
               </TouchableOpacity>
             </View>
           </View>
@@ -976,14 +1028,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(240, 255, 242, 0.7)', // Frosted glass with subtle green tint - more transparent
     zIndex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(76, 175, 80, 0.2)', // Subtle green border at top
-    shadowColor: '#4CAF50', // Green shadow to match app theme
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -1001,14 +1050,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
     minWidth: 44,
-  },
-  bookmarkFilterButtonActive: {
-    backgroundColor: '#333',
-    borderColor: '#333',
   },
   addButton: {
     flexDirection: 'row',
@@ -1017,9 +1060,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#4CAF50',
     borderWidth: 1,
-    borderColor: '#4CAF50',
     minWidth: 44, // Match filter button minimum width
   },
   locationButtonContainer: {
@@ -1043,10 +1084,8 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -1055,13 +1094,11 @@ const styles = StyleSheet.create({
   logoButton: {
     position: 'absolute',
     zIndex: 2,
-    backgroundColor: '#fff',
     borderRadius: 24,
     width: 48,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -1076,13 +1113,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     zIndex: 2,
-    backgroundColor: '#fff',
     borderRadius: 24,
     width: 48,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

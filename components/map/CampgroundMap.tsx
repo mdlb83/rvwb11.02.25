@@ -3,6 +3,8 @@ import { StyleSheet, View, Platform } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { CampgroundEntry } from '../../types/campground';
 import CampgroundMarker from './CampgroundMarker';
+import { useTheme } from '../../contexts/ThemeContext';
+import { darkMapStyle, lightMapStyle } from '../../utils/mapStyles';
 
 interface CampgroundMapProps {
   campgrounds: CampgroundEntry[];
@@ -13,6 +15,7 @@ interface CampgroundMapProps {
 }
 
 export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegionChangeComplete }: CampgroundMapProps) {
+  const { themeMode } = useTheme();
   const internalMapRef = useRef<MapView>(null);
   const mapRefToUse = mapRef || internalMapRef;
 
@@ -22,6 +25,9 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
     latitudeDelta: 30,
     longitudeDelta: 40,
   };
+
+  // Use dark map style when dark mode is enabled
+  const mapStyle = themeMode === 'dark' ? darkMapStyle : lightMapStyle;
 
   return (
     <View style={styles.container}>
@@ -34,6 +40,7 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
         showsMyLocationButton={false}
         onPress={onMapPress}
         onRegionChangeComplete={onRegionChangeComplete}
+        customMapStyle={mapStyle}
         // Android-specific optimizations for touch handling
         {...(Platform.OS === 'android' && {
           mapPadding: { top: 0, right: 0, bottom: 0, left: 0 },
