@@ -2,6 +2,7 @@ import React from 'react';
 import { Marker, Callout } from 'react-native-maps';
 import { View, Text, StyleSheet } from 'react-native';
 import { CampgroundEntry } from '../../types/campground';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface CampgroundMarkerProps {
   campground: CampgroundEntry;
@@ -9,8 +10,10 @@ interface CampgroundMarkerProps {
 }
 
 export default function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
+  const { theme } = useTheme();
+  
   const getMarkerColor = () => {
-    return campground.hookup_type === 'full' ? '#4CAF50' : '#FF9800';
+    return campground.hookup_type === 'full' ? theme.primary : theme.warning;
   };
 
   // Handle null campground data
@@ -29,15 +32,27 @@ export default function CampgroundMarker({ campground, onPress }: CampgroundMark
     >
       <Callout tooltip>
         <View style={styles.calloutWrapper}>
-          <View style={styles.calloutContainer}>
-            <Text style={styles.calloutTitle}>
+          <View style={[
+            styles.calloutContainer,
+            {
+              backgroundColor: theme.surface,
+              shadowColor: theme.shadow,
+            }
+          ]}>
+            <Text style={[styles.calloutTitle, { color: theme.text }]}>
               {campground.campground.name || `${campground.city}, ${campground.state}`}
             </Text>
-            <Text style={styles.calloutDescription}>
+            <Text style={[styles.calloutDescription, { color: theme.textSecondary }]}>
               {campground.city}, {campground.state}
             </Text>
           </View>
-          <View style={styles.calloutPointer} />
+          <View style={[
+            styles.calloutPointer,
+            {
+              borderTopColor: theme.surface,
+              shadowColor: theme.shadow,
+            }
+          ]} />
         </View>
       </Callout>
     </Marker>
@@ -49,13 +64,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calloutContainer: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     minWidth: 120,
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -70,12 +83,10 @@ const styles = StyleSheet.create({
     borderRightWidth: 8,
     borderBottomWidth: 0,
     borderLeftWidth: 8,
-    borderTopColor: '#fff',
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
     borderLeftColor: 'transparent',
     marginTop: -1, // Overlap slightly with container
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -84,13 +95,11 @@ const styles = StyleSheet.create({
   calloutTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 2,
     textAlign: 'center',
   },
   calloutDescription: {
     fontSize: 12,
-    color: '#666',
     textAlign: 'center',
   },
 });
