@@ -16,6 +16,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
+ * 
+ * NOTE: This function uses the device's local timezone and does NOT account for
+ * timezone differences between the device and the place. For accurate results,
+ * prefer using Google Places API's `openNow` value which is calculated server-side
+ * and accounts for timezones correctly.
+ * 
+ * This is only used as a fallback when the API's `openNow` value is unavailable.
  */
 function calculateOpenNow(weekdayText: string[]): boolean | undefined {
   if (!weekdayText || weekdayText.length === 0) {
@@ -1197,9 +1204,13 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
 
             {/* Opening Hours Card */}
             {googleMapsData.openingHours && googleMapsData.openingHours.weekdayText && googleMapsData.openingHours.weekdayText.length > 0 && (() => {
-              // Calculate openNow dynamically based on current time
+              // Prefer Google's timezone-aware openNow value (calculated server-side)
+              // Only use our local calculation as fallback if API value is unavailable
+              // Note: Our calculation uses device local time and doesn't account for timezone differences
               const calculatedOpenNow = calculateOpenNow(googleMapsData.openingHours.weekdayText);
-              const isOpenNow = calculatedOpenNow !== undefined ? calculatedOpenNow : googleMapsData.openingHours.openNow;
+              const isOpenNow = googleMapsData.openingHours.openNow !== undefined 
+                ? googleMapsData.openingHours.openNow 
+                : calculatedOpenNow;
               
               return (
                 <View style={[
@@ -1875,15 +1886,15 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   hoursText: {
-    fontSize: 22,
+    fontSize: 14,
     fontWeight: '500',
     color: '#666',
-    lineHeight: 32,
+    lineHeight: 20,
   },
   hoursDayText: {
     color: '#4CAF50',
     fontWeight: '500',
-    fontSize: 22,
+    fontSize: 14,
   },
   contactContainer: {
     flexDirection: 'row',
