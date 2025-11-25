@@ -8094,6 +8094,62 @@
       "placeId": "ChIJK2vp3CTgR4cR14dzOl5r4hg",
       "latitude": 38.610890999999995,
       "longitude": -109.55811059999999
+    },
+    {
+      "city": "Lincoln City",
+      "state": "IN",
+      "hookup_type": "Partial",
+      "campground": {
+        "name": "Lincoln State Park",
+        "link": "https://www.in.gov/dnr/state-parks/parks-lakes/lincoln-state-park/"
+      },
+      "cg_notes": "State Park",
+      "trail_notes": "The state park is located across the street from the Lincoln Boyhood National Memorial. Both the state park and the National Memorial have lots of activities and things to do. We rode our bikes ten miles in the state park, and we rode our bikes to the National Memorial which is across the street.",
+      "blog_post": "Lincoln City Indiana",
+      "blog_post_link": "https://chambersontheroad.com/2023/06/08/lincoln-city-indiana/",
+      "part": "Part 4 - No Trail",
+      "placeId": "ChIJFQa40KdQbogRlITLKFjrHgY",
+      "latitude": 38.1062818,
+      "longitude": -87.00435890000001
+    },
+    {
+      "city": "Gatlinburg",
+      "state": "TN",
+      "hookup_type": "Full",
+      "campground": {
+        "name": "Greenbrier Campground",
+        "link": "https://www.smokymountaincamping.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail_notes": "The campground is located very near the Greenbrier entrance of Great Smoky Mountains National Park. One can ride the back roads from the campground to the Greenbrier entrance and then on the park road for a total ride of about eleven miles.",
+      "blog_post": "Smoky 8 - Biking in the Smokies",
+      "blog_post_link": "https://chambersontheroad.com/2023/05/27/smoky-8-biking-in-the-smokies/",
+      "part": "Part 4 - No Trail",
+      "placeId": "ChIJn719a67iW4gR1elLB8woG0E",
+      "latitude": 35.7444346,
+      "longitude": -83.4141623
+    },
+    {
+      "city": "Tucson",
+      "state": "AZ",
+      "hookup_type": "Full",
+      "campground": {
+        "name": "Rincon Country West RV Resort",
+        "link": "https://www.rinconcountry.com/"
+      },
+      "cg_notes": "This is a 55+ RV resort which offers full hook ups for short term or seasonal stays. The resort also offers organized bike rides.",
+      "trail": {
+        "name": "Tucson Loop",
+        "link": "https://tucsonloop.org/"
+      },
+      "trail_notes": "The campground is adjacent to the Tucson Loop. The Tucson Loop is a 131 mile trail with an asphalt surface.",
+      "contributor": "Thanks to Ken and Martha Wiseman for this suggestion!",
+      "contributor_blog": "rvnavigator.com",
+      "contributor_blog_link": "http://rvnavigator.com/RV_Navigator/RV_Navigator_Home.html",
+      "part": "Part 5 - Over 55",
+      "placeId": "ChIJtxbzEPx51oYR8ICxo54AZ9s",
+      "latitude": 32.1668808,
+      "longitude": -110.99823599999999
     }
   ],
   "metadata": {
