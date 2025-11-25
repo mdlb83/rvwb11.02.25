@@ -23,7 +23,7 @@ import SettingsModal from '../components/settings/SettingsModal';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function MapScreen() {
-  const { theme } = useTheme();
+  const { theme, toggleTheme, resolvedThemeMode } = useTheme();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -688,25 +688,6 @@ export default function MapScreen() {
               showBookmarked={false}
               onBookmarkedChange={() => {}}
             />
-            {hasBookmarks && (
-              <TouchableOpacity
-                style={[
-                  styles.bookmarkFilterButton,
-                  {
-                    backgroundColor: showBookmarked ? theme.primary : theme.surface,
-                    borderColor: showBookmarked ? theme.primary : theme.border,
-                  },
-                ]}
-                onPress={() => setShowBookmarked(!showBookmarked)}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={showBookmarked ? "bookmark" : "bookmark-outline"}
-                  size={20}
-                  color={showBookmarked ? theme.buttonText : theme.iconSecondary}
-                />
-              </TouchableOpacity>
-            )}
             <SearchBar
               value={typeof searchQuery === 'string' ? searchQuery : ''}
               onChangeText={handleSearchChange}
@@ -739,8 +720,8 @@ export default function MapScreen() {
         {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
-          latitudeDelta: 8,
-          longitudeDelta: 8,
+          latitudeDelta: 2,
+          longitudeDelta: 2,
         },
         1000
       );
@@ -767,6 +748,25 @@ export default function MapScreen() {
         />
         {!selectedCampground && (
           <>
+            <TouchableOpacity
+              style={[
+                styles.themeButton, 
+                { 
+                  top: insets.top + 16,
+                  right: 16 + 48 + 12,
+                  backgroundColor: theme.mapControlBackground,
+                  shadowColor: theme.shadow,
+                }
+              ]}
+              onPress={toggleTheme}
+              activeOpacity={0.7}
+            >
+              <Ionicons 
+                name={resolvedThemeMode === 'dark' ? 'sunny-outline' : 'moon-outline'} 
+                size={24} 
+                color={theme.mapControlIcon} 
+              />
+            </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.settingsButton, 
@@ -812,136 +812,104 @@ export default function MapScreen() {
       </View>
       {!selectedCampground && (
         <>
-          {hasActiveFilters && campgrounds.length > 0 && (
-            <>
-              <View
-                style={[
-                  styles.locationButtonContainer,
-                  {
-                    // Badge bottom = filtersBottom + 60 + 12
-                    // Badge top = badgeBottom - 32 = filtersBottom + 60 + 12 - 32 = filtersBottom + 40
-                    // GPS button bottom = badgeTop + 12 = filtersBottom + 40 + 12 = filtersBottom + 52
-                    bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 52,
-                  },
-                ]}
-                pointerEvents="box-none"
-                collapsable={false}
-                removeClippedSubviews={false}
-              >
-                <LocationButton onPress={handleLocationPress} />
-              </View>
-              <View
-                style={[
-                  styles.zoomButtonsContainer,
-                  {
-                    // Position minus button at same height as GPS button
-                    // GPS button bottom = filtersBottom + 52
-                    // Minus button center should align with GPS button center
-                    // GPS button is 44px tall, so center is at bottom - 22
-                    // Minus button is 44px tall, so bottom should be at GPS center + 22 = GPS bottom
-                    bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 52,
-                  },
-                ]}
-                pointerEvents="box-none"
-                collapsable={false}
-                removeClippedSubviews={false}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.zoomButton,
-                    {
-                      backgroundColor: theme.mapControlBackground,
-                      shadowColor: theme.shadow,
-                    }
-                  ]}
-                  onPress={handleZoomIn}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="add" size={20} color={theme.mapControlIcon} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.zoomButton,
-                    {
-                      backgroundColor: theme.mapControlBackground,
-                      shadowColor: theme.shadow,
-                    }
-                  ]}
-                  onPress={handleZoomOut}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="remove" size={20} color={theme.mapControlIcon} />
-                </TouchableOpacity>
-              </View>
-              <ResultCountBadge 
-                count={campgrounds.length} 
-                total={allCampgrounds.length}
-                gpsButtonBottom={
-                  keyboardHeight > 0 
-                    ? keyboardHeight 
-                    : insets.bottom
+          {/* GPS, Zoom, and Bookmark buttons - always in same position */}
+          <View
+            style={[
+              styles.locationButtonContainer,
+              {
+                bottom: keyboardHeight > 0 
+                  ? keyboardHeight + 80 
+                  : (insets.bottom + 80),
+              },
+            ]}
+            pointerEvents="box-none"
+            collapsable={false}
+            removeClippedSubviews={false}
+          >
+            <LocationButton onPress={handleLocationPress} />
+          </View>
+          <View
+            style={[
+              styles.zoomButtonsContainer,
+              {
+                bottom: keyboardHeight > 0 
+                  ? keyboardHeight + 80 
+                  : (insets.bottom + 80),
+              },
+            ]}
+            pointerEvents="box-none"
+            collapsable={false}
+            removeClippedSubviews={false}
+          >
+            <TouchableOpacity
+              style={[
+                styles.zoomButton,
+                {
+                  backgroundColor: theme.mapControlBackground,
+                  shadowColor: theme.shadow,
                 }
-              />
-            </>
+              ]}
+              onPress={handleZoomIn}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={20} color={theme.mapControlIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.zoomButton,
+                {
+                  backgroundColor: theme.mapControlBackground,
+                  shadowColor: theme.shadow,
+                }
+              ]}
+              onPress={handleZoomOut}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="remove" size={20} color={theme.mapControlIcon} />
+            </TouchableOpacity>
+          </View>
+          {hasBookmarks && (
+            <View
+              style={[
+                styles.bookmarkButtonContainer,
+                {
+                  bottom: keyboardHeight > 0 
+                    ? keyboardHeight + 80 
+                    : (insets.bottom + 80),
+                },
+              ]}
+              pointerEvents="box-none"
+            >
+              <TouchableOpacity
+                style={[
+                  styles.bookmarkMapButton,
+                  {
+                    backgroundColor: showBookmarked ? theme.primary : theme.mapControlBackground,
+                    shadowColor: theme.shadow,
+                  }
+                ]}
+                onPress={() => setShowBookmarked(!showBookmarked)}
+                activeOpacity={0.7}
+              >
+                <Ionicons 
+                  name={showBookmarked ? "bookmark" : "bookmark-outline"} 
+                  size={20} 
+                  color={showBookmarked ? theme.buttonText : theme.mapControlIcon} 
+                />
+              </TouchableOpacity>
+            </View>
           )}
-          {(!hasActiveFilters || campgrounds.length === 0) && (
-            <>
-              <View
-                style={[
-                  styles.locationButtonContainer,
-                  {
-                    bottom: keyboardHeight > 0 
-                      ? keyboardHeight + 80 
-                      : (insets.bottom + 80),
-                  },
-                ]}
-                pointerEvents="box-none"
-                collapsable={false}
-                removeClippedSubviews={false}
-              >
-                <LocationButton onPress={handleLocationPress} />
-              </View>
-              <View
-                style={[
-                  styles.zoomButtonsContainer,
-                  {
-                    bottom: keyboardHeight > 0 
-                      ? keyboardHeight + 80 
-                      : (insets.bottom + 80),
-                  },
-                ]}
-                pointerEvents="box-none"
-                collapsable={false}
-                removeClippedSubviews={false}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.zoomButton,
-                    {
-                      backgroundColor: theme.mapControlBackground,
-                      shadowColor: theme.shadow,
-                    }
-                  ]}
-                  onPress={handleZoomIn}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="add" size={20} color={theme.mapControlIcon} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.zoomButton,
-                    {
-                      backgroundColor: theme.mapControlBackground,
-                      shadowColor: theme.shadow,
-                    }
-                  ]}
-                  onPress={handleZoomOut}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="remove" size={20} color={theme.mapControlIcon} />
-                </TouchableOpacity>
-              </View>
-            </>
+          {/* Result count badge - only shown when filters active */}
+          {hasActiveFilters && campgrounds.length > 0 && (
+            <ResultCountBadge 
+              count={campgrounds.length} 
+              total={allCampgrounds.length}
+              gpsButtonBottom={
+                keyboardHeight > 0 
+                  ? keyboardHeight 
+                  : insets.bottom
+              }
+            />
           )}
           <View
             style={[
@@ -964,25 +932,6 @@ export default function MapScreen() {
                 showBookmarked={false}
                 onBookmarkedChange={() => {}}
               />
-              {hasBookmarks && (
-                <TouchableOpacity
-                  style={[
-                    styles.bookmarkFilterButton,
-                    {
-                      backgroundColor: showBookmarked ? theme.primary : theme.surface,
-                      borderColor: showBookmarked ? theme.primary : theme.border,
-                    },
-                  ]}
-                  onPress={() => setShowBookmarked(!showBookmarked)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name={showBookmarked ? "bookmark" : "bookmark-outline"}
-                    size={20}
-                    color={showBookmarked ? theme.buttonText : theme.iconSecondary}
-                  />
-                </TouchableOpacity>
-              )}
               <SearchBar
                 value={typeof searchQuery === 'string' ? searchQuery : ''}
                 onChangeText={handleSearchChange}
@@ -1080,6 +1029,22 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: 'flex-end',
   },
+  bookmarkButtonContainer: {
+    position: 'absolute',
+    left: 16,
+    zIndex: 2,
+  },
+  bookmarkMapButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   zoomButton: {
     width: 44,
     height: 44,
@@ -1108,6 +1073,19 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 48,
     height: 48,
+  },
+  themeButton: {
+    position: 'absolute',
+    zIndex: 2,
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   settingsButton: {
     position: 'absolute',

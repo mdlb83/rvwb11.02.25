@@ -671,6 +671,30 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
         style={styles.scrollView}
       >
         {campground ? (
+          (() => {
+            // Compute hasSecondPill once for use in multiple places
+            const knownPrefixes = ['RV Park', 'City Park', 'County Park', 'State Park', 'National Park'];
+            let hasSecondPill = false;
+            let secondPillText: string | null = null;
+            
+            if (campground.cg_notes) {
+              for (const prefix of knownPrefixes) {
+                if (campground.cg_notes.startsWith(prefix)) {
+                  const afterPrefix = campground.cg_notes.slice(prefix.length).trim();
+                  if (afterPrefix.length === 0 || afterPrefix.startsWith('.') || afterPrefix.startsWith(',')) {
+                    hasSecondPill = true;
+                    secondPillText = prefix;
+                  }
+                  break;
+                }
+              }
+              if (!hasSecondPill && campground.cg_notes.length <= 40) {
+                hasSecondPill = true;
+                secondPillText = campground.cg_notes;
+              }
+            }
+            
+            return (
           <>
             <View 
               ref={contentBeforeSeparatorRef}
@@ -683,6 +707,31 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               collapsable={false}
             >
               <View style={styles.header}>
+              {/* Top-right badge stack: hookup type + campground info pill */}
+              <View style={styles.badgeStackTopRight}>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: campground.hookup_type === 'full' ? theme.primary : campground.hookup_type === 'partial' ? theme.warning : theme.textSecondary },
+                  ]}
+                >
+                  <Text style={[styles.badgeText, { color: theme.buttonText }]}>
+                    {campground.hookup_type === 'full' ? 'Full Hookup' : campground.hookup_type === 'partial' ? 'Partial Hookup' : 'No Hookups'}
+                  </Text>
+                </View>
+                {hasSecondPill && secondPillText && (
+                  <View
+                    style={[
+                      styles.badge,
+                      { backgroundColor: theme.surfaceSecondary, borderColor: theme.border, borderWidth: 1, marginTop: 6 },
+                    ]}
+                  >
+                    <Text style={[styles.badgeText, { color: theme.text }]}>
+                      {secondPillText}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text style={[styles.title, { color: theme.text }]}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
           <View style={styles.subtitleRow}>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
@@ -696,7 +745,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </View>
         </View>
 
-        <View style={styles.buttonContainer}>
+        <View style={[styles.buttonContainer, hasSecondPill && { marginTop: 12 }]}>
           <TouchableOpacity 
             style={[
               styles.actionButton, 
@@ -746,52 +795,61 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           </TouchableOpacity>
         </View>
 
-        {/* Campground Info section with tags */}
-        <View style={[styles.section, styles.firstSection]}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Campground Info</Text>
-          <View style={styles.tagRow}>
-            <View
-              style={[
-                styles.badge,
-                { backgroundColor: campground.hookup_type === 'full' ? theme.primary : campground.hookup_type === 'partial' ? theme.warning : theme.textSecondary },
-              ]}
-            >
-              <Text style={[styles.badgeText, { color: theme.buttonText }]}>
-                {campground.hookup_type === 'full' ? 'Full Hookup' : campground.hookup_type === 'partial' ? 'Partial Hookup' : 'No Hookups'}
-              </Text>
+        {/* Campground Info section - show remaining notes (after prefix pill) or website link */}
+        {(() => {
+          // Calculate remaining text for campground info section
+          let remainingText: string | null = null;
+          
+          if (campground.cg_notes) {
+            const knownPrefixes = ['RV Park', 'City Park', 'County Park', 'State Park', 'National Park'];
+            let foundPrefix = false;
+            
+            for (const prefix of knownPrefixes) {
+              if (campground.cg_notes.startsWith(prefix)) {
+                const afterPrefix = campground.cg_notes.slice(prefix.length).trim();
+                if (afterPrefix.length > 0 && (afterPrefix.startsWith('.') || afterPrefix.startsWith(','))) {
+                  // Has prefix with additional text - show the additional text
+                  remainingText = afterPrefix.replace(/^[.,]\s*/, '').trim();
+                  if (remainingText.length === 0) remainingText = null;
+                }
+                foundPrefix = true;
+                break;
+              }
+            }
+            
+            // If no prefix found and text is long (>40), show it all in the section
+            if (!foundPrefix && campground.cg_notes.length > 40) {
+              remainingText = campground.cg_notes;
+            }
+          }
+          
+          // Only show section if there's remaining text or a website link
+          if (!remainingText && !campground.campground?.link) return null;
+          
+          return (
+            <View style={[styles.section, styles.firstSection]}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Campground Info</Text>
+              {remainingText && (
+                <View style={styles.infoText}>
+                  <Text style={[styles.htmlText, { color: theme.text }]}>
+                    {remainingText}
+                  </Text>
+                </View>
+              )}
+              {campground.campground?.link && (
+                <TouchableOpacity 
+                  style={[styles.websiteButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.primary }]}
+                  onPress={() => Linking.openURL(campground.campground.link!)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="globe-outline" size={18} color={theme.primary} />
+                  <Text style={[styles.websiteButtonText, { color: theme.primary }]}>Visit Campground Website</Text>
+                  <Ionicons name="open-outline" size={16} color={theme.primary} />
+                </TouchableOpacity>
+              )}
             </View>
-            {campground.cg_notes && campground.cg_notes.length <= 40 && (
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: theme.surfaceSecondary, borderColor: theme.border, borderWidth: 1 },
-                ]}
-              >
-                <Text style={[styles.badgeText, { color: theme.text }]}>
-                  {campground.cg_notes}
-                </Text>
-              </View>
-            )}
-          </View>
-          {campground.cg_notes && campground.cg_notes.length > 40 && (
-            <View style={styles.infoText}>
-              <Text style={[styles.htmlText, { color: theme.text }]}>
-                {campground.cg_notes}
-              </Text>
-            </View>
-          )}
-          {campground.campground?.link && (
-            <TouchableOpacity 
-              style={[styles.websiteButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.primary }]}
-              onPress={() => Linking.openURL(campground.campground.link!)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="globe-outline" size={18} color={theme.primary} />
-              <Text style={[styles.websiteButtonText, { color: theme.primary }]}>Visit Website</Text>
-              <Ionicons name="open-outline" size={16} color={theme.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
+          );
+        })()}
 
         {(() => {
           // Combine single trail and trails array, deduplicating by name
@@ -1129,6 +1187,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             END GOOGLE MAPS DATA SECTION
             ============================================ */}
           </>
+            );
+          })()
         ) : null}
       </BottomSheetScrollView>
       <MapAppPickerModal
@@ -1186,6 +1246,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
+    marginRight: 120,
   },
   subtitleRow: {
     flexDirection: 'row',
@@ -1197,6 +1258,19 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     flexShrink: 1,
+  },
+  badgeTopRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  badgeStackTopRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1,
+    alignItems: 'flex-end',
   },
   tagRow: {
     flexDirection: 'row',
