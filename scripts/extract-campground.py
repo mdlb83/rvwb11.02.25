@@ -120,7 +120,7 @@ def find_entries_on_page(pdf_path: str, page_num: int, part: int = 1) -> list:
             # Skip header lines
             if 'A Guide to Campgrounds' in line or 'RVing with Bikes' in line:
                 continue
-            if 'Partial Hook Ups' in line:
+            if 'Partial Hook Ups' in line or 'No Hookups' in line or 'No Hook Ups' in line:
                 continue
             
             # Match "State - City" or "City - State" pattern
@@ -218,7 +218,7 @@ def extract_entry_from_page(pdf_path: str, page_num: int, entry_index: int = 0, 
         state_abbrevs = set(STATE_ABBREV.values())
         for line in lines:
             # Skip header lines
-            if 'A Guide to Campgrounds' in line or 'Partial Hook Ups' in line:
+            if 'A Guide to Campgrounds' in line or 'Partial Hook Ups' in line or 'No Hookups' in line or 'No Hook Ups' in line:
                 continue
             match = re.match(r'^([A-Z][a-zA-Z\s]+)\s+-\s+([A-Z][a-zA-Z\s\.,\']+)$', line.strip())
             if match:

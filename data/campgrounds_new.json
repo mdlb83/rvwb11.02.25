@@ -8041,6 +8041,59 @@
       "latitude": 43.8248155,
       "longitude": -90.4528788,
       "placeId": "ChIJFYBTV4F3_ocRcq03w4fyq6E"
+    },
+    {
+      "city": "Ochopee",
+      "state": "FL",
+      "hookup_type": "None",
+      "campground": {
+        "name": "Bear Island",
+        "link": "https://www.recreation.gov/camping/campgrounds/10214632"
+      },
+      "cg_notes": "National Preserve. Big Cypress National Preserve",
+      "trail_notes": "There are 21 miles of trails (which are hard packed dirt and gravel) that can be accessed from the Bear Island campground. These are old oil well roads, and cars are not allowed. These trails can also be accessed for day use. See the Related Blog Post.",
+      "blog_post": "Biking in Big Cypress and Beyond.",
+      "blog_post_link": "https://chambersontheroad.com/2025/03/02/biking-in-big-cypress-and-beyond/",
+      "placeId": "ChIJE_fdVGiz24gR4YkJ9aLft3Y",
+      "latitude": 26.183307199999998,
+      "longitude": -81.2473832
+    },
+    {
+      "city": "Townsend",
+      "state": "TN",
+      "hookup_type": "None",
+      "campground": {
+        "name": "Cades Cove",
+        "link": null
+      },
+      "cg_notes": "National Park. Great Smoky Mountain National Park",
+      "trail": {
+        "name": "Cades Cove",
+        "link": "https://www.nps.gov/grsm/planyourvisit/cadescove.htm"
+      },
+      "trail_notes": "Many folks know the 11 mile Cades Cove loop in the Great Smoky Mountains National Park is closed to vehicular traffic on Wednesdays, thus allowing folks to bike this scenic trail. The Cades Cove campground is located near the entrance to the 11 mile loop. Just be aware, the closure to vehicular traffic is only May through September with the specific dates set each year. For more info, check out the Cades Cove Great Smoky Mountains National Park website.",
+      "placeId": "ChIJ4Uj3VK-kXogR4rHBx6Hkag4",
+      "latitude": 35.6022311,
+      "longitude": -83.774943
+    },
+    {
+      "city": "Moab",
+      "state": "UT",
+      "hookup_type": "None",
+      "campground": {
+        "name": "Goose Island Campground",
+        "link": "https://www.recreation.gov/camping/poi/202151"
+      },
+      "cg_notes": "BLM. Goose Island Campground is located right on the Goose Island Trail which connects to the Moab Canyon Pathway. There are two group sites which can be reserved. In addition, there are 20 campsites which are on a first-come, first-served basis. For more info, check out the Campground BLM site or call (435) 259-2100",
+      "trail": {
+        "name": "Moab Canyon Pathway",
+        "link": "https://www.discovermoab.com/attractions/activities/road-biking/moab-canyon-pathway/"
+      },
+      "trail_notes": "The Goose Island Trail connects to the Moab Canyon Pathway. The Moab Canyon Pathway is a 13 mile paved trail.",
+      "contributor": "Thanks to Barb from Cottonwood, Arizona for emailing in this location!",
+      "placeId": "ChIJK2vp3CTgR4cR14dzOl5r4hg",
+      "latitude": 38.610890999999995,
+      "longitude": -109.55811059999999
     }
   ],
   "metadata": {
