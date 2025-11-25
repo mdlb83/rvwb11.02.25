@@ -1,0 +1,133 @@
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+🚀 Starting Google Maps data sync...
+
+📖 Loading campground data...
+   Found 434 campgrounds
+
+📊 Existing Google Maps data: 434 entries
+
+📋 Summary:
+   New/Changed: 434
+   To Remove: 0
+   Already Synced: 0
+
+
+📍 Processing: Dauphin Island Campground (Dauphin Island, AL)
+   ✓ Found place: ChIJobEXSaUumogRBusBWqDaNgA
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Lake Eufaula Campground (Eufaula, AL)
+   ✓ Found place: ChIJey3U6oU4jYgRdkkUhLu99k4
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Doc's RV Park (Gulf Shores, AL)
+   ✓ Found place: ChIJBTMiPBMbmogRWLSLmE8XwXc
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Gulf State Park (Gulf Shores, AL)
+   ✓ Found place: ChIJAf8qlDAEmogROxDShN5jCUY
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Island Retreat RV Park (Gulf Shores, AL)
+   ✓ Found place: ChIJDUsUKjkbmogRbWPuDoNJht8
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Sun Outdoors Orange Beach (Orange Beach, AL)
+   ✓ Found place: ChIJqZDrIsYFmogRta1W4Y30MQ4
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Downtown Riverside RV Park (Little Rock, AR)
+   ✓ Found place: ChIJ34M7DYC70ocRCw74nUSYsNw
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Petit Jean State Park (Morrilton, AR)
+   ✓ Found place: ChIJr11nu54IzYcRt8S-YExOk6E
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
+      ✓ Downloaded photo 5
+      ✓ Downloaded photo 6
+      ✓ Downloaded photo 7
+      ✓ Downloaded photo 8
+      ✓ Downloaded photo 9
+      ✓ Downloaded photo 10
+
+📍 Processing: Burns Park Campground (North Little Rock, AR)
+   ✓ Found place: ChIJuykQp9Oi0ocRfIDS1Gl89zw
+   📸 Downloading 10 photos...
+      ✓ Downloaded photo 1
+      ✓ Downloaded photo 2
+      ✓ Downloaded photo 3
+      ✓ Downloaded photo 4
