@@ -1,19 +1,18 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Modal,
-  ScrollView,
   TouchableOpacity,
   Dimensions,
   StatusBar,
   Platform,
+  FlatList,
 } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { Ionicons } from '@expo/vector-icons';
 import { GoogleMapsPhoto } from '../../types/googleMapsData';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -30,6 +29,153 @@ interface PhotoViewerModalProps {
   onClose: () => void;
 }
 
+interface ZoomableImageProps {
+  uri: string;
+  width: number;
+  height: number;
+  onZoomChange?: (isZoomed: boolean) => void;
+}
+
+// Separate component for zoomable image to isolate gesture state
+function ZoomableImage({ uri, width, height, onZoomChange }: ZoomableImageProps) {
+  const scale = useSharedValue(1);
+  const savedScale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
+
+  const MIN_SCALE = 1;
+  const MAX_SCALE = 4;
+  const ZOOM_TARGET = 2.5;
+
+  // Reset zoom when image changes
+  useEffect(() => {
+    scale.value = 1;
+    savedScale.value = 1;
+    translateX.value = 0;
+    translateY.value = 0;
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
+  }, [uri]);
+
+  const clampTranslation = (value: number, currentScale: number, dimension: number) => {
+    'worklet';
+    const maxTranslate = (dimension * (currentScale - 1)) / 2;
+    return Math.min(Math.max(value, -maxTranslate), maxTranslate);
+  };
+
+  const resetZoom = () => {
+    'worklet';
+    scale.value = withTiming(1, { duration: 200 });
+    translateX.value = withTiming(0, { duration: 200 });
+    translateY.value = withTiming(0, { duration: 200 });
+    savedScale.value = 1;
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
+    if (onZoomChange) {
+      runOnJS(onZoomChange)(false);
+    }
+  };
+
+  // Double tap to zoom in/out
+  const doubleTapGesture = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDuration(300)
+    .onEnd((event) => {
+      if (scale.value > 1.1) {
+        // Zoomed in - reset to 1x
+        resetZoom();
+      } else {
+        // Zoom to target at tap point
+        const focalX = event.x - width / 2;
+        const focalY = event.y - height / 2;
+        
+        // Calculate translation to center on tap point
+        const newTranslateX = -focalX * (ZOOM_TARGET - 1);
+        const newTranslateY = -focalY * (ZOOM_TARGET - 1);
+        
+        scale.value = withTiming(ZOOM_TARGET, { duration: 200 });
+        translateX.value = withTiming(
+          clampTranslation(newTranslateX, ZOOM_TARGET, width), 
+          { duration: 200 }
+        );
+        translateY.value = withTiming(
+          clampTranslation(newTranslateY, ZOOM_TARGET, height), 
+          { duration: 200 }
+        );
+        savedScale.value = ZOOM_TARGET;
+        savedTranslateX.value = clampTranslation(newTranslateX, ZOOM_TARGET, width);
+        savedTranslateY.value = clampTranslation(newTranslateY, ZOOM_TARGET, height);
+        
+        if (onZoomChange) {
+          runOnJS(onZoomChange)(true);
+        }
+      }
+    });
+
+  // Pinch to zoom
+  const pinchGesture = Gesture.Pinch()
+    .onUpdate((event) => {
+      const newScale = Math.min(Math.max(savedScale.value * event.scale, MIN_SCALE * 0.5), MAX_SCALE);
+      scale.value = newScale;
+      
+      if (onZoomChange) {
+        runOnJS(onZoomChange)(newScale > 1.1);
+      }
+    })
+    .onEnd(() => {
+      // Clamp scale to valid range
+      let finalScale = scale.value;
+      if (finalScale < MIN_SCALE) {
+        finalScale = MIN_SCALE;
+        scale.value = withTiming(MIN_SCALE, { duration: 150 });
+      }
+      
+      savedScale.value = finalScale;
+      
+      // Clamp translation
+      savedTranslateX.value = clampTranslation(translateX.value, finalScale, width);
+      savedTranslateY.value = clampTranslation(translateY.value, finalScale, height);
+      translateX.value = withTiming(savedTranslateX.value, { duration: 150 });
+      translateY.value = withTiming(savedTranslateY.value, { duration: 150 });
+      
+      if (onZoomChange) {
+        runOnJS(onZoomChange)(finalScale > 1.1);
+      }
+    });
+
+  // Combine gestures - just pinch and double-tap
+  // No pan gesture - when zoomed, pinch handles movement, when not zoomed, FlatList handles swipes
+  const composedGesture = Gesture.Race(
+    doubleTapGesture,
+    pinchGesture
+  );
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value },
+    ],
+  }));
+
+  return (
+    <GestureDetector gesture={composedGesture}>
+      <Animated.View style={[styles.imageContainer, { width, height }]}>
+        <Animated.Image
+          source={{ uri }}
+          style={[styles.image, { width, height }, animatedStyle]}
+          resizeMode="contain"
+          onError={(error) => {
+            console.error('Image load error:', error.nativeEvent?.error);
+          }}
+        />
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+
 export default function PhotoViewerModal({
   visible,
   photos,
@@ -38,509 +184,91 @@ export default function PhotoViewerModal({
   getPhotoUrl,
   onClose,
 }: PhotoViewerModalProps) {
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  // Track screen dimensions and update on orientation change
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
-  const orientationListenerRef = useRef<ScreenOrientation.Subscription | null>(null);
-  const currentIndexRef = useRef(currentIndex);
-  
-  // Photo zoom and pan state
-  const [resizeMode, setResizeMode] = useState<'contain' | 'cover'>('contain');
   const [isZoomed, setIsZoomed] = useState(false);
-  const [orientationLock, setOrientationLock] = useState<'portrait' | 'landscape' | 'unlocked'>('unlocked');
-  const scale = useSharedValue(1);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const savedScale = useRef(1);
-  const savedTranslateX = useRef(0);
-  const savedTranslateY = useRef(0);
-  const wasZoomedRef = useRef(false);
-  
-  // Update currentIndex when initialIndex changes (when user taps a different photo)
-  useEffect(() => {
-    if (initialIndex !== currentIndex) {
-      setCurrentIndex(initialIndex);
-      currentIndexRef.current = initialIndex;
-    }
-  }, [initialIndex, currentIndex]);
-  
-  // Keep ref in sync with state
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
-  
-  // Reset zoom/pan when photo changes
-  useEffect(() => {
-    scale.value = 1;
-    translateX.value = 0;
-    translateY.value = 0;
-    savedScale.current = 1;
-    savedTranslateX.current = 0;
-    savedTranslateY.current = 0;
-    wasZoomedRef.current = false;
-    setResizeMode('contain');
-    setIsZoomed(false);
-  }, [currentIndex, visible]);
 
-  // Handle orientation toggle - cycles between portrait and landscape
-  const handleToggleOrientation = async () => {
-    try {
-      // Get current orientation to determine what to switch to
-      const currentOrientation = await ScreenOrientation.getOrientationAsync();
-      const currentDimensions = Dimensions.get('window');
-      const isCurrentlyLandscape = currentDimensions.width > currentDimensions.height;
-      
-      console.log('📱 Toggling orientation:', {
-        currentOrientation,
-        isCurrentlyLandscape,
-        currentLock: orientationLock,
-        dimensions: currentDimensions
-      });
-      
-      if (orientationLock === 'portrait' || (!orientationLock && !isCurrentlyLandscape)) {
-        // Switch to landscape
-        console.log('📱 Switching to landscape');
-        // First unlock to allow rotation
-        try {
-          await ScreenOrientation.unlockAsync();
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (e) {
-          console.log('📱 Could not unlock:', e);
-        }
-        
-        try {
-          await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-          setOrientationLock('landscape');
-          // Force update dimensions after a short delay
-          setTimeout(() => {
-            const newDims = Dimensions.get('window');
-            console.log('📱 Updated dimensions after landscape lock:', newDims);
-            setDimensions(newDims);
-          }, 200);
-        } catch (e) {
-          // Try alternative landscape lock
-          try {
-            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_LEFT);
-            setOrientationLock('landscape');
-            setTimeout(() => {
-              const newDims = Dimensions.get('window');
-              setDimensions(newDims);
-            }, 200);
-          } catch (e2) {
-            console.log('📱 Failed to lock to landscape:', e2);
-          }
-        }
-      } else {
-        // Switch to portrait (from landscape or unlocked)
-        console.log('📱 Switching to portrait');
-        // First unlock to allow rotation
-        try {
-          await ScreenOrientation.unlockAsync();
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (e) {
-          console.log('📱 Could not unlock:', e);
-        }
-        
-        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-        setOrientationLock('portrait');
-        // Force update dimensions after a short delay
-        setTimeout(() => {
-          const newDims = Dimensions.get('window');
-          console.log('📱 Updated dimensions after portrait lock:', newDims);
-          setDimensions(newDims);
-        }, 200);
-      }
-    } catch (error) {
-      console.log('📱 Error toggling orientation:', error);
-    }
-  };
-
-  // Apply orientation lock when it changes
+  // Update dimensions on orientation change
   useEffect(() => {
-    if (!visible) return;
-    
-    const applyOrientation = async () => {
-      try {
-        if (orientationLock === 'portrait') {
-          await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-          // Update dimensions after locking - check if we need to swap
-          setTimeout(() => {
-            const currentDims = Dimensions.get('window');
-            // If currently landscape, swap dimensions for portrait
-            if (currentDims.width > currentDims.height) {
-              const portraitDims = { 
-                width: currentDims.height, 
-                height: currentDims.width,
-                scale: currentDims.scale,
-                fontScale: currentDims.fontScale
-              };
-              console.log('📱 Swapping dimensions for portrait:', portraitDims);
-              setDimensions(portraitDims);
-            } else {
-              setDimensions(currentDims);
-            }
-          }, 200);
-        } else if (orientationLock === 'landscape') {
-          await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-          // Update dimensions after locking - check if we need to swap
-          setTimeout(() => {
-            const currentDims = Dimensions.get('window');
-            // If currently portrait, swap dimensions for landscape
-            if (currentDims.height > currentDims.width) {
-              const landscapeDims = { 
-                width: currentDims.height, 
-                height: currentDims.width,
-                scale: currentDims.scale,
-                fontScale: currentDims.fontScale
-              };
-              console.log('📱 Swapping dimensions for landscape:', landscapeDims);
-              setDimensions(landscapeDims);
-            } else {
-              setDimensions(currentDims);
-            }
-          }, 200);
-        } else {
-          // Unlocked - allow all orientations
-          try {
-            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.ALL);
-          } catch (e) {
-            await ScreenOrientation.unlockAsync();
-          }
-        }
-      } catch (error) {
-        console.log('📱 Error applying orientation lock:', error);
-      }
-    };
-    
-    applyOrientation();
-  }, [orientationLock, visible]);
-
-  // Allow all orientations when photo viewer is visible, lock to portrait when closed
-  useEffect(() => {
-    let savedOrientationLock: ScreenOrientation.OrientationLock | null = null;
-    
-    const handleOrientation = async () => {
-      try {
-        if (visible) {
-          console.log('📱 Photo viewer opened - unlocking orientation');
-          
-          // Add a small delay to ensure component is fully mounted
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
-          // Check current orientation before unlocking
-          try {
-            const currentOrientation = await ScreenOrientation.getOrientationAsync();
-            console.log('📱 Current orientation before unlock:', currentOrientation);
-          } catch (e) {
-            console.log('📱 Could not get current orientation:', e);
-          }
-          
-          // Save current orientation lock before unlocking
-          try {
-            savedOrientationLock = await ScreenOrientation.getOrientationLockAsync();
-            console.log('📱 Saved orientation lock:', savedOrientationLock);
-          } catch (e) {
-            console.log('📱 Could not get current orientation lock:', e);
-          }
-          
-          // Allow rotation when photo viewer is open (unless user has manually locked it)
-          if (orientationLock === 'unlocked') {
-            console.log('📱 Attempting to allow all orientations...');
-            try {
-              // Try ALL orientations first
-              await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.ALL);
-              console.log('📱 Locked to ALL orientations');
-            } catch (e1) {
-              console.log('📱 Failed to lock to ALL, trying unlockAsync:', e1);
-              // Fallback to unlock if ALL fails
-              try {
-                await ScreenOrientation.unlockAsync();
-                console.log('📱 Orientation unlocked - rotation should now be allowed');
-              } catch (e2) {
-                console.log('📱 Failed to unlock orientation:', e2);
-              }
-            }
-          } else {
-            // User has manually locked orientation, respect that
-            console.log('📱 User has manually locked orientation to:', orientationLock);
-            if (orientationLock === 'portrait') {
-              await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-            } else if (orientationLock === 'landscape') {
-              await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-            }
-          }
-          
-          // Double-check by trying to get orientation again
-          try {
-            const orientationAfterUnlock = await ScreenOrientation.getOrientationAsync();
-            console.log('📱 Orientation after unlock:', orientationAfterUnlock);
-          } catch (e) {
-            console.log('📱 Could not get orientation after unlock:', e);
-          }
-          
-          // Verify unlock worked
-          try {
-            const lockAfterUnlock = await ScreenOrientation.getOrientationLockAsync();
-            console.log('📱 Orientation lock after unlock:', lockAfterUnlock);
-          } catch (e) {
-            console.log('📱 Could not verify unlock (this is OK if unlocked):', e);
-          }
-          
-          // Remove existing listener if any
-          if (orientationListenerRef.current) {
-            orientationListenerRef.current.remove();
-            orientationListenerRef.current = null;
-          }
-          
-          // Set up a listener to detect orientation changes
-          orientationListenerRef.current = ScreenOrientation.addOrientationChangeListener(async (event) => {
-            console.log('📱 Orientation changed via expo-screen-orientation:', event.orientationInfo);
-            console.log('📱 Full event:', JSON.stringify(event, null, 2));
-            // Wait a bit for the system to update dimensions
-            await new Promise(resolve => setTimeout(resolve, 150));
-            // Update dimensions when orientation changes
-            const newDimensions = Dimensions.get('window');
-            console.log('📱 Updating dimensions after orientation change:', newDimensions);
-            setDimensions(newDimensions);
-            // Re-scroll to current photo after orientation change
-            if (scrollViewRef.current) {
-              setTimeout(() => {
-                scrollViewRef.current?.scrollTo({
-                  x: currentIndexRef.current * newDimensions.width,
-                  animated: false,
-                });
-              }, 100);
-            }
-          });
-          console.log('📱 Orientation change listener added');
-          
-          // Also check orientation periodically to see if it changes
-          const checkInterval = setInterval(async () => {
-            try {
-              const current = await ScreenOrientation.getOrientationAsync();
-              console.log('📱 Periodic orientation check:', current);
-            } catch (e) {
-              // Ignore errors
-            }
-          }, 2000);
-          
-          // Store interval ID for cleanup
-          (orientationListenerRef.current as any).checkInterval = checkInterval;
-        } else {
-          console.log('📱 Photo viewer closed - locking to portrait');
-          // Reset orientation lock state
-          setOrientationLock('unlocked');
-          // Remove orientation listener if it exists
-          if (orientationListenerRef.current) {
-            // Clear any check interval
-            if ((orientationListenerRef.current as any).checkInterval) {
-              clearInterval((orientationListenerRef.current as any).checkInterval);
-            }
-            orientationListenerRef.current.remove();
-            orientationListenerRef.current = null;
-            console.log('📱 Orientation listener removed');
-          }
-          
-          // Try to restore previous orientation, or default to portrait
-          try {
-            if (savedOrientationLock) {
-              await ScreenOrientation.lockAsync(savedOrientationLock);
-              console.log('📱 Restored saved orientation:', savedOrientationLock);
-            } else {
-              // Try portrait first, fall back to default if not supported
-              await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-              console.log('📱 Locked to PORTRAIT_UP');
-            }
-          } catch (e) {
-            console.log('📱 Portrait lock failed, trying DEFAULT:', e);
-            // If portrait isn't supported, try default
-            try {
-              await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.DEFAULT);
-              console.log('📱 Locked to DEFAULT');
-            } catch (e2) {
-              console.log('📱 Default lock failed, unlocking:', e2);
-              // If all else fails, just unlock - device will use app default
-              await ScreenOrientation.unlockAsync();
-            }
-          }
-        }
-      } catch (error) {
-        console.error('📱 Error managing screen orientation:', error);
-      }
-    };
-    
-    handleOrientation();
-    
-    return () => {
-      // Cleanup: remove listener and restore orientation when component unmounts
-      if (orientationListenerRef.current) {
-        // Clear any check interval
-        if ((orientationListenerRef.current as any).checkInterval) {
-          clearInterval((orientationListenerRef.current as any).checkInterval);
-        }
-        orientationListenerRef.current.remove();
-        orientationListenerRef.current = null;
-        console.log('📱 Cleanup: removed orientation listener');
-      }
-      if (!visible) {
-        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {
-          // Ignore errors on cleanup - device will use app default
-        });
-      }
-    };
-  }, [visible]);
-
-  // Listen for orientation changes - only when modal is visible
-  useEffect(() => {
-    if (!visible) return;
-    
-    console.log('📱 Setting up Dimensions listener for orientation changes');
-    const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {
-      console.log('📱 Dimensions changed!', {
-        windowWidth: window.width,
-        windowHeight: window.height,
-        screenWidth: screen.width,
-        screenHeight: screen.height,
-        isLandscape: window.width > window.height,
-        currentIndex: currentIndexRef.current
-      });
-      // Force update dimensions
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setDimensions(window);
-      // Re-scroll to current photo after orientation change
-      if (scrollViewRef.current) {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollTo({
-            x: currentIndexRef.current * window.width,
-            animated: false,
-          });
-        }, 150);
-      }
     });
+    return () => subscription?.remove();
+  }, []);
 
-    return () => {
-      console.log('📱 Removing Dimensions listener');
-      subscription?.remove();
-    };
-  }, [visible]);
-
-  // Scroll to initial photo when modal opens or initialIndex changes
+  // Reset to initial index when modal opens
   useEffect(() => {
-    if (visible && scrollViewRef.current) {
-      const currentDimensions = Dimensions.get('window');
-      const targetIndex = initialIndex !== undefined ? initialIndex : 0;
-      
-      // Only scroll if we're not already at the target index
-      if (targetIndex !== currentIndex) {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollTo({
-            x: targetIndex * currentDimensions.width,
-            animated: false,
-          });
-          setCurrentIndex(targetIndex);
-        }, 100);
+    if (visible) {
+      setCurrentIndex(initialIndex);
+      setIsZoomed(false);
+      // Scroll to initial index after a brief delay
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({ index: initialIndex, animated: false });
+      }, 100);
+    }
+  }, [visible, initialIndex]);
+
+  const handleZoomChange = useCallback((zoomed: boolean) => {
+    setIsZoomed(zoomed);
+  }, []);
+
+  const handleViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      const newIndex = viewableItems[0].index;
+      if (newIndex !== undefined && newIndex >= 0) {
+        setCurrentIndex(newIndex);
+        setIsZoomed(false); // Reset zoom when changing photos
       }
     }
-  }, [visible, initialIndex]); // Removed currentIndex from dependencies to prevent re-scrolling on user swipes
+  }, []);
 
-  const handleScroll = (event: any) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(offsetX / dimensions.width);
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
+  const renderPhoto = useCallback(({ item, index }: { item: GoogleMapsPhoto; index: number }) => {
+    if (!item.photoReference) {
+      return (
+        <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
+          <View style={styles.placeholder}>
+            <Ionicons name="image-outline" size={64} color="#666" />
+            <Text style={styles.placeholderText}>Photo unavailable</Text>
+          </View>
+        </View>
+      );
+    }
+
+    const photoUrl = getPhotoUrl(item.photoReference, placeId);
     
-    // Only update index if it actually changed to prevent unnecessary re-renders
-    // Use ref to avoid stale closure issues
-    if (newIndex !== currentIndexRef.current && newIndex >= 0 && newIndex < photos.length) {
-      setCurrentIndex(newIndex);
-      currentIndexRef.current = newIndex;
+    if (!photoUrl) {
+      return (
+        <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
+          <View style={styles.placeholder}>
+            <Ionicons name="image-outline" size={64} color="#666" />
+            <Text style={styles.placeholderText}>Photo unavailable</Text>
+          </View>
+        </View>
+      );
     }
-  };
 
-  const handleClose = () => {
-    onClose();
-  };
-  
-  // Toggle resize mode function
-  const toggleResizeMode = () => {
-    setResizeMode(prev => prev === 'contain' ? 'cover' : 'contain');
-    // Reset zoom/pan when toggling
-    scale.value = withTiming(1);
-    translateX.value = withTiming(0);
-    translateY.value = withTiming(0);
-    savedScale.current = 1;
-    savedTranslateX.current = 0;
-    savedTranslateY.current = 0;
-  };
-  
-  // Pinch gesture for zooming
-  const pinchGesture = Gesture.Pinch()
-    .onUpdate((event) => {
-      const newScale = savedScale.current * event.scale;
-      // Limit zoom between 1x and 5x
-      const clampedScale = Math.max(1, Math.min(5, newScale));
-      scale.value = clampedScale;
-      // Only update state when crossing threshold to avoid excessive runOnJS calls
-      const isNowZoomed = clampedScale > 1.1;
-      if (isNowZoomed !== wasZoomedRef.current) {
-        wasZoomedRef.current = isNowZoomed;
-        runOnJS(setIsZoomed)(isNowZoomed);
-      }
-    })
-    .onEnd(() => {
-      savedScale.current = scale.value;
-      const isNowZoomed = scale.value > 1.1;
-      wasZoomedRef.current = isNowZoomed;
-      runOnJS(setIsZoomed)(isNowZoomed);
-    });
-  
-  // Pan gesture for moving zoomed image (only when zoomed)
-  // Use failOffsetX to fail on horizontal swipes, allowing ScrollView to handle them
-  const panGesture = Gesture.Pan()
-    .minPointers(1)
-    .maxPointers(1)
-    .failOffsetX([-15, 15]) // Fail if horizontal movement exceeds 15px (allows ScrollView to handle horizontal swipes)
-    .activeOffsetY([-10, 10]) // Require 10px vertical movement to activate
-    .onUpdate((event) => {
-      // Only allow panning when zoomed in
-      if (scale.value > 1.1) {
-        translateX.value = savedTranslateX.current + event.translationX;
-        translateY.value = savedTranslateY.current + event.translationY;
-      }
-    })
-    .onEnd(() => {
-      if (scale.value > 1.1) {
-        savedTranslateX.current = translateX.value;
-        savedTranslateY.current = translateY.value;
-      }
-    });
-  
-  // Tap gesture to toggle resize mode (only when not zoomed)
-  const tapGesture = Gesture.Tap()
-    .numberOfTaps(1)
-    .maxDuration(250)
-    .onEnd(() => {
-      // Only toggle if not zoomed
-      if (scale.value <= 1.1) {
-        runOnJS(toggleResizeMode)();
-      }
-    });
-  
-  // Combine gestures - use Simultaneous for pinch+pan, Race for tap vs pan
-  // The pan gesture fails on horizontal movement, allowing ScrollView to handle horizontal swipes
-  const composedGesture = Gesture.Simultaneous(
-    pinchGesture,
-    Gesture.Race(tapGesture, panGesture)
-  );
-  
-  // Animated style for the image
-  const animatedImageStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { scale: scale.value },
-      ],
-    };
-  });
+    return (
+      <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
+        <ZoomableImage
+          uri={photoUrl}
+          width={dimensions.width}
+          height={dimensions.height}
+          onZoomChange={index === currentIndex ? handleZoomChange : undefined}
+        />
+      </View>
+    );
+  }, [dimensions, placeId, getPhotoUrl, currentIndex, handleZoomChange]);
+
+  const getItemLayout = useCallback((_: any, index: number) => ({
+    length: dimensions.width,
+    offset: dimensions.width * index,
+    index,
+  }), [dimensions.width]);
 
   if (!visible || photos.length === 0) return null;
 
@@ -549,127 +277,60 @@ export default function PhotoViewerModal({
       visible={visible}
       transparent={false}
       animationType="fade"
-      onRequestClose={handleClose}
+      onRequestClose={onClose}
       statusBarTranslucent
     >
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
+      <GestureHandlerRootView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+          <TouchableOpacity style={styles.headerButton} onPress={onClose}>
             <Ionicons name="close" size={28} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.photoCounter}>
-            {currentIndex + 1} of {photos.length}
-          </Text>
-          <TouchableOpacity 
-            style={styles.orientationButton} 
-            onPress={handleToggleOrientation}
-          >
-            <Ionicons 
-              name={orientationLock === 'portrait' ? 'phone-portrait-outline' : orientationLock === 'landscape' ? 'phone-landscape-outline' : 'sync-outline'} 
-              size={24} 
-              color="#fff" 
-            />
-          </TouchableOpacity>
+          <View style={styles.counterContainer}>
+            <Text style={styles.counter}>{currentIndex + 1} / {photos.length}</Text>
+          </View>
+          <View style={styles.headerButtonPlaceholder} />
         </View>
 
-        {/* Photo ScrollView */}
-        <ScrollView
-          key={`scrollview-${dimensions.width}-${dimensions.height}`}
-          ref={scrollViewRef}
+        {/* Photos FlatList */}
+        <FlatList
+          ref={flatListRef}
+          data={photos}
+          renderItem={renderPhoto}
+          keyExtractor={(_, index) => `photo-${index}`}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={handleScroll}
-          onScrollBeginDrag={() => {
-            // Reset zoom/pan when user starts scrolling horizontally (only if zoomed)
-            // Use a ref check to avoid state updates during scroll
-            if (wasZoomedRef.current) {
-              scale.value = 1;
-              translateX.value = 0;
-              translateY.value = 0;
-              savedScale.current = 1;
-              savedTranslateX.current = 0;
-              savedTranslateY.current = 0;
-              wasZoomedRef.current = false;
-              setIsZoomed(false);
-            }
-          }}
-          scrollEventThrottle={16}
-          style={styles.scrollView}
-          contentContainerStyle={{ width: dimensions.width * photos.length, height: dimensions.height }}
-          scrollEnabled={true} // Always allow scrolling - gestures handle zoom blocking
-          bounces={true}
-          decelerationRate="fast"
-        >
-          {photos.map((photo, index) => {
-            if (!photo.photoReference) return null;
-            const photoUrl = getPhotoUrl(photo.photoReference, placeId);
+          scrollEnabled={!isZoomed}
+          onViewableItemsChanged={handleViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          getItemLayout={getItemLayout}
+          initialScrollIndex={initialIndex}
+          removeClippedSubviews={false}
+          bounces={false}
+          style={styles.flatList}
+        />
 
-            const photoContent = photoUrl ? (
-              <Animated.View 
-                key={`photo-wrapper-${index}-${dimensions.width}-${dimensions.height}`}
-                style={[styles.photoWrapper, { width: dimensions.width, height: dimensions.height }]}
-              >
-                <Animated.Image
-                  key={`photo-${index}-${dimensions.width}-${dimensions.height}`}
-                  source={{ uri: photoUrl }}
-                  style={[
-                    styles.photo,
-                    { width: dimensions.width, height: dimensions.height },
-                    index === currentIndex ? animatedImageStyle : {}
-                  ]}
-                  resizeMode={index === currentIndex ? resizeMode : 'contain'}
-                  onError={(error) => {
-                    console.error('❌ Full-screen image load error:', {
-                      photoUrl: photoUrl.substring(0, 100),
-                      error: error.nativeEvent?.error,
-                      photoReference: photo.photoReference?.substring(0, 30)
-                    });
-                  }}
-                  onLoad={() => {
-                    console.log('✅ Full-screen image loaded successfully');
-                  }}
-                />
-              </Animated.View>
-            ) : null;
+        {/* Zoom hint */}
+        <View style={styles.hintContainer}>
+          <Text style={styles.hintText}>
+            {isZoomed ? 'Double-tap to reset' : 'Pinch or double-tap to zoom'}
+          </Text>
+        </View>
 
-            return (
-              <View 
-                key={`photo-container-${index}-${dimensions.width}-${dimensions.height}`} 
-                style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}
-              >
-                {photoUrl && photoContent ? (
-                  index === currentIndex ? (
-                    <GestureDetector gesture={composedGesture}>
-                      {photoContent}
-                    </GestureDetector>
-                  ) : (
-                    photoContent
-                  )
-                ) : (
-                  <View style={styles.placeholderContainer}>
-                    <Ionicons name="image-outline" size={64} color="#999" />
-                    <Text style={styles.placeholderText}>Photo unavailable</Text>
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
-
-        {/* Footer with attribution */}
+        {/* Attribution */}
         {photos[currentIndex]?.attribution && (
-          <View style={styles.footer}>
-            <Text style={styles.attribution} numberOfLines={2}>
-              Photo by {photos[currentIndex].attribution}
+          <View style={styles.attribution}>
+            <Text style={styles.attributionText} numberOfLines={1}>
+              📷 {photos[currentIndex].attribution}
             </Text>
           </View>
         )}
 
         {/* Dots indicator */}
-        {photos.length > 1 && (
+        {photos.length > 1 && photos.length <= 10 && (
           <View style={styles.dotsContainer}>
             {photos.map((_, index) => (
               <View
@@ -682,7 +343,7 @@ export default function PhotoViewerModal({
             ))}
           </View>
         )}
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
@@ -694,82 +355,87 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20,
+    top: Platform.OS === 'ios' ? 50 : 30,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    zIndex: 10,
+    zIndex: 100,
   },
-  closeButton: {
+  headerButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  photoCounter: {
+  headerButtonPlaceholder: {
+    width: 44,
+    height: 44,
+  },
+  counterContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  counter: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
   },
-  orientationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scrollView: {
+  flatList: {
     flex: 1,
   },
   photoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
-  photoWrapper: {
+  imageContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  photo: {
-    // Dimensions will be set dynamically based on orientation
+  image: {
+    // Size set dynamically
   },
-  placeholderContainer: {
+  placeholder: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   placeholderText: {
-    color: '#999',
+    color: '#666',
     fontSize: 16,
-    marginTop: 16,
+    marginTop: 12,
   },
-  footer: {
+  hintContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 20,
+    bottom: Platform.OS === 'ios' ? 140 : 120,
     left: 0,
     right: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignItems: 'center',
+  },
+  hintText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
   },
   attribution: {
-    color: '#fff',
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 100 : 80,
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+  },
+  attributionText: {
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 12,
-    textAlign: 'center',
   },
   dotsContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 80,
+    bottom: Platform.OS === 'ios' ? 60 : 40,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -788,4 +454,3 @@ const styles = StyleSheet.create({
     width: 24,
   },
 });
-

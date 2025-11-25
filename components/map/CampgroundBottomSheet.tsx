@@ -1029,12 +1029,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                     <Text style={[styles.amenityText, { color: theme.text }]}>Credit cards</Text>
                   </View>
                 )}
-                {googleMapsData.paymentOptions?.acceptsNfc && (
-                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
-                    <Ionicons name="phone-portrait-outline" size={18} color={theme.primary} />
-                    <Text style={[styles.amenityText, { color: theme.text }]}>Contactless</Text>
-                  </View>
-                )}
               </View>
             )}
 
