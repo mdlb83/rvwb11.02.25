@@ -17,7 +17,7 @@ const fetch = require('node-fetch');
 // Configuration
 const PLACES_API_BASE_URL = 'https://places.googleapis.com/v1';
 const DELAY_BETWEEN_REQUESTS = 100; // ms - adjust based on rate limits
-const MAX_PHOTOS_TO_DOWNLOAD = 4;
+const MAX_PHOTOS_TO_DOWNLOAD = 10;
 
 // File paths
 const CAMPGROUNDS_FILE = path.join(__dirname, '../data/campgrounds.json');
