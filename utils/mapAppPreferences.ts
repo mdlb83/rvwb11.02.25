@@ -50,9 +50,10 @@ export function getMapAppUrl(
     longitude?: number;
     query?: string;
     campgroundId?: string; // Optional: for deep linking back to app
+    placeId?: string; // Google Place ID for exact location
   }
 ): string {
-  const { latitude, longitude, query, campgroundId } = params;
+  const { latitude, longitude, query, campgroundId, placeId } = params;
 
   if (app === 'default') {
     // Use platform default
@@ -70,12 +71,15 @@ export function getMapAppUrl(
   }
 
   if (type === 'directions' && latitude !== undefined && longitude !== undefined) {
-    // Directions URLs
+    // Directions URLs - use placeId for Google Maps if available for exact destination
     switch (app) {
       case 'apple':
         return `http://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
       case 'google':
-        // Add callback URL for Google Maps to enable "Back to App" functionality
+        // Use place_id for exact destination if available
+        if (placeId) {
+          return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${placeId}`;
+        }
         if (callbackUrl) {
           return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&callback=${encodeURIComponent(callbackUrl)}`;
         }
@@ -83,30 +87,56 @@ export function getMapAppUrl(
       case 'waze':
         return `waze://?navigate=yes&ll=${latitude},${longitude}`;
       default:
+        if (placeId) {
+          return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${placeId}`;
+        }
         if (callbackUrl) {
           return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&callback=${encodeURIComponent(callbackUrl)}`;
         }
         return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
     }
-  } else if (type === 'search' && query) {
-    // Search URLs
-    const encodedQuery = encodeURIComponent(query);
+  } else if (type === 'search') {
+    // Search URLs - use placeId for Google Maps if available for exact place
     switch (app) {
       case 'apple':
-        return `http://maps.apple.com/?q=${encodedQuery}`;
+        if (query) {
+          return `http://maps.apple.com/?q=${encodeURIComponent(query)}`;
+        }
+        if (latitude !== undefined && longitude !== undefined) {
+          return `http://maps.apple.com/?ll=${latitude},${longitude}`;
+        }
+        return `http://maps.apple.com/`;
       case 'google':
-        // Add callback URL for Google Maps
-        if (callbackUrl) {
-          return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}&callback=${encodeURIComponent(callbackUrl)}`;
+        // Use place_id for exact place if available
+        if (placeId) {
+          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query || '')}&query_place_id=${placeId}`;
         }
-        return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+        if (query) {
+          if (callbackUrl) {
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}&callback=${encodeURIComponent(callbackUrl)}`;
+          }
+          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        }
+        return `https://www.google.com/maps/`;
       case 'waze':
-        return `waze://?q=${encodedQuery}`;
-      default:
-        if (callbackUrl) {
-          return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}&callback=${encodeURIComponent(callbackUrl)}`;
+        if (query) {
+          return `waze://?q=${encodeURIComponent(query)}`;
         }
-        return `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+        if (latitude !== undefined && longitude !== undefined) {
+          return `waze://?ll=${latitude},${longitude}`;
+        }
+        return `waze://`;
+      default:
+        if (placeId) {
+          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query || '')}&query_place_id=${placeId}`;
+        }
+        if (query) {
+          if (callbackUrl) {
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}&callback=${encodeURIComponent(callbackUrl)}`;
+          }
+          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        }
+        return `https://www.google.com/maps/`;
     }
   }
 

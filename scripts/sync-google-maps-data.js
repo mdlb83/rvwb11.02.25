@@ -111,7 +111,14 @@ async function fetchPlaceDetails(placeId) {
           'photos',
           'currentOpeningHours',
           'websiteUri',
-          'nationalPhoneNumber'
+          'nationalPhoneNumber',
+          // "Know before you go" fields
+          'goodForChildren',
+          'allowsDogs',
+          'restroom',
+          'accessibilityOptions',
+          'parkingOptions',
+          'paymentOptions'
         ].join(',')
       }
     });
@@ -289,6 +296,13 @@ async function processCampground(entry, campgroundId, existingData) {
     } : undefined,
     websiteUri: details.websiteUri || undefined,
     nationalPhoneNumber: details.nationalPhoneNumber || undefined,
+    // "Know before you go" fields
+    goodForChildren: details.goodForChildren,
+    allowsDogs: details.allowsDogs,
+    restroom: details.restroom,
+    accessibilityOptions: details.accessibilityOptions || undefined,
+    parkingOptions: details.parkingOptions || undefined,
+    paymentOptions: details.paymentOptions || undefined,
     lastUpdated: new Date().toISOString(),
     syncStatus: 'success'
   };

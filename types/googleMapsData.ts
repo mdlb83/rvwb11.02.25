@@ -11,6 +11,26 @@ export interface GoogleMapsPhoto {
   attribution?: string; // Photo attribution text
 }
 
+export interface AccessibilityOptions {
+  wheelchairAccessibleParking?: boolean;
+  wheelchairAccessibleEntrance?: boolean;
+  wheelchairAccessibleRestroom?: boolean;
+}
+
+export interface ParkingOptions {
+  freeParkingLot?: boolean;
+  paidParkingLot?: boolean;
+  streetParking?: boolean;
+  valetParking?: boolean;
+}
+
+export interface PaymentOptions {
+  acceptsCreditCards?: boolean;
+  acceptsDebitCards?: boolean;
+  acceptsCashOnly?: boolean;
+  acceptsNfc?: boolean;
+}
+
 export interface GoogleMapsData {
   campgroundId: string; // Matches generateCampgroundIdFromEntry
   placeId?: string; // Google Places ID for future API calls
@@ -28,6 +48,13 @@ export interface GoogleMapsData {
   };
   websiteUri?: string; // Website URL
   nationalPhoneNumber?: string; // Phone number in national format
+  // "Know before you go" fields
+  goodForChildren?: boolean;
+  allowsDogs?: boolean;
+  restroom?: boolean;
+  accessibilityOptions?: AccessibilityOptions;
+  parkingOptions?: ParkingOptions;
+  paymentOptions?: PaymentOptions;
   lastUpdated: string; // ISO timestamp of last sync
   syncStatus: 'pending' | 'success' | 'failed' | 'not_found';
   syncError?: string; // Error message if sync failed

@@ -132,7 +132,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     // Fallback to default snap points
     return ['30%', '65%', '90%'];
   }, [contentHeight, campground]);
-  const { preference, loading, savePreference } = useMapAppPreference();
+  const { preference, loading, savePreference, reload: reloadPreference } = useMapAppPreference();
   const [showPicker, setShowPicker] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [pendingAction, setPendingAction] = useState<'directions' | 'search' | null>(null);
@@ -235,6 +235,14 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     loadGoogleMapsData();
   }, [campground]);
 
+  // Reload map app preference when campground changes (bottom sheet opens)
+  // This ensures we pick up any changes made in Settings
+  useEffect(() => {
+    if (campground) {
+      reloadPreference();
+    }
+  }, [campground, reloadPreference]);
+
   // Determine initial snap index to position separator just below screen
   // Always use index 1 (the middle snap point) which will be calculated dynamically
   const initialSnapIndex = useMemo(() => {
@@ -318,6 +326,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       latitude: campground.latitude,
       longitude: campground.longitude,
       campgroundId: campgroundId,
+      placeId: googleMapsData?.placeId,
     });
 
     Linking.openURL(url).catch((err) => {
@@ -369,14 +378,18 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           latitude: campgroundToUse.latitude,
           longitude: campgroundToUse.longitude,
           campgroundId: campgroundId,
+          placeId: googleMapsData?.placeId,
         });
         console.log('Opening directions URL:', url);
         await Linking.openURL(url);
       } else if (actionToUse === 'search') {
-        const campgroundName = campgroundToUse.campground?.name || `${campgroundToUse.city}, ${campgroundToUse.state}`;
+        // Include city and state for better search accuracy
+        const baseName = campgroundToUse.campground?.name || campgroundToUse.city;
+        const campgroundName = `${baseName}, ${campgroundToUse.city}, ${campgroundToUse.state}`;
         const url = getMapAppUrl(mapAppToUse, 'search', {
           query: campgroundName,
           campgroundId: campgroundId,
+          placeId: googleMapsData?.placeId,
         });
         console.log('Opening search URL:', url);
         await Linking.openURL(url);
@@ -419,16 +432,23 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     }
 
     // User has opted out of seeing instructions, open directly
-    const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
+    // Include city and state for better search accuracy
+    const baseName = campground.campground?.name || campground.city;
+    const campgroundName = `${baseName}, ${campground.city}, ${campground.state}`;
     const url = getMapAppUrl(mapApp, 'search', {
       query: campgroundName,
       campgroundId: campgroundId,
+      placeId: googleMapsData?.placeId,
     });
 
     Linking.openURL(url).catch((err) => {
       console.error('Failed to open maps:', err);
-      // Fallback to web-based Google Maps
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campgroundName)}`);
+      // Fallback to web-based Google Maps with placeId if available
+      if (googleMapsData?.placeId) {
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campgroundName)}&query_place_id=${googleMapsData.placeId}`);
+      } else {
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campgroundName)}`);
+      }
     });
   };
 
@@ -464,15 +484,19 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           latitude: campground.latitude,
           longitude: campground.longitude,
           campgroundId: campgroundId,
+          placeId: googleMapsData?.placeId,
         });
         Linking.openURL(url).catch((err) => {
           console.error('Failed to open maps:', err);
         });
       } else if (pendingAction === 'search') {
-        const campgroundName = campground.campground?.name || `${campground.city}, ${campground.state}`;
+        // Include city and state for better search accuracy
+        const baseName = campground.campground?.name || campground.city;
+        const campgroundName = `${baseName}, ${campground.city}, ${campground.state}`;
         const url = getMapAppUrl(app, 'search', {
           query: campgroundName,
           campgroundId: campgroundId,
+          placeId: googleMapsData?.placeId,
         });
         Linking.openURL(url).catch((err) => {
           console.error('Failed to open maps:', err);
@@ -957,6 +981,59 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                   <Text style={[styles.reviewCountText, { color: theme.textSecondary }]}>
                     {googleMapsData.userRatingCount.toLocaleString()} reviews
                   </Text>
+                )}
+              </View>
+            )}
+
+            {/* Amenities */}
+            {(googleMapsData.goodForChildren !== undefined || 
+              googleMapsData.allowsDogs !== undefined || 
+              googleMapsData.restroom !== undefined ||
+              googleMapsData.accessibilityOptions ||
+              googleMapsData.parkingOptions ||
+              googleMapsData.paymentOptions) && (
+              <View style={styles.amenitiesGrid}>
+                {googleMapsData.goodForChildren === true && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="happy-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Good for kids</Text>
+                  </View>
+                )}
+                {googleMapsData.allowsDogs === true && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="paw-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Dogs allowed</Text>
+                  </View>
+                )}
+                {googleMapsData.restroom === true && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="water-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Restrooms</Text>
+                  </View>
+                )}
+                {googleMapsData.accessibilityOptions?.wheelchairAccessibleEntrance && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="accessibility-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Wheelchair accessible</Text>
+                  </View>
+                )}
+                {googleMapsData.parkingOptions?.freeParkingLot && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="car-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Free parking</Text>
+                  </View>
+                )}
+                {googleMapsData.paymentOptions?.acceptsCreditCards && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="card-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Credit cards</Text>
+                  </View>
+                )}
+                {googleMapsData.paymentOptions?.acceptsNfc && (
+                  <View style={[styles.amenityItem, { backgroundColor: theme.surfaceSecondary }]}>
+                    <Ionicons name="phone-portrait-outline" size={18} color={theme.primary} />
+                    <Text style={[styles.amenityText, { color: theme.text }]}>Contactless</Text>
+                  </View>
                 )}
               </View>
             )}
@@ -1797,6 +1874,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     lineHeight: 22,
+  },
+  amenitiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  amenityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  amenityText: {
+    fontSize: 13,
+    color: '#333',
   },
   hoursCard: {
     backgroundColor: '#F5F5F5',

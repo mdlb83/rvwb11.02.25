@@ -101,7 +101,24 @@
       "websiteUri": "https://www.townofdauphinisland.org/things-to-do/dauphin-island-campground",
       "nationalPhoneNumber": "(251) 861-2742",
       "lastUpdated": "2025-11-25T18:04:17.924Z",
-      "syncStatus": "success"
+      "syncStatus": "success",
+      "goodForChildren": true,
+      "allowsDogs": true,
+      "restroom": true,
+      "accessibilityOptions": {
+        "wheelchairAccessibleParking": true,
+        "wheelchairAccessibleEntrance": true,
+        "wheelchairAccessibleRestroom": true
+      },
+      "parkingOptions": {
+        "freeParkingLot": true
+      },
+      "paymentOptions": {
+        "acceptsCreditCards": true,
+        "acceptsDebitCards": true,
+        "acceptsCashOnly": false,
+        "acceptsNfc": true
+      }
     },
     "eufaula-al-lake-eufaula-campground": {
       "campgroundId": "eufaula-al-lake-eufaula-campground",
@@ -41493,7 +41510,13 @@
       "websiteUri": "https://www.nps.gov/bicy/planyourvisit/bear-island-campground.htm",
       "nationalPhoneNumber": "(239) 695-1205",
       "lastUpdated": "2025-11-25T19:19:15.946Z",
-      "syncStatus": "success"
+      "syncStatus": "success",
+      "goodForChildren": true,
+      "allowsDogs": true,
+      "restroom": true,
+      "accessibilityOptions": {
+        "wheelchairAccessibleEntrance": false
+      }
     }
   },
   "metadata": {
