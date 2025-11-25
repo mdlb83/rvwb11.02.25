@@ -38,7 +38,7 @@ export function filterCampgrounds(
   entries: CampgroundEntry[],
   filters: {
     state?: string;
-    hookupType?: 'full' | 'partial' | 'all';
+    hookupType?: 'full' | 'partial' | 'none' | 'all';
     searchQuery?: string;
     bookmarked?: boolean;
     bookmarkedIds?: string[]; // Array of bookmarked campground IDs

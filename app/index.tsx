@@ -693,8 +693,8 @@ export default function MapScreen() {
                 style={[
                   styles.bookmarkFilterButton,
                   {
-                    backgroundColor: showBookmarked ? theme.text : theme.surface,
-                    borderColor: showBookmarked ? theme.text : theme.border,
+                    backgroundColor: showBookmarked ? theme.primary : theme.surface,
+                    borderColor: showBookmarked ? theme.primary : theme.border,
                   },
                 ]}
                 onPress={() => setShowBookmarked(!showBookmarked)}
@@ -969,8 +969,8 @@ export default function MapScreen() {
                   style={[
                     styles.bookmarkFilterButton,
                     {
-                      backgroundColor: showBookmarked ? theme.text : theme.surface,
-                      borderColor: showBookmarked ? theme.text : theme.border,
+                      backgroundColor: showBookmarked ? theme.primary : theme.surface,
+                      borderColor: showBookmarked ? theme.primary : theme.border,
                     },
                   ]}
                   onPress={() => setShowBookmarked(!showBookmarked)}

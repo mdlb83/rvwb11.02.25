@@ -20,13 +20,9 @@ const mockCampground: CampgroundEntry = {
   hookup_type: 'full',
   campground: {
     name: 'Test Campground',
-    type: 'RV Park',
-    info: 'Test info',
-    notes: '',
+    link: 'https://example.com',
   },
-  trails: [],
-  blog_post: null,
-  contributor: null,
+  cg_notes: 'Test info',
   latitude: 32.2226,
   longitude: -110.9747,
 };
@@ -67,4 +63,3 @@ describe('CampgroundMarker', () => {
     expect(queryByTestId('mock-marker')).toBeNull();
   });
 });
-

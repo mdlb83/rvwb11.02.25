@@ -28,8 +28,6 @@ interface PhotoViewerModalProps {
   placeId?: string;
   getPhotoUrl: (photoReference: string, placeId?: string) => string | null;
   onClose: () => void;
-  onLoadMorePhotos?: () => void;
-  hasLoadedMorePhotos?: boolean;
 }
 
 export default function PhotoViewerModal({
@@ -39,15 +37,12 @@ export default function PhotoViewerModal({
   placeId,
   getPhotoUrl,
   onClose,
-  onLoadMorePhotos,
-  hasLoadedMorePhotos = false,
 }: PhotoViewerModalProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   // Track screen dimensions and update on orientation change
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
   const orientationListenerRef = useRef<ScreenOrientation.Subscription | null>(null);
-  const isLoadingMoreRef = useRef(false);
   const currentIndexRef = useRef(currentIndex);
   
   // Photo zoom and pan state
@@ -458,23 +453,7 @@ export default function PhotoViewerModal({
       setCurrentIndex(newIndex);
       currentIndexRef.current = newIndex;
     }
-    
-    // Auto-load more photos when user reaches the last photo
-    if (newIndex === photos.length - 1 && onLoadMorePhotos && !hasLoadedMorePhotos && !isLoadingMoreRef.current) {
-      console.log('📸 Reached last photo, auto-loading more...');
-      isLoadingMoreRef.current = true;
-      onLoadMorePhotos();
-      // Reset the flag after a delay to allow for async loading
-      setTimeout(() => {
-        isLoadingMoreRef.current = false;
-      }, 2000);
-    }
   };
-  
-  // Reset loading flag when photos change (new photos loaded)
-  useEffect(() => {
-    isLoadingMoreRef.current = false;
-  }, [photos.length]);
 
   const handleClose = () => {
     onClose();

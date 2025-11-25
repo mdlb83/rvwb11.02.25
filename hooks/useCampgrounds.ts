@@ -5,7 +5,7 @@ import { getBookmarks } from '../utils/bookmarks';
 
 export interface CampgroundFilters {
   state?: string;
-  hookupType?: 'full' | 'partial' | 'all';
+  hookupType?: 'full' | 'partial' | 'none' | 'all';
   searchQuery?: string;
   bookmarked?: boolean;
   bookmarkedIds?: string[];

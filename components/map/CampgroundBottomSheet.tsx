@@ -8,7 +8,7 @@ import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
 import { isBookmarked, toggleBookmark } from '../../utils/bookmarks';
 import { getGoogleMapsDataForEntry } from '../../utils/googleMapsDataLoader';
-import { GoogleMapsData, GoogleMapsPhoto } from '../../types/googleMapsData';
+import { GoogleMapsData } from '../../types/googleMapsData';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
@@ -142,16 +142,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const [googleMapsData, setGoogleMapsData] = useState<GoogleMapsData | undefined>(undefined);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-  const [additionalPhotos, setAdditionalPhotos] = useState<GoogleMapsPhoto[]>([]);
-  const [loadingMorePhotos, setLoadingMorePhotos] = useState(false);
-  const [hasLoadedMorePhotos, setHasLoadedMorePhotos] = useState(false); // Track if Load More has been clicked
-  // Use a ref to track additional photos count to avoid stale closure issues
-  const additionalPhotosRef = useRef<GoogleMapsPhoto[]>([]);
-  
-  // Keep ref in sync with state
-  useEffect(() => {
-    additionalPhotosRef.current = additionalPhotos;
-  }, [additionalPhotos]);
   // Use ref to store pending action immediately, avoiding React state update delays
   const pendingActionRef = useRef<PendingMapAction | null>(null);
   
@@ -188,208 +178,10 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     return photoUrl;
   }, []);
 
-  // Fetch additional photos from Google Places API
-  // Helper function to normalize photo references for comparison
-  const normalizePhotoRef = useCallback((photoRef: string | undefined | null): string => {
-    if (!photoRef) return '';
-    // Remove any whitespace and convert to string
-    const normalized = String(photoRef).trim();
-    // If it contains /photos/, extract just the reference part
-    if (normalized.includes('/photos/')) {
-      return normalized.split('/photos/')[1];
-    }
-    // If it's a full path, get the last segment
-    if (normalized.includes('/')) {
-      return normalized.split('/').pop() || normalized;
-    }
-    // Otherwise return as-is
-    return normalized;
-  }, []);
-
-  const loadMorePhotos = useCallback(async () => {
-    if (!googleMapsData?.placeId || loadingMorePhotos) return;
-
-    const apiKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey || 
-                   Constants.expoConfig?.android?.config?.googleMaps?.apiKey || 
-                   Constants.expoConfig?.extra?.googleMapsApiKey || '';
-    
-    console.log('🔑 API Key check:', {
-      iosKey: !!Constants.expoConfig?.ios?.config?.googleMapsApiKey,
-      androidKey: !!Constants.expoConfig?.android?.config?.googleMaps?.apiKey,
-      extraKey: !!Constants.expoConfig?.extra?.googleMapsApiKey,
-      hasApiKey: !!apiKey,
-      placeId: googleMapsData.placeId
-    });
-    
-    if (!apiKey) {
-      Alert.alert('Error', 'API key not configured. Please ensure GOOGLE_MAPS_IOS_API_KEY or GOOGLE_MAPS_ANDROID_API_KEY is set as an EAS secret.');
-      return;
-    }
-
-    setLoadingMorePhotos(true);
-    try {
-      // Request all photos - the API should return all available photos
-      const url = `https://places.googleapis.com/v1/places/${googleMapsData.placeId}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask': 'photos' // This should return all photos
-        }
-      });
-      
-      console.log('🔍 API Request:', {
-        url,
-        placeId: googleMapsData.placeId,
-        fieldMask: 'photos'
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorText
-        });
-        throw new Error(`API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ API Response received:', {
-        hasPhotos: !!data.photos,
-        photosCount: data.photos?.length || 0
-      });
-      
-      // Use ref to get the latest count (avoids stale closure)
-      const currentAdditionalCount = additionalPhotosRef.current.length;
-      
-      console.log('🔍 Full API response structure:', {
-        hasPhotos: !!data.photos,
-        photosIsArray: Array.isArray(data.photos),
-        photosLength: data.photos?.length,
-        additionalPhotosLength: currentAdditionalCount,
-        additionalPhotosLengthFromState: additionalPhotos.length,
-        hasNextPageToken: !!data.nextPageToken,
-        responseKeys: Object.keys(data)
-      });
-      
-      // Check if there's pagination (though Places API New might not support it for photos)
-      if (data.nextPageToken) {
-        console.log('📄 Found nextPageToken - pagination available:', data.nextPageToken);
-      }
-      
-      if (data.photos && Array.isArray(data.photos)) {
-        const totalPhotosFromAPI = data.photos.length;
-        console.log(`📸 API returned ${totalPhotosFromAPI} total photos`);
-        console.log(`📸 Current additionalPhotos.length (from ref): ${currentAdditionalCount}`);
-        console.log(`📸 Current additionalPhotos.length (from state): ${additionalPhotos.length}`);
-        
-        // NOTE: Google Places API (New) may limit photos returned per request
-        // If totalPhotosFromAPI is 10, that's likely the API limit, not the actual total
-        if (totalPhotosFromAPI === 10) {
-          console.log(`⚠️ API returned exactly 10 photos - this may be the API limit, not the actual total`);
-        }
-        
-        // Calculate how many photos we've already loaded
-        // First 4 are synced, then we have additionalPhotos.length already loaded
-        // Use ref to avoid stale closure issues
-        const alreadyLoadedCount = 4 + currentAdditionalCount;
-        console.log(`📸 Already loaded: ${alreadyLoadedCount} photos (4 synced + ${currentAdditionalCount} additional)`);
-        console.log(`📸 Will start from index ${alreadyLoadedCount} (photo #${alreadyLoadedCount + 1})`);
-        
-        // Check if we've loaded all available photos from this API response
-        if (alreadyLoadedCount >= totalPhotosFromAPI) {
-          console.log(`⚠️ All photos from API response loaded! (${alreadyLoadedCount} >= ${totalPhotosFromAPI})`);
-          if (totalPhotosFromAPI === 10) {
-            Alert.alert(
-              'Info', 
-              `Loaded all available photos (${totalPhotosFromAPI} shown). The Google Places API may limit results to 10 photos per place.`
-            );
-          } else {
-            Alert.alert('Info', `All available photos have been loaded (${totalPhotosFromAPI} total)`);
-          }
-          return;
-        }
-        
-        // Skip photos we've already seen and start from the next one
-        // Load all remaining photos (not just a batch) to avoid hitting limits
-        const startIndex = alreadyLoadedCount;
-        const photosToProcess = data.photos.slice(startIndex);
-        
-        console.log(`📸 Processing photos starting from index ${startIndex} (${photosToProcess.length} photos remaining)`);
-        console.log(`📸 Total photos from API: ${totalPhotosFromAPI}, Already loaded: ${alreadyLoadedCount}, Remaining: ${photosToProcess.length}`);
-        
-        if (photosToProcess.length === 0) {
-          console.log(`⚠️ No photos to process! startIndex=${startIndex}, total=${totalPhotosFromAPI}, alreadyLoaded=${alreadyLoadedCount}`);
-          Alert.alert('Info', `All available photos have been loaded (${totalPhotosFromAPI} total)`);
-          return;
-        }
-        
-        // Extract photo references from the API response
-        // Photo name format: "places/ChIJN1t_tDeuEmsRUsoyG83frY4/photos/AW..."
-        const newPhotos: GoogleMapsPhoto[] = photosToProcess.map((photo: any, index: number) => {
-          const photoName = photo.name || '';
-          const photoRef = normalizePhotoRef(photoName);
-          console.log(`  📷 Photo ${startIndex + index + 1}: ${photoRef.substring(0, 30)}...`);
-          
-          return {
-            photoReference: photoRef,
-            width: photo.widthPx,
-            height: photo.heightPx,
-            attribution: photo.authorAttributions?.[0]?.displayName
-          };
-        });
-
-        console.log(`✅ Extracted ${newPhotos.length} new photos`);
-        
-        if (newPhotos.length > 0) {
-          setAdditionalPhotos(prev => {
-            const updated = [...prev, ...newPhotos];
-            console.log(`✅ Updated additionalPhotos from ${prev.length} to ${updated.length}`);
-            return updated;
-          });
-          
-          // Mark that we've loaded more photos (hide button after first load)
-          setHasLoadedMorePhotos(true);
-          
-          // Check if there are more photos available after this batch
-          const remainingPhotos = totalPhotosFromAPI - (alreadyLoadedCount + newPhotos.length);
-          console.log(`📸 ${remainingPhotos} more photos available after this batch`);
-        } else {
-          console.log(`⚠️ No new photos extracted!`);
-          Alert.alert('Info', 'No additional photos available');
-        }
-      } else {
-        console.log('⚠️ No photos array in API response:', data);
-        Alert.alert('Info', 'No photos found in API response');
-      }
-    } catch (error) {
-      console.error('❌ Error loading more photos:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('❌ Full error details:', {
-        message: errorMessage,
-        error: error,
-        placeId: googleMapsData?.placeId
-      });
-      Alert.alert(
-        'Error Loading Photos', 
-        `Failed to load more photos: ${errorMessage}\n\nPlease check:\n1. API key has Places API (New) enabled\n2. API key has photo access permissions\n3. Check console logs for details`
-      );
-    } finally {
-      setLoadingMorePhotos(false);
-    }
-  }, [googleMapsData, additionalPhotos, loadingMorePhotos, normalizePhotoRef]);
-
-  // Combine synced photos with additional photos
+  // Get photos from Google Maps data
   const allPhotos = useMemo(() => {
-    return [...(googleMapsData?.photos || []), ...additionalPhotos];
-  }, [googleMapsData?.photos, additionalPhotos]);
-
-  // Reset additional photos and Load More state when campground changes
-  useEffect(() => {
-    setAdditionalPhotos([]);
-    setHasLoadedMorePhotos(false);
-  }, [campground]);
+    return googleMapsData?.photos || [];
+  }, [googleMapsData?.photos]);
 
   // Load the "don't show instructions" preference on mount
   useEffect(() => {
@@ -891,17 +683,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
               collapsable={false}
             >
               <View style={styles.header}>
-              <View
-                style={[
-                  styles.badge,
-                  styles.badgeTopRight,
-                  { backgroundColor: campground.hookup_type === 'full' ? theme.primary : theme.warning },
-                ]}
-              >
-                <Text style={[styles.badgeText, { color: theme.buttonText }]}>
-                  {campground.hookup_type === 'full' ? 'Full Hookup' : 'Partial Hookup'}
-                </Text>
-              </View>
               <Text style={[styles.title, { color: theme.text }]}>{campground.campground?.name || `${campground.city}, ${campground.state}`}</Text>
           <View style={styles.subtitleRow}>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
@@ -909,42 +690,13 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             </Text>
             {campground.contributor && (
               <Text style={[styles.contributorTextInline, { color: theme.textSecondary }]}>
-                📍 Submitted by {campground.contributor.name}
-                {campground.contributor.location && ` from ${campground.contributor.location}`}
+                📍 {campground.contributor}
               </Text>
             )}
           </View>
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={[
-              styles.actionButton, 
-              styles.reportButton,
-              { borderColor: theme.error }
-            ]} 
-            onPress={handleReportProblem}
-          >
-            <Ionicons name="warning-outline" size={16} color={theme.error} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[
-              styles.actionButton, 
-              styles.bookmarkButton,
-              { borderColor: theme.text },
-              isBookmarkedState && { 
-                backgroundColor: theme.primary,
-                borderColor: theme.primary 
-              }
-            ]} 
-            onPress={handleBookmark}
-          >
-            <Ionicons 
-              name={isBookmarkedState ? "bookmark" : "bookmark-outline"} 
-              size={16} 
-              color={isBookmarkedState ? theme.buttonText : theme.text} 
-            />
-          </TouchableOpacity>
           <TouchableOpacity 
             style={[
               styles.actionButton, 
@@ -957,59 +709,158 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
             <Text style={[styles.openMapsButtonText, { color: theme.primary }]}>Open in Maps</Text>
           </TouchableOpacity>
         </View>
+        
+        <View style={styles.secondaryButtonContainer}>
+          <TouchableOpacity 
+            style={[
+              styles.secondaryButton, 
+              { borderColor: theme.border, backgroundColor: theme.surface }
+            ]} 
+            onPress={handleReportProblem}
+          >
+            <Ionicons name="warning-outline" size={18} color={theme.error} />
+            <Text style={[styles.secondaryButtonText, { color: theme.error }]}>Report Problem</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[
+              styles.secondaryButton,
+              { borderColor: theme.border, backgroundColor: theme.surface },
+              isBookmarkedState && { 
+                backgroundColor: theme.primary,
+                borderColor: theme.primary 
+              }
+            ]} 
+            onPress={handleBookmark}
+          >
+            <Ionicons 
+              name={isBookmarkedState ? "bookmark" : "bookmark-outline"} 
+              size={18} 
+              color={isBookmarkedState ? theme.buttonText : theme.text} 
+            />
+            <Text style={[
+              styles.secondaryButtonText, 
+              { color: isBookmarkedState ? theme.buttonText : theme.text }
+            ]}>
+              {isBookmarkedState ? 'Bookmarked' : 'Bookmark'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        {campground.campground && (
-          <View style={[styles.section, styles.firstSection]}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Campground Info</Text>
-            <View style={styles.infoText}>
-              {renderHtmlContent(campground.campground.info || 'No information available.')}
+        {/* Campground Info section with tags */}
+        <View style={[styles.section, styles.firstSection]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Campground Info</Text>
+          <View style={styles.tagRow}>
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: campground.hookup_type === 'full' ? theme.primary : campground.hookup_type === 'partial' ? theme.warning : theme.textSecondary },
+              ]}
+            >
+              <Text style={[styles.badgeText, { color: theme.buttonText }]}>
+                {campground.hookup_type === 'full' ? 'Full Hookup' : campground.hookup_type === 'partial' ? 'Partial Hookup' : 'No Hookups'}
+              </Text>
             </View>
-          </View>
-        )}
-
-        {campground.trails.length > 0 && (
-          <View style={[styles.section, styles.trailsSection]}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Bike Trails</Text>
-            {campground.trails.map((trail, index) => (
-              <View key={index} style={[styles.trailCard, { backgroundColor: theme.surfaceSecondary }]}>
-                {trail.name && <Text style={[styles.trailName, { color: theme.text }]}>{trail.name}</Text>}
-                <Text style={[styles.trailInfo, { color: theme.textSecondary }]}>
-                  {trail.distance} • {trail.surface}
+            {campground.cg_notes && campground.cg_notes.length <= 40 && (
+              <View
+                style={[
+                  styles.badge,
+                  { backgroundColor: theme.surfaceSecondary, borderColor: theme.border, borderWidth: 1 },
+                ]}
+              >
+                <Text style={[styles.badgeText, { color: theme.text }]}>
+                  {campground.cg_notes}
                 </Text>
-                {renderHtmlContent(trail.description)}
               </View>
-            ))}
+            )}
           </View>
-        )}
+          {campground.cg_notes && campground.cg_notes.length > 40 && (
+            <View style={styles.infoText}>
+              <Text style={[styles.htmlText, { color: theme.text }]}>
+                {campground.cg_notes}
+              </Text>
+            </View>
+          )}
+          {campground.campground?.link && (
+            <TouchableOpacity 
+              style={[styles.websiteButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.primary }]}
+              onPress={() => Linking.openURL(campground.campground.link!)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="globe-outline" size={18} color={theme.primary} />
+              <Text style={[styles.websiteButtonText, { color: theme.primary }]}>Visit Website</Text>
+              <Ionicons name="open-outline" size={16} color={theme.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
 
-        {campground.blog_post && (() => {
-          // Extract URL and link text from blog_post HTML
-          const urlMatch = campground.blog_post.match(/<a\s+href=['"]([^'"]+)['"][^>]*>(.*?)<\/a>/i);
-          const blogPostUrl = urlMatch ? urlMatch[1] : null;
-          const blogPostTitle = urlMatch ? urlMatch[2].replace(/<[^>]*>/g, '').trim() : null;
+        {(() => {
+          // Combine single trail and trails array, deduplicating by name
+          const rawTrails = [
+            ...(campground.trail ? [campground.trail] : []),
+            ...(campground.trails || [])
+          ].filter(t => t && t.name);
           
-          if (!blogPostUrl) return null;
+          // Deduplicate trails by name (case-insensitive)
+          const seenNames = new Set<string>();
+          const allTrails = rawTrails.filter(t => {
+            const normalizedName = t.name.toLowerCase().trim();
+            if (seenNames.has(normalizedName)) return false;
+            seenNames.add(normalizedName);
+            return true;
+          });
+          
+          if (allTrails.length === 0 && !campground.trail_notes) return null;
           
           return (
-            <TouchableOpacity 
-              style={[styles.blogPostButton, { backgroundColor: theme.primary, shadowColor: theme.shadow }]}
-              onPress={() => {
-                Linking.openURL(blogPostUrl).catch(err => {
-                  console.error('Failed to open blog post URL:', err);
-                  Alert.alert('Error', 'Could not open the blog post link.');
-                });
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="document-text" size={24} color={theme.buttonText} style={styles.blogPostButtonIcon} />
-              <Text style={[styles.blogPostButtonLabel, { color: theme.buttonText }]}>Read blog post</Text>
-              <View style={[styles.blogPostButtonDivider, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }]} />
-              <Text style={[styles.blogPostButtonText, { color: theme.buttonText }]} numberOfLines={2}>
-                {blogPostTitle || 'Related Blog Post'}
-              </Text>
-            </TouchableOpacity>
+            <View style={[styles.section, styles.trailsSection]}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Bike Trails</Text>
+              {campground.trail_notes && (
+                <View style={[styles.trailNotesCard, { backgroundColor: theme.surfaceSecondary }]}>
+                  <Text style={[styles.trailNotesText, { color: theme.textSecondary }]}>{campground.trail_notes}</Text>
+                </View>
+              )}
+              {allTrails.map((trail, index) => (
+                trail.link ? (
+                  <TouchableOpacity 
+                    key={index}
+                    style={[styles.trailButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.primary }]}
+                    onPress={() => Linking.openURL(trail.link!)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="bicycle" size={20} color={theme.primary} style={styles.trailButtonIcon} />
+                    <Text style={[styles.trailButtonText, { color: theme.primary }]} numberOfLines={2}>{trail.name}</Text>
+                    <Ionicons name="open-outline" size={16} color={theme.primary} />
+                  </TouchableOpacity>
+                ) : (
+                  <View key={index} style={[styles.trailButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.border }]}>
+                    <Ionicons name="bicycle" size={20} color={theme.text} style={styles.trailButtonIcon} />
+                    <Text style={[styles.trailButtonText, { color: theme.text }]} numberOfLines={2}>{trail.name}</Text>
+                  </View>
+                )
+              ))}
+            </View>
           );
         })()}
+
+        {campground.blog_post_link && (
+          <TouchableOpacity 
+            style={[styles.blogPostButton, { backgroundColor: theme.primary, shadowColor: theme.shadow }]}
+            onPress={() => {
+              Linking.openURL(campground.blog_post_link!).catch(err => {
+                console.error('Failed to open blog post URL:', err);
+                Alert.alert('Error', 'Could not open the blog post link.');
+              });
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="document-text" size={24} color={theme.buttonText} style={styles.blogPostButtonIcon} />
+            <Text style={[styles.blogPostButtonLabel, { color: theme.buttonText }]}>Read blog post</Text>
+            <View style={[styles.blogPostButtonDivider, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }]} />
+            <Text style={[styles.blogPostButtonText, { color: theme.buttonText }]} numberOfLines={2}>
+              {campground.blog_post || 'Related Blog Post'}
+            </Text>
+          </TouchableOpacity>
+        )}
             </View>
 
         {/* ============================================
@@ -1153,29 +1004,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                       </TouchableOpacity>
                     );
                   })}
-                  
-                    {/* Load More button column on the right - only show if we haven't loaded more photos yet */}
-                    {googleMapsData.placeId && !hasLoadedMorePhotos && (
-                      <View style={styles.loadMoreColumn}>
-                        <TouchableOpacity
-                          style={styles.loadMorePhoto}
-                          activeOpacity={0.9}
-                          onPress={loadMorePhotos}
-                          disabled={loadingMorePhotos}
-                        >
-                          {loadingMorePhotos ? (
-                            <View style={styles.loadMoreContent}>
-                              <Text style={[styles.loadMoreText, { color: theme.textSecondary }]}>Loading...</Text>
-                            </View>
-                          ) : (
-                            <View style={styles.loadMoreContent}>
-                              <Ionicons name="add-circle-outline" size={32} color={theme.primary} />
-                              <Text style={[styles.loadMoreText, { color: theme.textSecondary }]}>Load More</Text>
-                            </View>
-                          )}
-                        </TouchableOpacity>
-                      </View>
-                    )}
                   </View>
                 </ScrollView>
               </View>
@@ -1326,8 +1154,6 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           placeId={googleMapsData.placeId}
           getPhotoUrl={getPhotoUrl}
           onClose={() => setPhotoViewerVisible(false)}
-          onLoadMorePhotos={loadMorePhotos}
-          hasLoadedMorePhotos={hasLoadedMorePhotos}
         />
       )}
     </BottomSheet>
@@ -1360,9 +1186,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
-    marginRight: 120,
-    flexWrap: 'wrap',
-    flexShrink: 1,
   },
   subtitleRow: {
     flexDirection: 'row',
@@ -1375,24 +1198,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flexShrink: 1,
   },
-  badgeContainer: {
+  tagRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     flexWrap: 'wrap',
-    marginTop: 0,
-    marginBottom: 0,
+    gap: 8,
+    marginBottom: 8,
   },
   badge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-  },
-  badgeTopRight: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    zIndex: 1,
   },
   badgeText: {
     fontSize: 12,
@@ -1447,6 +1262,33 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: '100%',
     alignSelf: 'stretch',
+  },
+  trailButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 2,
+    width: '100%',
+  },
+  trailButtonIcon: {
+    marginRight: 12,
+  },
+  trailButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  trailNotesCard: {
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  trailNotesText: {
+    fontSize: 14,
+    lineHeight: 21,
   },
   trailName: {
     fontSize: 16,
@@ -1517,6 +1359,42 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 0,
     alignItems: 'center',
+  },
+  secondaryButtonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  secondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
+  },
+  secondaryButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  websiteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 2,
+    marginTop: 4,
+    gap: 8,
+  },
+  websiteButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    flex: 1,
   },
   actionButton: {
     flex: 1,

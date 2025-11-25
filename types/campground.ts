@@ -1,36 +1,39 @@
-export interface Contributor {
-  name: string;
-  location: string | null;
-}
-
 export interface Trail {
-  description: string;
   name: string;
-  distance: string;
-  surface: string;
+  link?: string | null;
 }
 
 export interface Campground {
   name: string;
-  type: string;
-  info: string;
-  notes: string;
+  link?: string | null;
 }
 
 export interface CampgroundEntry {
   city: string;
   state: string;
-  hookup_type: 'full' | 'partial';
+  hookup_type: 'full' | 'partial' | 'none';
   campground: Campground;
-  trails: Trail[];
-  blog_post: string | null;
-  contributor: Contributor | null;
-  exception?: string;
+  cg_notes?: string;
+  trail?: Trail;
+  trails?: Trail[];
+  trail_notes?: string;
+  directions?: string;
+  other?: string;
+  blog_post?: string;
+  blog_post_link?: string;
+  contributor?: string;
+  contributor_blog?: string;
+  contributor_blog_link?: string;
+  part?: string; // For Part 4/5 entries
   latitude: number;
   longitude: number;
+  placeId?: string;
 }
 
 export interface CampgroundDatabase {
   entries: CampgroundEntry[];
+  metadata?: {
+    version: string;
+    source: string;
+  };
 }
-

@@ -55,7 +55,7 @@ export function mergeCampgroundWithGoogleMaps(
 ): CampgroundEntry & { googleMapsData?: GoogleMapsData } {
   return {
     ...entry,
-    googleMapsData
+    googleMapsData: googleData
   };
 }
 

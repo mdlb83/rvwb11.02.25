@@ -14,13 +14,9 @@ const mockCampgrounds: CampgroundEntry[] = [
     hookup_type: 'full',
     campground: {
       name: 'Test Campground 1',
-      type: 'RV Park',
-      info: 'Test info',
-      notes: 'Test notes',
+      link: 'https://example1.com',
     },
-    trails: [],
-    blog_post: null,
-    contributor: null,
+    cg_notes: 'Test info',
     latitude: 32.2226,
     longitude: -110.9747,
   },
@@ -30,13 +26,9 @@ const mockCampgrounds: CampgroundEntry[] = [
     hookup_type: 'partial',
     campground: {
       name: 'Test Campground 2',
-      type: 'State Park',
-      info: 'Test info 2',
-      notes: '',
+      link: 'https://example2.com',
     },
-    trails: [],
-    blog_post: null,
-    contributor: null,
+    cg_notes: 'Test info 2',
     latitude: 33.4484,
     longitude: -112.074,
   },
@@ -46,13 +38,9 @@ const mockCampgrounds: CampgroundEntry[] = [
     hookup_type: 'full',
     campground: {
       name: 'Test Campground 3',
-      type: 'RV Park',
-      info: 'Test info 3',
-      notes: '',
+      link: 'https://example3.com',
     },
-    trails: [],
-    blog_post: null,
-    contributor: null,
+    cg_notes: 'Test info 3',
     latitude: 39.7392,
     longitude: -104.9903,
   },
@@ -96,9 +84,6 @@ describe('dataLoader utilities', () => {
           state: 'TX',
           hookup_type: 'full' as const,
           campground: null as any,
-          trails: [],
-          blog_post: null,
-          contributor: null,
           latitude: 0,
           longitude: 0,
         },
@@ -179,4 +164,3 @@ describe('dataLoader utilities', () => {
     });
   });
 });
-
