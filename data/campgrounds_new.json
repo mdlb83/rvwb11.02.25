@@ -606,24 +606,6 @@
       "state": "CO",
       "hookup_type": "full",
       "campground": {
-        "name": "Carbondale \u2013 Crystal River KOA",
-        "link": "https://koa.com/campgrounds/carbondale/"
-      },
-      "cg_notes": "RV Park. This is NOT a FHU campground; however, the campground does offer (for a\nfee) a honeywagon service",
-      "trail": {
-        "name": "Crystal Valley Trail",
-        "link": "https://www.carbondale.com/destination/crystal-valley-trail/"
-      },
-      "trail_notes": "The Crystal Valley Trail runs right through the campground. The Crystal Valley Trail\nconnects with the Rio Grande Trail. The Rio Grande Trail is a 42 mile, hard-surfaced multi-use\ntrail.",
-      "latitude": 39.3200851,
-      "longitude": -107.20896719999999,
-      "placeId": "ChIJGabal5dUQIcR2-fEi6VdRfA"
-    },
-    {
-      "city": "Carbondale",
-      "state": "CO",
-      "hookup_type": "full",
-      "campground": {
         "name": "Gateway RV Park",
         "link": "https://www.carbondalerec.com/gateway/"
       },
@@ -6242,24 +6224,6 @@
       "latitude": 41.702011999999996,
       "longitude": -93.68629899999999,
       "placeId": "ChIJT9VG5dSC7ocR4xeR9LY4jB0"
-    },
-    {
-      "city": "Knoxville",
-      "state": "IA",
-      "hookup_type": "partial",
-      "campground": {
-        "name": "Howell Station Campground",
-        "link": "https://www.recreation.gov/camping/campgrounds/233516"
-      },
-      "cg_notes": "Army Corps of Engineers",
-      "trail": {
-        "name": "Volksweg Trail",
-        "link": "http://www.iowabytrail.com/find-a-trail/88/volksweg-trail/"
-      },
-      "trail_notes": "There is easy access to the Volksweg Trail from the campground. This is a 13 mile\nasphalt trail.",
-      "latitude": 41.365034,
-      "longitude": -92.97374669999999,
-      "placeId": "ChIJM_lDc6sv74cRbwKt0bS3VBs"
     },
     {
       "city": "Lake View",
