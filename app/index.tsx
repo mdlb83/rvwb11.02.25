@@ -915,8 +915,8 @@ export default function MapScreen() {
               total={allCampgrounds.length}
               gpsButtonBottom={
                 keyboardHeight > 0 
-                  ? keyboardHeight 
-                  : insets.bottom
+                  ? keyboardHeight + 80 
+                  : insets.bottom + 80
               }
             />
           )}

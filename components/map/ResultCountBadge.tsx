@@ -15,12 +15,12 @@ export default function ResultCountBadge({ count, total, gpsButtonBottom }: Resu
     return null; // Don't show badge when all results are visible
   }
 
-  // Position badge 12px above the filters container
-  // filtersContainer bottom is at gpsButtonBottom (which represents the container bottom)
-  // filtersContainer approximate height: ~60px (padding + button height)
-  // To position badge 12px above filters container top: badgeBottom = gpsButtonBottom + containerHeight + 12
-  const filtersContainerHeight = 60; // Approximate height of filters container
-  const badgeBottom = gpsButtonBottom + filtersContainerHeight + 12;
+  // Position badge above the GPS button
+  // GPS button bottom is at gpsButtonBottom
+  // GPS button height is approximately 44px, add 12px spacing above it
+  const gpsButtonHeight = 44;
+  const spacing = 12;
+  const badgeBottom = gpsButtonBottom + gpsButtonHeight + spacing;
 
   return (
     <View 
