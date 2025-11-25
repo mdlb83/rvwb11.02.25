@@ -60,11 +60,14 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
             !isNaN(campground.latitude) &&
             !isNaN(campground.longitude)
           )
-          .map((campground, index) => {
+          .map((campground) => {
             try {
+              // Use a stable key based on campground identity, not array index
+              // This prevents unnecessary marker recreation during filtering
+              const stableKey = `${campground.city}-${campground.state}-${campground.campground?.name || ''}-${campground.latitude}-${campground.longitude}`;
               return (
                 <CampgroundMarker
-                  key={`${campground.city}-${campground.state}-${index}`}
+                  key={stableKey}
                   campground={campground}
                   onPress={() => onMarkerPress(campground)}
                 />

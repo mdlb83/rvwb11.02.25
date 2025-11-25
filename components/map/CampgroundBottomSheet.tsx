@@ -164,16 +164,24 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
       apiKeyLength: apiKey.length
     });
     
-    if (!apiKey || !placeId) {
-      console.warn('⚠️ getPhotoUrl returning null:', {
-        noApiKey: !apiKey,
-        noPlaceId: !placeId
-      });
+    if (!apiKey) {
+      console.warn('⚠️ getPhotoUrl returning null: no API key');
       return null;
     }
     
-    // Places API (New) photo URL format
-    const photoUrl = `https://places.googleapis.com/v1/places/${placeId}/photos/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
+    // Handle both old format (just photo ID) and new format (full path starting with "places/")
+    let photoUrl: string;
+    if (photoReference.startsWith('places/')) {
+      // New format: photoReference already contains full path
+      photoUrl = `https://places.googleapis.com/v1/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
+    } else if (placeId) {
+      // Old format: need to construct full path
+      photoUrl = `https://places.googleapis.com/v1/places/${placeId}/photos/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
+    } else {
+      console.warn('⚠️ getPhotoUrl returning null: no placeId for old format');
+      return null;
+    }
+    
     console.log('✅ Generated photo URL:', photoUrl.substring(0, 100) + '...');
     return photoUrl;
   }, []);
