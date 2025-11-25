@@ -8,6 +8,7 @@ interface SearchBarProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   onClear?: () => void;
+  onSubmit?: () => void;
   autoFocus?: boolean;
 }
 
@@ -16,6 +17,7 @@ function SearchBar({
   onChangeText,
   placeholder = 'Search campgrounds...',
   onClear,
+  onSubmit,
   autoFocus = false,
 }: SearchBarProps) {
   const { theme } = useTheme();
@@ -57,6 +59,8 @@ function SearchBar({
         placeholderTextColor={theme.textTertiary}
         value={safeValue}
         onChangeText={handleChangeText}
+        onSubmitEditing={onSubmit}
+        returnKeyType="search"
         autoCapitalize="none"
         autoCorrect={false}
         editable={true}

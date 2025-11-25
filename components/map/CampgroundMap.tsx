@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { StyleSheet, View, Platform } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { CampgroundEntry } from '../../types/campground';
 import CampgroundMarker from './CampgroundMarker';
 import { useTheme } from '../../contexts/ThemeContext';
 import { darkMapStyle, lightMapStyle } from '../../utils/mapStyles';
+import { generateCampgroundIdFromEntry } from '../../utils/dataLoader';
 
 interface CampgroundMapProps {
   campgrounds: CampgroundEntry[];
@@ -14,7 +15,7 @@ interface CampgroundMapProps {
   onRegionChangeComplete?: (region: Region) => void;
 }
 
-export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegionChangeComplete }: CampgroundMapProps) {
+function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegionChangeComplete }: CampgroundMapProps) {
   const { resolvedThemeMode } = useTheme();
   const internalMapRef = useRef<MapView>(null);
   const mapRefToUse = mapRef || internalMapRef;
@@ -29,6 +30,30 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
   // Use dark map style when dark mode is enabled
   const mapStyle = resolvedThemeMode === 'dark' ? darkMapStyle : lightMapStyle;
 
+  // Memoize valid campgrounds to prevent recalculation on every render
+  // This helps prevent crashes during rapid filtering
+  const validCampgrounds = useMemo(() => {
+    if (!Array.isArray(campgrounds)) {
+      return [];
+    }
+    
+    return campgrounds.filter((campground) => {
+      try {
+        return (
+          campground &&
+          campground.campground && 
+          typeof campground.latitude === 'number' &&
+          typeof campground.longitude === 'number' &&
+          !isNaN(campground.latitude) &&
+          !isNaN(campground.longitude)
+        );
+      } catch (err) {
+        console.error('Error validating campground:', err, campground);
+        return false;
+      }
+    });
+  }, [campgrounds]);
+
   return (
     <View style={styles.container}>
       <MapView
@@ -41,42 +66,52 @@ export default function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, 
         onPress={onMapPress}
         onRegionChangeComplete={onRegionChangeComplete}
         customMapStyle={mapStyle}
+        // Ensure all markers are rendered, not just those in visible region
+        // This is important when showing all campgrounds after clearing filters
+        removeClippedSubviews={false}
         // Android-specific optimizations for touch handling
         {...(Platform.OS === 'android' && {
           mapPadding: { top: 0, right: 0, bottom: 0, left: 0 },
-          // Ensure map can receive touch events properly on Android 12+
           scrollEnabled: true,
           zoomEnabled: true,
           pitchEnabled: true,
           rotateEnabled: true,
         })}
       >
-        {Array.isArray(campgrounds) && campgrounds
-          .filter((campground) => 
-            campground &&
-            campground.campground && 
-            typeof campground.latitude === 'number' &&
-            typeof campground.longitude === 'number' &&
-            !isNaN(campground.latitude) &&
-            !isNaN(campground.longitude)
-          )
-          .map((campground) => {
-            try {
-              // Use a stable key based on campground identity, not array index
-              // This prevents unnecessary marker recreation during filtering
-              const stableKey = `${campground.city}-${campground.state}-${campground.campground?.name || ''}-${campground.latitude}-${campground.longitude}`;
-              return (
-                <CampgroundMarker
-                  key={stableKey}
-                  campground={campground}
-                  onPress={() => onMarkerPress(campground)}
-                />
-              );
-            } catch (err) {
-              console.error('Error rendering marker:', err, campground);
+        {validCampgrounds.map((campground, index) => {
+          try {
+            // Validate campground before rendering
+            if (!campground || !campground.campground || 
+                typeof campground.latitude !== 'number' || 
+                typeof campground.longitude !== 'number' ||
+                isNaN(campground.latitude) || isNaN(campground.longitude)) {
               return null;
             }
-          })}
+            
+            // Use generateCampgroundIdFromEntry for stable, unique keys
+            // Fallback to index if ID generation fails
+            let stableKey: string;
+            try {
+              stableKey = generateCampgroundIdFromEntry(campground);
+              if (!stableKey) {
+                stableKey = `marker-${index}-${campground.latitude}-${campground.longitude}`;
+              }
+            } catch (err) {
+              stableKey = `marker-${index}-${campground.latitude}-${campground.longitude}`;
+            }
+            
+            return (
+              <CampgroundMarker
+                key={stableKey}
+                campground={campground}
+                onPress={() => onMarkerPress(campground)}
+              />
+            );
+          } catch (err) {
+            console.error('Error rendering marker:', err, campground);
+            return null;
+          }
+        })}
       </MapView>
     </View>
   );
@@ -91,4 +126,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 });
+
+// Export directly without memoization to ensure re-renders when campgrounds change
+export default CampgroundMap;
 

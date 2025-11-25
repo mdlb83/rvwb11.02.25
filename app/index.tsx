@@ -26,7 +26,8 @@ export default function MapScreen() {
   const { theme, toggleTheme, resolvedThemeMode } = useTheme();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  // Search input state - filtering happens in real-time as user types
+  const [searchInput, setSearchInput] = useState('');
   const [selectedHookupType, setSelectedHookupType] = useState<'full' | 'partial' | 'all'>('all');
   const [showBookmarked, setShowBookmarked] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
@@ -34,9 +35,6 @@ export default function MapScreen() {
   const [selectedCampground, setSelectedCampground] = useState<CampgroundEntry | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
-
-  // Safely ensure searchQuery is always a string
-  const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
   
   // Check if user has any bookmarks on mount and when app comes to foreground
   useEffect(() => {
@@ -98,29 +96,37 @@ export default function MapScreen() {
     };
   }, [showBookmarked]);
 
-  // Memoize filters object to prevent unnecessary recalculations in useCampgrounds
-  // Only create new object if values actually changed
-  // Only apply search filter if query is at least 2 characters to reduce rapid recalculations
+  // Create stable key for bookmarkedIds to prevent unnecessary filter recalculations
+  const bookmarkedIdsKey = useMemo(() => {
+    return Array.isArray(bookmarkedIds) ? bookmarkedIds.join(',') : '';
+  }, [bookmarkedIds]);
+  
+  // Memoize filters object - always create a new object to ensure reference changes
+  // Use searchInput for real-time filtering as user types
   const filters: CampgroundFilters = useMemo(() => {
-    const filterObj: CampgroundFilters = {
-      hookupType: selectedHookupType,
-    };
-    // Only filter by search if query is at least 2 characters
-    // This prevents rapid recalculations when typing single characters
-    if (safeSearchQuery.length >= 2) {
-      filterObj.searchQuery = safeSearchQuery;
+    // Always create a new object to ensure React detects changes
+    const filterObj: CampgroundFilters = {};
+    
+    // Only add hookupType if it's not 'all'
+    if (selectedHookupType && selectedHookupType !== 'all') {
+      filterObj.hookupType = selectedHookupType;
     }
-    if (showBookmarked && bookmarkedIds.length > 0) {
+    
+    // Filter by search in real-time if query is at least 2 characters
+    const trimmedQuery = searchInput.trim();
+    if (trimmedQuery && trimmedQuery.length >= 2) {
+      filterObj.searchQuery = trimmedQuery;
+    }
+    
+    // Only add bookmark filter if enabled and has bookmarked IDs
+    if (showBookmarked && bookmarkedIdsKey && Array.isArray(bookmarkedIds) && bookmarkedIds.length > 0) {
       filterObj.bookmarked = true;
-      filterObj.bookmarkedIds = bookmarkedIds;
-      console.log('Filtering with bookmarkedIds:', bookmarkedIds, 'count:', bookmarkedIds.length);
-    } else if (showBookmarked && bookmarkedIds.length === 0) {
-      // Don't apply bookmark filter if we don't have any bookmarked IDs yet
-      // This prevents filtering out everything while bookmarks are loading
-      console.log('Bookmark filter enabled but no bookmarked IDs loaded yet');
+      // Create a new array reference to ensure change detection
+      filterObj.bookmarkedIds = [...bookmarkedIds];
     }
+    
     return filterObj;
-  }, [selectedHookupType, safeSearchQuery, showBookmarked, bookmarkedIds]);
+  }, [selectedHookupType, searchInput, showBookmarked, bookmarkedIdsKey, bookmarkedIds]);
 
   const [retryKey, setRetryKey] = useState(0);
   const { campgrounds, loading, error, allCampgrounds } = useCampgrounds(filters, retryKey);
@@ -151,9 +157,8 @@ export default function MapScreen() {
   // Track if we're auto-selecting from a single search result to skip the selectedCampground effect
   const isAutoSelectingRef = useRef<boolean>(false);
   
-  // Check if we have active filters
-  const safeSearchQueryForFilter = typeof searchQuery === 'string' ? searchQuery.trim() : '';
-  const hasActiveFilters = selectedHookupType !== 'all' || safeSearchQueryForFilter.length > 0 || showBookmarked;
+  // Check if we have active filters based on searchInput (real-time filtering)
+  const hasActiveFilters = selectedHookupType !== 'all' || searchInput.trim().length >= 2 || showBookmarked;
   const hasNoResults = !loading && !error && hasActiveFilters && campgrounds.length === 0;
 
   // Hide splash screen once data is loaded (or error occurs)
@@ -220,16 +225,16 @@ export default function MapScreen() {
       return;
     }
 
-    const safeSearchQueryForZoom = typeof searchQuery === 'string' ? searchQuery.trim() : '';
-    const currentFilterState = `${selectedHookupType}-${safeSearchQueryForZoom}-${showBookmarked ? 'bookmarked' : 'all'}`;
+    // Use searchInput for zoom (real-time filtering)
+    const trimmedSearch = searchInput.trim();
+    const currentFilterState = `${selectedHookupType}-${trimmedSearch}-${showBookmarked ? 'bookmarked' : 'all'}`;
     
     // Skip if we've already zoomed for this filter state
     if (lastFilterStateRef.current === currentFilterState) {
       return;
     }
 
-    // Debounce zoom during rapid typing to prevent crashes
-    // Increased debounce time to 500ms to better handle rapid typing
+    // Debounce zoom to prevent rapid changes while typing
     const timeoutId = setTimeout(() => {
       // Prevent multiple simultaneous zoom operations
       if (isZoomingRef.current) {
@@ -237,8 +242,8 @@ export default function MapScreen() {
       }
 
       // Double-check filter state hasn't changed during debounce
-      const latestSafeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
-      const latestFilterState = `${selectedHookupType}-${latestSafeSearchQuery}-${showBookmarked ? 'bookmarked' : 'all'}`;
+      const latestTrimmedSearch = searchInput.trim();
+      const latestFilterState = `${selectedHookupType}-${latestTrimmedSearch}-${showBookmarked ? 'bookmarked' : 'all'}`;
       if (lastFilterStateRef.current === latestFilterState) {
         return;
       }
@@ -339,7 +344,7 @@ export default function MapScreen() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [campgrounds, hasActiveFilters, selectedHookupType, searchQuery, showBookmarked, loading, error, keyboardHeight, allCampgrounds]);
+  }, [campgrounds, hasActiveFilters, selectedHookupType, searchInput, showBookmarked, loading, error, keyboardHeight, allCampgrounds]);
 
   // Handle deep links to restore campground when user returns from map app
   useEffect(() => {
@@ -544,23 +549,27 @@ export default function MapScreen() {
     );
   }
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    // Reset filter state ref so zoom can happen again if filters are re-applied
-    lastFilterStateRef.current = '';
-  };
-
-  // Safely handle search query changes - ensure it's always a string
+  // Handle search input changes (user typing - doesn't trigger filtering)
   const handleSearchChange = (text: string) => {
     try {
-      // Ensure text is always a string, default to empty string if not
       const safeText = typeof text === 'string' ? text : '';
-      setSearchQuery(safeText);
+      setSearchInput(safeText);
     } catch (err) {
       console.error('Error in handleSearchChange:', err, { text });
-      // Set to empty string on error to prevent crash
-      setSearchQuery('');
+      setSearchInput('');
     }
+  };
+
+  // Handle search submission (user hits enter - just dismiss keyboard since filtering is real-time)
+  const handleSearchSubmit = () => {
+    Keyboard.dismiss();
+  };
+
+  // Handle clearing search (clears input - filtering happens in real-time)
+  const handleClearSearch = () => {
+    setSearchInput('');
+    // Reset filter state ref so zoom can happen again if filters are re-applied
+    lastFilterStateRef.current = '';
   };
 
   const handleMapPress = () => {
@@ -650,8 +659,6 @@ export default function MapScreen() {
 
   // Show empty state when filters return no results
   if (hasNoResults) {
-    // Safely get search query for display
-    const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery.trim() : '';
     return (
       <View style={styles.container}>
         <View style={styles.emptyStateWrapper}>
@@ -660,8 +667,8 @@ export default function MapScreen() {
             message={
               showBookmarked
                 ? 'No bookmarked campgrounds found. Bookmark campgrounds to see them here.'
-                : safeSearchQuery.length > 0
-                ? `No campgrounds match "${safeSearchQuery}". Try adjusting your search or filters.`
+                : searchInput.trim().length >= 2
+                ? `No campgrounds match "${searchInput.trim()}". Try adjusting your search or filters.`
                 : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
             }
             icon="map-outline"
@@ -689,10 +696,11 @@ export default function MapScreen() {
               onBookmarkedChange={() => {}}
             />
             <SearchBar
-              value={typeof searchQuery === 'string' ? searchQuery : ''}
+              value={searchInput}
               onChangeText={handleSearchChange}
+              onSubmit={handleSearchSubmit}
               onClear={handleClearSearch}
-              autoFocus={safeSearchQuery.length > 0}
+              autoFocus={searchInput.length > 0}
             />
             <TouchableOpacity
               style={[styles.addButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
@@ -734,6 +742,7 @@ export default function MapScreen() {
     <View style={styles.container}>
       <View style={styles.mapWrapper} pointerEvents="box-none">
         <CampgroundMap
+          key={`map-${campgrounds.length}-${searchInput.trim()}-${selectedHookupType}-${showBookmarked}`}
           campgrounds={Array.isArray(campgrounds) ? campgrounds : []}
           onMarkerPress={setSelectedCampground}
           onMapPress={handleMapPress}
@@ -933,8 +942,9 @@ export default function MapScreen() {
                 onBookmarkedChange={() => {}}
               />
               <SearchBar
-                value={typeof searchQuery === 'string' ? searchQuery : ''}
+                value={searchInput}
                 onChangeText={handleSearchChange}
+                onSubmit={handleSearchSubmit}
                 onClear={handleClearSearch}
               />
               <TouchableOpacity

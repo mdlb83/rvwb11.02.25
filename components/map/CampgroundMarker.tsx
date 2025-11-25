@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Marker, Callout } from 'react-native-maps';
 import { View, Text, StyleSheet } from 'react-native';
 import { CampgroundEntry } from '../../types/campground';
 import { useTheme } from '../../contexts/ThemeContext';
+import { generateCampgroundIdFromEntry } from '../../utils/dataLoader';
 
 interface CampgroundMarkerProps {
   campground: CampgroundEntry;
   onPress: () => void;
 }
 
-export default function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
+function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
   const { theme } = useTheme();
   
   const getMarkerColor = () => {
@@ -102,5 +103,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
+});
+
+// Memoize to prevent unnecessary re-renders
+// Only re-render if campground ID changes (campground moved or data changed)
+export default memo(CampgroundMarker, (prevProps, nextProps) => {
+  const prevId = generateCampgroundIdFromEntry(prevProps.campground);
+  const nextId = generateCampgroundIdFromEntry(nextProps.campground);
+  // Return true if props are equal (skip re-render), false if different (re-render)
+  return prevId === nextId && prevProps.onPress === nextProps.onPress;
 });
 
