@@ -5104,16 +5104,12 @@
     {
       "city": "Port Townsend",
       "state": "WA",
-      "hookup_type": "full",
+      "hookup_type": "partial",
       "campground": {
         "name": "Fort Worden Historical State Park",
         "link": "https://parks.wa.gov/find-parks/state-parks/fort-worden-historical-state-park"
       },
-      "cg_notes": "State Park. Beach Campground",
-      "trail": {
-        "name": "biking trails within the park",
-        "link": "https://parks.wa.gov/find-parks/state-parks/fort-worden-historical-state-park"
-      },
+      "cg_notes": "State Park. Upper Forest Campground",
       "trail_notes": "There are 8.3 miles of biking trails within the park. The trails are a combination of\npaved and dirt.",
       "latitude": 48.1391503,
       "longitude": -122.76944870000001,
@@ -5327,6 +5323,2724 @@
       "latitude": 43.0257839,
       "longitude": -88.0086966,
       "placeId": "ChIJT3s9UTUFBYgRQK2Mc2FKtSA"
+    },
+    {
+      "city": "Tucson",
+      "state": "AZ",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Catalina State Park",
+        "link": "https://azstateparks.com/catalina"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Tucson Loop",
+        "link": "https://tucsonloop.org/free-tucson-loop-maps/"
+      },
+      "trail_notes": "There is connector trail from the state park to the Tucson Loop which is a paved\nasphalt trail system of about 50 miles.",
+      "contributor": "Thanks to Patrick S from Arizona for emailing in this location!",
+      "latitude": 32.436433,
+      "longitude": -110.909647,
+      "placeId": "ChIJ09NlRfQN1oYRn3QRlQ_8V-s"
+    },
+    {
+      "city": "Little Rock",
+      "state": "AR",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Maumelle Park Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233098?tab=info"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Arkansas River Trail",
+        "link": "https://www.littlerock.gov/residents/bikeped-little-rock/projects/trails-sidepaths/arkansas-river-trail/"
+      },
+      "trail_notes": "The campground is very close to the Arkansas River Trail which is an 88 mile multi-\nuse trail.",
+      "latitude": 34.8309308,
+      "longitude": -92.43547029999999,
+      "placeId": "ChIJ50JPvSOg0ocR6MHXE5bSjiQ"
+    },
+    {
+      "city": "Coronado",
+      "state": "CA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Silver Strand State Beach",
+        "link": "https://www.parks.ca.gov/?page_id=654"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Bayshore Trail",
+        "link": "https://www.sandiego.org/articles/biking/bike-route-bayshore-bikeway.aspx#:~:text=The%20continuous%2C%20paved%20portion%20of,Main%20Street%20in%20Chula%20Vista."
+      },
+      "trail_notes": "A paved portion of the Bayshore Trail goes through the state park. This is a 24 mile\ntrail; however, only 13 miles of it is a car free bicycle path. However, this paved path goes through\nthe park. You can ride about 5 miles north to Coronado and about 5 miles south to Imperial Beach.\non paved trails.",
+      "latitude": 32.639964899999995,
+      "longitude": -117.14167309999999,
+      "placeId": "ChIJPa43HZ9S2YAR_-is2O-G3jk"
+    },
+    {
+      "city": "Half Moon Bay",
+      "state": "CA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Half Moon Bay State Beach",
+        "link": "https://www.parks.ca.gov/?page_id=531"
+      },
+      "cg_notes": "State Park. Francis Beach Campground",
+      "trail": {
+        "name": "Half Moon Coastside Trail",
+        "link": "https://www.parks.ca.gov/?page_id=531"
+      },
+      "trail_notes": "The campground is adjacent to the Half Moon Coastside Trail. This is a three mile trail\nwhich does connect to other trails. For more info, view on Google Maps.",
+      "latitude": 37.480803699999996,
+      "longitude": -122.45168379999998,
+      "placeId": "ChIJvXB09yFzj4ARVpKu59_l40g"
+    },
+    {
+      "city": "Perris",
+      "state": "CA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lake Perris Recreation Area",
+        "link": "https://www.parks.ca.gov/?page_id=651"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail around the lake",
+        "link": "https://www.parks.ca.gov/?page_id=651"
+      },
+      "trail_notes": "There is a 9 mile paved trail around the lake.",
+      "latitude": 33.8685628,
+      "longitude": -117.17661369999999,
+      "placeId": "ChIJ5Uoodqug3IARnmTXX6MpLFM"
+    },
+    {
+      "city": "Carbondale",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Carbondale-Crystal River KOA",
+        "link": "https://koa.com/campgrounds/carbondale/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Crystal Valley Trail",
+        "link": "https://www.carbondale.com/destination/crystal-valley-trail/"
+      },
+      "trails": [
+        {
+          "name": "Crystal Valley Trail",
+          "link": "https://www.carbondale.com/destination/crystal-valley-trail/"
+        },
+        {
+          "name": "Rio Grande Trail",
+          "link": "https://visitglenwood.com/things-to-do/trail-guide/rio-grande-trail/"
+        }
+      ],
+      "trail_notes": "The campground has direct access to the Crystal Valley Trail - which is a 6.5 mile\npaved trail. At the northernmost end, the Crystal Valley Trail connects to the Rio Grande Trail. The\nRio Grande Trail is a 42 mile trail with surfaces of asphalt, concrete and compact gravel.",
+      "latitude": 39.3200851,
+      "longitude": -107.20896719999999,
+      "placeId": "ChIJGabal5dUQIcR2-fEi6VdRfA"
+    },
+    {
+      "city": "Dillon",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lowry Campground",
+        "link": "https://www.fs.usda.gov/r02/whiteriver/recreation/lowry-campground"
+      },
+      "cg_notes": "National Forest. White River National Forest",
+      "trail": {
+        "name": "campground provides access",
+        "link": "https://www.fs.usda.gov/r02/whiteriver/recreation/lowry-campground"
+      },
+      "trail_notes": "The campground provides access to more than 7 miles of paved trail which is part of\nthe 50 mile Summit Country trail system.",
+      "latitude": 39.5969254,
+      "longitude": -106.0263638,
+      "placeId": "ChIJMXbi0NdbaocRGmMtykFIH64"
+    },
+    {
+      "city": "Frisco",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Heaton Bay Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/232220"
+      },
+      "cg_notes": "National Forest. White River National Forest",
+      "trail": {
+        "name": "Summit County Trail System",
+        "link": "https://www.summitcountyco.gov/1130/Recreational-Pathway"
+      },
+      "trail_notes": "This campground is adjacent to the Summit County Trail System. This is a 50 mile trail\nsystem with 7 miles of paved trails.",
+      "latitude": 39.6024561,
+      "longitude": -106.0784482,
+      "placeId": "ChIJB-TnNRBcaocRMOV5phnPAj0"
+    },
+    {
+      "city": "Lakewood",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bear Creek Lake Park",
+        "link": "https://www.lakewood.org/Government/Departments/Community-Resources/Parks-Forestry-and-Open-Space/A-to-Z-Park-List/Bear-Creek-Lake-Park"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "paved trails in the park",
+        "link": "https://www.lakewood.org/Government/Departments/Community-Resources/Parks-Forestry-and-Open-Space/A-to-Z-Park-List/Bear-Creek-Lake-Park/Activities-Inside-BCLP#section-9"
+      },
+      "trail_notes": "There are paved trails in the park which connect to two regional paved trail systems.\nOne is the Bear Creek Trail, and the other is the C-470 Trail.",
+      "latitude": 39.6519513,
+      "longitude": -105.14343869999999,
+      "placeId": "ChIJldssyxSCa4cRJCykqZ5Frsk"
+    },
+    {
+      "city": "Loveland",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Boyd Lake State Park",
+        "link": "https://cpw.state.co.us/state-parks/boyd-lake-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail within the state park",
+        "link": "https://cpw.state.co.us/state-parks/boyd-lake-state-park"
+      },
+      "trail_notes": "There is a paved trail within the state park which joins with Loveland's Recreation\nTrail System at the north and south ends of the park.",
+      "latitude": 40.4315078,
+      "longitude": -105.04522109999999,
+      "placeId": "ChIJ5zTj_rBSaYcRBici35tBQSY"
+    },
+    {
+      "city": "Pueblo",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Arkansas Point Campground",
+        "link": "https://cpw.state.co.us/state-parks/lake-pueblo-state-park/lake-pueblo-state-park-camping-lodging"
+      },
+      "cg_notes": "State Park. Lake Pueblo State Park",
+      "trail_notes": "There is an 8 mile paved path around the lake.",
+      "latitude": 38.2515401,
+      "longitude": -104.7324063,
+      "placeId": "ChIJXTC1wpmZE4cR77ZkdQvOiSc"
+    },
+    {
+      "city": "Pueblo",
+      "state": "CO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Northern Plains Campground",
+        "link": "https://cpw.state.co.us/state-parks/lake-pueblo-state-park/lake-pueblo-state-park-camping-lodging"
+      },
+      "cg_notes": "State Park. Lake Pueblo State Park",
+      "trail_notes": "There is an 8 mile paved path around the lake.",
+      "latitude": 38.2723893,
+      "longitude": -104.7784705,
+      "placeId": "ChIJydCO4b6bE4cRX7hqY1Ycw7c"
+    },
+    {
+      "city": "Lewes",
+      "state": "DE",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Cape Henlopen State Park",
+        "link": "https://destateparks.com/Beaches/CapeHenlopen"
+      },
+      "cg_notes": "State Park",
+      "trail_notes": "There is a 3.2 multi use accessible trail within the state park.",
+      "latitude": 38.7820409,
+      "longitude": -75.10369709999999,
+      "placeId": "ChIJN17aSdS2uIkRQXrfecfsBe8"
+    },
+    {
+      "city": "Brooksville",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Cypress Glen Campground",
+        "link": "https://floridastateforests.reserveamerica.com/camping/cypress-glen-campground-withlacoochee-state-forest/r/campgroundDetails.do?contractCode=FLFS&parkId=1120168#sr_a"
+      },
+      "cg_notes": "State Forest. Withlacoochee State Forest",
+      "trail": {
+        "name": "Withlacoochee State Trail",
+        "link": "https://www.floridastateparks.org/parks-and-trails/withlacoochee-state-trail"
+      },
+      "trail_notes": "The Withlacoochee State Trail is a 47 mile paved trail. This trail is directly across the\nstreet from the entrance station to the campground.",
+      "latitude": 28.570358499999998,
+      "longitude": -82.211473,
+      "placeId": "ChIJtUyUr4v954gRaAJzW8oOLss"
+    },
+    {
+      "city": "Brooksville",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Silver Lake Campground",
+        "link": "https://floridastateforests.reserveamerica.com/camping/silver-lake-campground-withlacoochee-state-forest/r/campgroundDetails.do?contractCode=FLFS&parkId=1120180#sr_a"
+      },
+      "cg_notes": "State Forest. Withlacoochee State Forest",
+      "trail": {
+        "name": "Withlacoochee State Trail",
+        "link": "https://www.floridastateparks.org/parks-and-trails/withlacoochee-state-trail"
+      },
+      "trail_notes": "The Withlacoochee State Trail is a 47 mile paved trail.",
+      "latitude": 28.5763,
+      "longitude": -82.2239371,
+      "placeId": "ChIJy2SHBGIH6IgR5dGRFt6kgMo"
+    },
+    {
+      "city": "DeBary",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lake Monroe Park",
+        "link": "https://www.volusia.org/services/community-services/parks-recreation-and-culture/parks-and-trails/park-facilities-and-locations/ecological-nature-parks/lake-monroe-park.stml"
+      },
+      "cg_notes": "County Park. Call (386) 736-5953 for reservations",
+      "trail": {
+        "name": "Spring to Spring Trail",
+        "link": "https://www.volusia.org/services/community-services/parks-recreation-and-culture/parks-and-trails/trails/spring-to-spring.stml#"
+      },
+      "trail_notes": "The park has easy access to the Spring to Spring Trail. This is a 26 mile paved asphalt\ntrail.",
+      "latitude": 28.840820599999997,
+      "longitude": -81.32199279999999,
+      "placeId": "ChIJf969fxMS54gRc0QGZxAZiT4"
+    },
+    {
+      "city": "Gainesville",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Kate's Fish Camp",
+        "link": "https://katesfishcamp.com/"
+      },
+      "cg_notes": "Campground",
+      "trail": {
+        "name": "Gainesville-Hawthorne State Trail",
+        "link": "https://www.floridastateparks.org/parks-and-trails/gainesville-hawthorne-state-trail"
+      },
+      "trail_notes": "The campground has direct access to the Gainesville-Hawthorne State Trail. This is a\n16 mile paved trail.",
+      "latitude": 29.6120274,
+      "longitude": -82.24879059999999,
+      "placeId": "ChIJjxbITPig6IgRqo_FbVo4aXE"
+    },
+    {
+      "city": "High Springs",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "O'Leno State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/oleno-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "state park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/oleno-state-park/experiences-amenities"
+      },
+      "trails": [
+        {
+          "name": "state park",
+          "link": "https://www.floridastateparks.org/parks-and-trails/oleno-state-park/experiences-amenities"
+        },
+        {
+          "name": "Notes There is a 15 mile paved trail which connects this state park to Ichetucknee Springs",
+          "link": null
+        }
+      ],
+      "latitude": 29.909653100000003,
+      "longitude": -82.5782387,
+      "placeId": "ChIJ-fb5tvLK6IgR5nFhJ6NuEmY"
+    },
+    {
+      "city": "Jacksonville",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Little Talbot Island State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/little-talbot-island-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Timicuan Trail",
+        "link": "https://www.floridastateparks.org/learn/bike-timucuan-trail"
+      },
+      "trail_notes": "In addition to the 2.5 miles of paved trail in the park, there is also also to the\nTimicuan Trail which is part of a larger trail system.",
+      "latitude": 30.454557299999998,
+      "longitude": -81.415296,
+      "placeId": "ChIJnT6NxZFR5IgRoT-dOrhovwc"
+    },
+    {
+      "city": "Keystone Heights",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Mike Roess Gold Head Branch State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/mike-roess-gold-head-branch-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved path",
+        "link": "https://www.floridastateparks.org/parks-and-trails/mike-roess-gold-head-branch-state-park/experiences-amenities#bicycling"
+      },
+      "trails": [
+        {
+          "name": "paved path",
+          "link": "https://www.floridastateparks.org/parks-and-trails/mike-roess-gold-head-branch-state-park/experiences-amenities#bicycling"
+        },
+        {
+          "name": "Palatka-to-Lake Butler State Trail",
+          "link": "https://www.floridastateparks.org/parks-and-trails/palatka-lake-butler-state-trail"
+        }
+      ],
+      "trail_notes": "At the entrance to the state park on State Road 21, there is a 6 mile paved path\nwhich connects to the Palatka-to-Lake Butler State Trail.",
+      "latitude": 29.836919799999997,
+      "longitude": -81.95011889999999,
+      "placeId": "ChIJjVgwm1gJ5ogRtkO-OtEH7bI"
+    },
+    {
+      "city": "Melbourne Beach",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Sebastian Inlet State Park",
+        "link": "https://www.floridastateparks.org/Sebastian-Inlet"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "multi-use paved path",
+        "link": "https://www.floridastateparks.org/parks-and-trails/sebastian-inlet-state-park/experiences-amenities-0#bicycling"
+      },
+      "trail_notes": "A multi-use paved path runs through the state park. This is a 40 mile path which is\nparallel to Highway AIA. There are also three mountain bike trails within the park.",
+      "latitude": 27.85221,
+      "longitude": -80.44794999999999,
+      "placeId": "ChIJ1zHKWAlC3ogRtZKNI2d_kG0"
+    },
+    {
+      "city": "Micanopy",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Paynes Prairie Preserve State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/paynes-prairie-preserve-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "trails in the park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/paynes-prairie-preserve-state-park/experiences-amenities-0#bicycling"
+      },
+      "trails": [
+        {
+          "name": "trails in the park",
+          "link": "https://www.floridastateparks.org/parks-and-trails/paynes-prairie-preserve-state-park/experiences-amenities-0#bicycling"
+        },
+        {
+          "name": "Gainesville-Hawthorne State Trail",
+          "link": "https://www.floridastateparks.org/parks-and-trails/gainesville-hawthorne-state-trail"
+        }
+      ],
+      "trail_notes": "There are over 30 miles of trails in the park, including the 16 mile paved Gainesville-\nHawthorne State Trail.",
+      "latitude": 29.570596199999997,
+      "longitude": -82.3006784,
+      "placeId": "ChIJOcvRfCaf6IgRBNn_MkPaShI"
+    },
+    {
+      "city": "Ocala",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Santos Trailhead & Campground",
+        "link": "https://www.floridastateparks.org/parks-and-trails/santos-trailhead-campground"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Florida Trail",
+        "link": "https://www.floridastateparks.org/index.php/parks-and-trails/santos-trailhead-campground/experiences-amenities#bicycling"
+      },
+      "trail_notes": "This Florida State Park is a trailhead for the 16 mile paved asphalt Florida Trail. It also\nhas mountain biking trails.",
+      "latitude": 29.1055442,
+      "longitude": -82.0937249,
+      "placeId": "ChIJe7HyVc7T54gR8T7Y2L0F1GU"
+    },
+    {
+      "city": "Orange City",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Blue Spring State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/blue-spring-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Spring to Spring Trail",
+        "link": "https://www.volusia.org/services/community-services/parks-recreation-and-culture/parks-and-trails/trails/spring-to-spring.stml"
+      },
+      "trail_notes": "The campground is located adjacent to the Spring to Spring Trail. This is 26 mile\npaved asphalt trail.",
+      "latitude": 28.946701199999996,
+      "longitude": -81.338922,
+      "placeId": "ChIJyYEUav8P54gRatuv_zQzm20"
+    },
+    {
+      "city": "Osprey",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Oscar Scherer State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/oscar-scherer-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Legacy Trail",
+        "link": "https://www.scgov.net/government/parks-recreation-and-natural-resources/find-a-park/specialty-parks/the-legacy-trail"
+      },
+      "trail_notes": "The Legacy Trail runs through the state park. This is a 30 mile paved trail.",
+      "latitude": 27.1807275,
+      "longitude": -82.46023439999999,
+      "placeId": "ChIJZRcWTm5Dw4gRzvoBeUPUQRg"
+    },
+    {
+      "city": "Pensacola Beach",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Fort Pickens Campground",
+        "link": "https://www.nps.gov/guis/planyourvisit/fortpickens-campground.htm"
+      },
+      "cg_notes": "National Seashore. Gulf Islands National Seashore",
+      "trail_notes": "In the National Seashore, there is a designated bike lane which is approximately four\nmiles.",
+      "latitude": 30.323483299999996,
+      "longitude": -87.2745112,
+      "placeId": "ChIJ7eLkMNS5kIgRmxzvWLWK49E"
+    },
+    {
+      "city": "Saint Petersburg",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Fort De Soto Park Campground",
+        "link": "https://pinellas.gov/camping-information"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "paved 7 mile multi-use trail",
+        "link": "https://www.100floridatrails.com/trails/fort-desoto-park-bike.htm"
+      },
+      "trail_notes": "There is a paved 7 mile multi-use trail in the park.",
+      "latitude": 27.636705499999998,
+      "longitude": -82.71962909999999,
+      "placeId": "ChIJZ7mnRVkbw4gRMqzzKDqA39o"
+    },
+    {
+      "city": "Sebring",
+      "state": "FL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Highlands Hammock State Park",
+        "link": "https://www.floridastateparks.org/parks-and-trails/highlands-hammock-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail",
+        "link": "https://www.floridastateparks.org/index.php/parks-and-trails/highlands-hammock-state-park/experiences-amenities-0#bicycling"
+      },
+      "trail_notes": "There is a 3 mile paved trail through the park.",
+      "latitude": 27.470986200000002,
+      "longitude": -81.5304182,
+      "placeId": "ChIJjXHBs8T33IgRcL3-dO1gOSI"
+    },
+    {
+      "city": "Hartwell",
+      "state": "GA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Watsadler",
+        "link": "https://www.recreation.gov/camping/campgrounds/232735"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail_notes": "From the campground gate, take a left and ride down the campground access road.\nAt the main road, there is a grass, bike-able path on the left. This will take you across a portion of\nthe dam to the Hartwell COE Headquarters. The paved path begins behind the headquarters and\ngoes all the way to the power generation plant on the main dam. The total ride is about 3.5 miles\nround trip.",
+      "contributor": "Thanks to Reagan T. for posting this information on Facebook.",
+      "latitude": 34.3409467,
+      "longitude": -82.8433523,
+      "placeId": "ChIJ9ZRpMB9_WIgRn3gRMJZ3OfM"
+    },
+    {
+      "city": "Harrison",
+      "state": "ID",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "City of Harrison RV Park and Campground",
+        "link": "https://www.cityofharrisonid.com/new-page-2"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Trail of the Coeur d'Alenes",
+        "link": "https://parksandrecreation.idaho.gov/parks/trail-coeur-d-alenes/"
+      },
+      "trail_notes": "The Trail of the Coeur d'Alenes is a 73 mile paved trail.",
+      "latitude": 47.4534526,
+      "longitude": -116.7873176,
+      "placeId": "ChIJF0Bp3C4tYFMRB6SXy2TGDh8"
+    },
+    {
+      "city": "Twin Falls",
+      "state": "ID",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Rock Creek RV Park",
+        "link": "https://twinfallscounty.org/make-reservations/"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "Canyon Rim Trail",
+        "link": "https://visitsouthidaho.com/adventure/snake-river-canyon-rim-trails/"
+      },
+      "trail_notes": "From this RV park, you can ride through neighborhoods to get to the Canyon Rim\nTrail. There are additional paved bike trails in the area.",
+      "latitude": 42.565937,
+      "longitude": -114.5002375,
+      "placeId": "ChIJhRYePuOirFQRhaLzd5FgKrk"
+    },
+    {
+      "city": "Bourbonnais",
+      "state": "IL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Kankakee River State Park",
+        "link": "https://dnr.illinois.gov/parks/park.kankakeeriver.html"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Kankakee River Trail",
+        "link": "https://www.enjoyillinois.com/explore/listing/kankakee-river-trail/"
+      },
+      "trail_notes": "The Kankakee River Trail runs through the state park. The trail goes 10.5 miles along\nthe river.",
+      "latitude": 41.2080294,
+      "longitude": -88.0132466,
+      "placeId": "ChIJU2Q93p_ZDYgROmPlCRIwY-8"
+    },
+    {
+      "city": "Carlyle",
+      "state": "IL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Dam East - McNair Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233786?tab=info"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Carlyle Lake Bike Trail",
+        "link": "https://www.mvs.usace.army.mil/Portals/54/docs/recreation/caryle/maps/ComptrollerBikePathMap.pdf?ver=5b4VWj_ALolDnr0N_4ZLWQ%3D%3D"
+      },
+      "trail_notes": "The campground has access to the Carlyle Lake Bike Trail. This is a 10.3 mile paved\npath. This trail goes to town, but there is additional riding across the dam. See the related blog\npost for more information.",
+      "blog_post": "Carlyle Lake - Dam West",
+      "blog_post_link": "https://chambersontheroad.com/2022/10/08/carlyle-lake-dam-west/",
+      "latitude": 38.613187499999995,
+      "longitude": -89.3383125,
+      "placeId": "ChIJ1c-4wZ6BdogR7wwe_buqu-w"
+    },
+    {
+      "city": "Grafton",
+      "state": "IL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Pere Marquette State Park",
+        "link": "https://dnr.illinois.gov/parks/park.peremarquette.html"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Sam Vadalabene Bike Trail",
+        "link": "https://www.enjoyillinois.com/explore/listing/sam-vadalabene-bike-trail"
+      },
+      "trail_notes": "The Sam Vadalabene Bike Trail runs from the state park to Grafton to the City of\nAlton. The bike trail is approximately 20 miles; however, the trail does have some segments where\nit is a dedicated bike lane between Grafton and Alton.",
+      "latitude": 38.972707799999995,
+      "longitude": -90.5424312,
+      "placeId": "ChIJw4tUW4sY34cR1JWcPwgVXR8"
+    },
+    {
+      "city": "Hampton",
+      "state": "IL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Fishermans Corner",
+        "link": "https://www.recreation.gov/camping/campgrounds/233498"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Great River Trail",
+        "link": "https://www.qctrails.org/trails/trail/great-river-trail"
+      },
+      "trail_notes": "Great River Trail. This is a 60 mile trail - mostly paved and separated. Does have\nsegments of bike lanes on the street and a short stretch of road shoulder along Interstate 84.",
+      "latitude": 41.569470599999995,
+      "longitude": -90.3901314,
+      "placeId": "ChIJn_e5cDE_4ocRD_dKEEKhxXE"
+    },
+    {
+      "city": "Palatine",
+      "state": "IL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Camp Reinberg",
+        "link": "https://fpdcc.com/places/locations/camp-reinberg/"
+      },
+      "cg_notes": "County Park. There are 5 RV sites with electrical hook ups",
+      "trail": {
+        "name": "Deer Grove Trails",
+        "link": "https://fpdcc.com/places/locations/deer-grove/"
+      },
+      "trail_notes": "The campground is connected to the Deer Grove Trails system. There are about 4\nmiles of paved trails - a 2.8 mile loop and a 1 mile spur. There are also 10 miles of unpaved trails.",
+      "latitude": 42.142110699999996,
+      "longitude": -88.0612417,
+      "placeId": "ChIJ8W9uboijD4gRk9w2zZmdZtk"
+    },
+    {
+      "city": "Thomson",
+      "state": "IL",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Thomson Causeway Recreation Area",
+        "link": "https://www.recreation.gov/camping/campgrounds/233651"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Mississippi River Trail",
+        "link": "https://www.qctrails.org/trails/trail/mississippi-river-trail-illinois"
+      },
+      "trail_notes": "The central section of the Mississippi River Trail passes beside the campground. It is\n60 miles, mostly paved.",
+      "latitude": 41.9488809,
+      "longitude": -90.11659499999999,
+      "placeId": "ChIJX2hVBqaH4ocRHkXB6YN8ONc"
+    },
+    {
+      "city": "Chesterton",
+      "state": "IN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Indiana Dunes State Park",
+        "link": "https://www.in.gov/dnr/state-parks/parks-lakes/indiana-dunes-state-park/#Trails"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Dunes Kankakee Trail",
+        "link": "https://www.indianatrails.com/dunes-kankakee-trail"
+      },
+      "trails": [
+        {
+          "name": "Dunes Kankakee Trail",
+          "link": "https://www.indianatrails.com/dunes-kankakee-trail"
+        },
+        {
+          "name": "Calumet Trail",
+          "link": "https://www.indianatrails.com/calumet-trail"
+        }
+      ],
+      "trail_notes": "There are several trails within the state park which allow for miles of bike riding.\nThese include the Dunes Kankakee Trail (asphalt) which connects to the Calumet Trail. The\nCalumet Trail is 9.1 miles and has a paved and crushed stone surface.",
+      "contributor": "Thanks to Ken and Martha Wiseman for this suggestion!",
+      "contributor_blog": "rvnavigator.com.",
+      "contributor_blog_link": "http://rvnavigator.com/RV_Navigator/RV_Navigator_Home.html",
+      "latitude": 41.6625588,
+      "longitude": -87.039377,
+      "placeId": "ChIJw_zhNrCkEYgRYVtIRmpsTCg"
+    },
+    {
+      "city": "Eckerty",
+      "state": "IN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Patoka Lake Campground",
+        "link": "https://www.in.gov/dnr/state-parks/parks-lakes/patoka-lake/"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Patoka Bike Trail",
+        "link": "https://patokalakestatepark.com/patoka-lake-bike-trails/"
+      },
+      "trail_notes": "The paved 6 mile Patoka Bike Trail starts at the campground.",
+      "latitude": 38.383700999999995,
+      "longitude": -86.64399879999999,
+      "placeId": "ChIJHVLiJMOWbogRdcMPMtAlGoI"
+    },
+    {
+      "city": "Fort Wayne",
+      "state": "IN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Johnny Appleseed Campground",
+        "link": "https://www.fortwayneparks.org/facilities/johnny-appleseed-campground.html"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Rivergreenway Trail",
+        "link": "https://www.fortwayneparks.org/trails/rivergreenway.html"
+      },
+      "trail_notes": "The Rivergreenway Trail can be accessed from the campground. This is a 25 mile\npaved trail.",
+      "latitude": 41.111998899999996,
+      "longitude": -85.1192379,
+      "placeId": "ChIJu9FF9UPjFYgRl6b99H9oKJI"
+    },
+    {
+      "city": "Kendallville",
+      "state": "IN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bixler Lake Park & Campground",
+        "link": "https://www.kendallvillein.gov/departments/Park/BixlerLakeCampground"
+      },
+      "cg_notes": "City Park. Call (261) 242-6898 during the camping season to make reservations",
+      "trail": {
+        "name": "Fishingline Trail",
+        "link": "https://www.traillink.com/trail/fishing-line-trail-(noble)/"
+      },
+      "trail_notes": "There is a 3.1 mile trail in the park around the lake. You can also ride to the Fishingline\nTrail.",
+      "latitude": 41.4433517,
+      "longitude": -85.2515315,
+      "placeId": "ChIJ_10v3S4VFogRT9KQmDR4eJc"
+    },
+    {
+      "city": "North Liberty",
+      "state": "IN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Potato Creek State Park",
+        "link": "https://www.in.gov/dnr/state-parks/parks-lakes/potato-creek-state-park/#Activities"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "state park",
+        "link": "https://www.in.gov/dnr/state-parks/parks-lakes/potato-creek-state-park/#Activities"
+      },
+      "trail_notes": "There is a 3.2 mile paved bicycle trail within the state park. There is also a 7.4 mile\nmountain bike trail.",
+      "latitude": 41.5350934,
+      "longitude": -86.36167999999999,
+      "placeId": "ChIJdSApEwU2EYgRDAQHuhOZ8jI"
+    },
+    {
+      "city": "Terra Haute",
+      "state": "IN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Hawthorn Park Campground",
+        "link": "https://vigoparks.org/hawthorn-park-3/"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "The Heritage Road National Trail",
+        "link": "https://www.terrehaute.in.gov/departments/parks/parks-information/national-road-heritage-trail.html"
+      },
+      "trail_notes": "There are bike paths within the park; the Heritage Road National Trail is on the park's\nsouth boundary. The Heritage Road National Trail is a 6.5 mile paved trail.",
+      "latitude": 39.491320699999996,
+      "longitude": -87.3271271,
+      "placeId": "ChIJy0QhccpvbYgR3wnpOoWFY1s"
+    },
+    {
+      "city": "Adel",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Island Park Campground",
+        "link": "https://discoveradel.com/island-park-campground/"
+      },
+      "cg_notes": "City Park. Call (515) 993-4525 for reservations",
+      "trail": {
+        "name": "The Raccoon River Valley Trail",
+        "link": "https://www.raccoonrivervalleytrail.org/"
+      },
+      "trail_notes": "You can ride from the campground to the Raccoon River Valley Trail. Directions: Cross\nthe old bridge into the park. Cross the grass to Rapids Street. Turn right, ride to 6th Street. Turn\nleft, ride 6th Street 4 blocks to the bike trail. The Raccoon River Valley Trail is a 72 mile loop with\n89 miles of paved trail.",
+      "directions": "Cross\nthe old bridge into the park. Cross the grass to Rapids Street. Turn right, ride to 6th Street. Turn\nleft, ride 6th Street 4 blocks to the bike trail. The Raccoon River Valley Trail is a 72 mile loop with\n89 miles of paved trail.",
+      "latitude": 41.621629299999995,
+      "longitude": -94.0134715,
+      "placeId": "ChIJwyLjDjc57IcRPdIlx-H4x3c"
+    },
+    {
+      "city": "Clarksville",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Heery Woods State Park Campground",
+        "link": "https://www.mycountyparks.com/county/Butler/Park/Heery-Woods-State-Park-North-Side/Facility/Heery-Woods-State-Park-Campground.aspx"
+      },
+      "cg_notes": "State Park. Call for availability: (319) 278-4237",
+      "trail": {
+        "name": "Rolling Prairie Trail",
+        "link": "https://cedarvalleytrails.org/trails/rolling-prairie-trail/"
+      },
+      "trail_notes": "The campground is near the Rolling Prairie Trail. This is a 28.2 mile paved trail.",
+      "latitude": 42.7708278,
+      "longitude": -92.6665834,
+      "placeId": "ChIJPbZEbr8T8IcRZD3qdMfuiDM"
+    },
+    {
+      "city": "Dawson",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Sportsman Park",
+        "link": "https://www.mycountyparks.com/county/Dallas/Park/Sportsman-Park.aspx"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "The Raccoon River Valley Trail",
+        "link": "https://www.raccoonrivervalleytrail.org/"
+      },
+      "trail_notes": "The campground provides access to The Raccoon River Valley Trail which is a 72 mile\nloop with 89 miles of paved trail.",
+      "latitude": 41.848832200000004,
+      "longitude": -94.20900050000002,
+      "placeId": "ChIJn4QAXSmz7YcRiNhJsInHOJU"
+    },
+    {
+      "city": "Decorah",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Pulpit Rock Campground",
+        "link": "https://parks.decorahia.org/pulpit-rock-campground"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Trout Run Trail",
+        "link": "https://www.mycountyparks.com/county/winneshiek/Park/Trout-Run-Trail.aspx"
+      },
+      "trail_notes": "The campground has easy access to the Trout Run Trail. This is a paved 11 mile trail.",
+      "latitude": 43.299780299999995,
+      "longitude": -91.8094524,
+      "placeId": "ChIJ5fLCGGqt-4cRWxOdMK0ZF3M"
+    },
+    {
+      "city": "Iowa City",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "West Overlook",
+        "link": "https://www.recreation.gov/camping/campgrounds/233671?tab=info"
+      },
+      "cg_notes": "Army Corps of Engineers. Campground on Coralville Lake",
+      "trail": {
+        "name": "network of trails",
+        "link": "https://www.icgov.org/government/departments-and-divisions/parks-and-recreation/parks-and-trails"
+      },
+      "trail_notes": "The campground is located near the network of Iowa City bike trails. A one mile ride\non West Overlook Road will lead to the bike trail which runs along Dubuque Street. West Overlook\nRoad is not a busy road; though, caution should be used. This trail leads into a network of trails in\nIowa City.",
+      "latitude": 41.7241096,
+      "longitude": -91.5440087,
+      "placeId": "ChIJ0-r7gZZC5IcRyWDEDx92U64"
+    },
+    {
+      "city": "Johnston",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bob Stetler Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233432"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Neal Smith",
+        "link": "https://www.traveliowa.com/trails/neal-smith-and-john-pat-dorrian-trails/25/"
+      },
+      "trail_notes": "The Neal Smith trail is 0.7 mile down Camp Road from the campground. The Neal\nSmith trail is a 26 mile paved trail.",
+      "latitude": 41.702011999999996,
+      "longitude": -93.68629899999999,
+      "placeId": "ChIJT9VG5dSC7ocR4xeR9LY4jB0"
+    },
+    {
+      "city": "Knoxville",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Howell Station Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233516"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Volksweg Trail",
+        "link": "http://www.iowabytrail.com/find-a-trail/88/volksweg-trail/"
+      },
+      "trail_notes": "There is easy access to the Volksweg Trail from the campground. This is a 13 mile\nasphalt trail.",
+      "latitude": 41.365034,
+      "longitude": -92.97374669999999,
+      "placeId": "ChIJM_lDc6sv74cRbwKt0bS3VBs"
+    },
+    {
+      "city": "Lake View",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Black Hawk State Park",
+        "link": "https://iowastateparks.reserveamerica.com/camping/black-hawk-state-park/r/campgroundDetails.do?contractCode=IA&parkId=610154"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Sauk Rail Trail",
+        "link": "https://www.traveliowa.com/trails/sauk-rail-trail/22/"
+      },
+      "trail_notes": "The Sauk Rail Trail is a 33 mile hard-surfaced multi-use trail which starts near the\npark. It ends at Swan Lake State Park in Carroll, Iowa.",
+      "latitude": 42.2928718,
+      "longitude": -95.01882979999999,
+      "placeId": "ChIJhUYTDrhS7YcRz0FFQctALa0"
+    },
+    {
+      "city": "Palo",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Morgan Creek County Park",
+        "link": "https://www.linncountyiowa.gov/964/Morgan-Creek-Park"
+      },
+      "cg_notes": "County Park. 7287 Worcester Road. 35 campsites with electricity and water. First-\ncome, first-served only. Open 4/15 - 10/15. A campground expansion is planned. Conservation\noffice: (319) 892-6450",
+      "trail": {
+        "name": "Morgan Creek County Park Loop Trail",
+        "link": "https://www.linncountyiowa.gov/969/Morgan-Creek-Trail"
+      },
+      "trail_notes": "The Morgan Creek County Park Loop Trail is 3.1 miles. However, there are multiple\ntrails in the area and an extension of the trail is planned.",
+      "latitude": 41.9855404,
+      "longitude": -91.7628403,
+      "placeId": "ChIJ1Q2rUgD95IcRhHAenhKXy1I"
+    },
+    {
+      "city": "Pella",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Howell Station Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233516"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Volksweg Trail",
+        "link": "https://www.visitpella.com/do/volksweg_trail/"
+      },
+      "trail_notes": "The Volksweg Trail runs right through the campground. This is a 17 mile asphalt trail.",
+      "latitude": 41.365034,
+      "longitude": -92.97374669999999,
+      "placeId": "ChIJM_lDc6sv74cRbwKt0bS3VBs"
+    },
+    {
+      "city": "Pella",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Wallashuck Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233663?tab=ratings"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Volksweg Trail",
+        "link": "http://www.iowabytrail.com/find-a-trail/88/volksweg-trail/"
+      },
+      "trail_notes": "There is easy access to the Volksweg Trail from the campground. This is a 17 mile\nasphalt trail.",
+      "latitude": 41.4,
+      "longitude": -92.9943667,
+      "placeId": "ChIJK8jBp2Ev74cRavZ0YBnkEKw"
+    },
+    {
+      "city": "Waterloo",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "George Wyth State Park",
+        "link": "https://www.iowadnr.gov/Places-to-Go/State-Parks/Iowa-State-Parks/George-Wyth-State-Park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trails in the park",
+        "link": "https://www.iowadnr.gov/Places-to-Go/State-Parks/Iowa-State-Parks/George-Wyth-State-Park"
+      },
+      "trail_notes": "There are more than 3 miles of paved trails in the park. There are also 10 miles of soft\ntrails in the park. The park trail system is also linked to a 100 mile trail system between Waterloo\nand Cedar Falls.",
+      "latitude": 42.534472799999996,
+      "longitude": -92.40973029999999,
+      "placeId": "ChIJhaDRfzGr-ocROBYmjrSVyqw"
+    },
+    {
+      "city": "Woodward",
+      "state": "IA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Whistlin Donkey",
+        "link": null
+      },
+      "cg_notes": "RV Park. 111 N. Main St. Reservations by text: (515) 795-6786. You may also try calling\nthe Whistlin Donkey Sports Bar & Grill at (515) 438-2629 for more information",
+      "trail": {
+        "name": "High Trestle Trail",
+        "link": "https://www.traveliowa.com/trails/high-trestle-trail/28/"
+      },
+      "trail_notes": "The campground has access to the High Trestle Trail. This is a 25 mile rail trail.",
+      "latitude": 41.859617199999995,
+      "longitude": -93.9212325,
+      "placeId": "ChIJTWMr207N7YcRkHsdYe1_R90"
+    },
+    {
+      "city": "Marysville",
+      "state": "KS",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Marysville City Park",
+        "link": "https://www.cityofmarysvilleks.com/servicesparks"
+      },
+      "cg_notes": "City Park. 6 sites with basic RV or tent needs. Free",
+      "trail": {
+        "name": "Blue River Rail Trail",
+        "link": "https://www.blueriverrailtrail.org/"
+      },
+      "trail_notes": "The Blue River Rail begins in downtown Marysville at the bronze Pony Express\nStatue. The first three blocks are unfinished, followed by three blocks along 7th street. At that\npoint, the trail continues as a crushed limestone trail. It continues for about 13 miles to the\nNebraska state line. There it continues as the Chief Standing Bear Trail to Beatrice and eventually\nit continues as the Homestead Trail in Lincoln.",
+      "latitude": 39.8388153,
+      "longitude": -96.646495,
+      "placeId": "ChIJ8yTb-zQclocR1hpTDSjfYFo"
+    },
+    {
+      "city": "Lexington",
+      "state": "KY",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Kentucky Horse Park Campground",
+        "link": "https://kyhorsepark.com/campground/"
+      },
+      "cg_notes": "Horse Park",
+      "trail": {
+        "name": "Legacy Trail",
+        "link": "https://www.kentuckytourism.com/cycling-kentuckys-legacy-trail"
+      },
+      "trail_notes": "The Legacy Trail is a paved 12 mile trail with opportunities for additional miles\nthrough the Kentucky Horse Park.",
+      "blog_post": "Lexington's Legacy.",
+      "blog_post_link": "https://chambersontheroad.com/2025/07/07/lexingtons-legacy/",
+      "latitude": 38.142253499999995,
+      "longitude": -84.5134975,
+      "placeId": "ChIJPQVfPCdHQogRfHzKsqE1CFE"
+    },
+    {
+      "city": "Baton Rouge",
+      "state": "LA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Farr Park Equestrian Center and RV Campground",
+        "link": "https://www.brec.org/facility/FarrPark"
+      },
+      "cg_notes": "City Park. Reservations are not taken. Call: (225) 769-7805",
+      "trail": {
+        "name": "Mississippi River Levee Trail",
+        "link": "https://downtownbatonrouge.org/discover-downtown/places/levee-bike-path"
+      },
+      "trail_notes": "The campground has access to the Mississippi River Levee Trail. This is a 13 mile trail.",
+      "latitude": 30.384407600000003,
+      "longitude": -91.2070095,
+      "placeId": "ChIJ_VZ6GoCnJoYRhHPsPZkHoKQ"
+    },
+    {
+      "city": "Winter Harbor",
+      "state": "ME",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Schoodic Woods Campground",
+        "link": "https://nps.gov/acad/planyourvisit/schoodic-woods-campground.htm"
+      },
+      "cg_notes": "National Park. Acadia National Park",
+      "trail": {
+        "name": "Frazer Creek Bike Path",
+        "link": "https://www.alltrails.com/trail/us/maine/lower-harbor-trail-and-frazer-creek-bike-path-loop"
+      },
+      "trails": [
+        {
+          "name": "Frazer Creek Bike Path",
+          "link": "https://www.alltrails.com/trail/us/maine/lower-harbor-trail-and-frazer-creek-bike-path-loop"
+        },
+        {
+          "name": "Wonsqueak Bike Path",
+          "link": "https://www.alltrails.com/trail/us/maine/wonsqueak-bike-path-loop"
+        }
+      ],
+      "trail_notes": "There is a network of bike trails in the area including the Frazer Creek Bike Path and\nthe Wonsqueak Bike Path.",
+      "latitude": 44.381354599999995,
+      "longitude": -68.0643703,
+      "placeId": "ChIJJZhgmujHrkwRp47PF7SZjvA"
+    },
+    {
+      "city": "Bourne",
+      "state": "MA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bourne Scenic Park",
+        "link": "https://bournescenicpark.com/"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Cape Cod Canal",
+        "link": "https://www.capecodbikeguide.com/canal.asp"
+      },
+      "trail_notes": "The Cape Cod Canal trail is 7.5 miles and is paved.",
+      "latitude": 41.750853,
+      "longitude": -70.58989199999999,
+      "placeId": "ChIJv8MGiMPI5IkRGxvi8V3UfW0"
+    },
+    {
+      "city": "Sagamore",
+      "state": "MA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Scusset Beach State Reservation",
+        "link": "https://www.mass.gov/locations/scusset-beach-state-reservation"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Cape Cod Canal Pathway",
+        "link": "https://www.savebuzzardsbay.org/places-to-go/cape-cod-canal-bikeway/"
+      },
+      "trail_notes": "The park has access to the Cape Cod Canal Pathway. This is a 7.5 mile (one way)\npaved trail.",
+      "latitude": 41.7789587,
+      "longitude": -70.5121127,
+      "placeId": "ChIJ6fpzdT3K5IkRc9w4N7CRcjs"
+    },
+    {
+      "city": "Salem",
+      "state": "MA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Winter Island Park",
+        "link": "https://www.salemma.gov/winter-island-park"
+      },
+      "cg_notes": "City Park",
+      "trail_notes": "There is a bike line on the road from the campground which leads to a paved trail in\nSalem. NOTE: The bike lane IS ON THE ROAD; however, it is a double lane bike lane. The distance\nfrom the campground to the paved bike trail is about 1.1 mile. The town of Salem has additional\npaved bike trails.",
+      "contributor": "Thanks to Jim B. from Pennsylvania for emailing in this location!",
+      "latitude": 42.526680000000006,
+      "longitude": -70.8691812,
+      "placeId": "ChIJVbkEUEgU44kR-Y9Vp_9e5S8"
+    },
+    {
+      "city": "Alpena",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Alpena County Fairgrounds",
+        "link": "https://www.visitalpena.com/places/alpena-county-fairgrounds/"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "Alpena Bi-Path Trail",
+        "link": "https://www.visitalpena.com/places/alpena-bi-path-trail/"
+      },
+      "trail_notes": "The campground is located near the Alpena Bi-Path Trail. This is a 18.5 mile paved\ntrail.",
+      "latitude": 45.0678365,
+      "longitude": -83.4519833,
+      "placeId": "ChIJGT2_eIJeM00RitFeY3GjCXo"
+    },
+    {
+      "city": "Bay City",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bay City State Park",
+        "link": "https://www2.dnr.state.mi.us/parksandtrails/Details.aspx?id=437&type=SPRK"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Frank N. Andersen Nature Trail",
+        "link": "https://www2.dnr.state.mi.us/parksandtrails/Details.aspx?id=437&type=SPRK"
+      },
+      "trail_notes": "The Frank N. Andersen Nature Trail can be accessed from the campground. This trail\nconnects to the Bay City Trailway System. The Bay City Trailway System is 21 miles of paved\ntrails.",
+      "latitude": 43.666903399999995,
+      "longitude": -83.9057863,
+      "placeId": "ChIJ9USaWExeIYgRwxvxWu8IfT4"
+    },
+    {
+      "city": "Frankfort",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bestie River Campsite",
+        "link": "https://www.betsieriver.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Bestie Valley Trailway",
+        "link": "https://betsievalleytrail.org/"
+      },
+      "trail_notes": "The Bestie Valley Trailway runs right through the campground. This is a 22 mile trail.\nAlmost 6 miles of the trail is paved asphalt. Other parts are gravel, and other areas are an\naggregate.",
+      "contributor": "Thanks to Vickie M. from Bradenton, Florida for emailing in this location!",
+      "latitude": 44.6127423,
+      "longitude": -86.20346029999999,
+      "placeId": "ChIJ1wIsIO90HogRAQ1eszwrYso"
+    },
+    {
+      "city": "Grand Haven",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Grand Haven State Park",
+        "link": "https://www.michigandnr.com/parksandtrails/Details.aspx?type=SPRK&id=449"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Lakeshore Trail",
+        "link": "https://www.michigan.org/property/lakeshore-trail"
+      },
+      "trail_notes": "The Lakeshore Trail is a 20 mile trail which connects Grand Haven State Park with\nHolland State Park.",
+      "latitude": 43.0560329,
+      "longitude": -86.2465314,
+      "placeId": "ChIJRUAZcZiAGYgRB7p_odQ-sEk"
+    },
+    {
+      "city": "Ludington",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "LudingtonState Park",
+        "link": "https://www.michigan.gov/recsearch/parks/Ludington"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "state park",
+        "link": "https://www.michigan.gov/recsearch/parks/Ludington"
+      },
+      "trail_notes": "There are 4 miles of paved trails in the state park. In addition, there are more trails in\nthe state park suitable for fat tire bikes. Also, the road into the park, M-116, is designated as a\nbicycle friendly road. The shoulder is very wide. M-116 could be ridden all the way into Ludington,\nabout 7 miles one way.",
+      "latitude": 44.032350199999996,
+      "longitude": -86.50752229999999,
+      "placeId": "ChIJUfNUPOUVHIgRYFiUqjPhGQY"
+    },
+    {
+      "city": "Petoskey",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Petoskey State Park",
+        "link": "https://www.michigandnr.com/parksandtrails/Details.aspx?id=483&type=SPRK"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Little Traverse Wheelway",
+        "link": "https://www.trailscouncil.org/little-traverse-wheelway/"
+      },
+      "trail_notes": "The Little Traverse Wheelway is a 26 mile paved trail and passes right by the state\npark's entrance.",
+      "latitude": 45.4067167,
+      "longitude": -84.9085162,
+      "placeId": "ChIJNfEFicODSk0R0NGyIMpw-qA"
+    },
+    {
+      "city": "Reed City",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Rambadt City Park",
+        "link": "https://reedcity.org/parks-and-trails.php"
+      },
+      "cg_notes": "City Park. Call (231) 832-2245 for reservations",
+      "trail": {
+        "name": "Pere Marquette Trail",
+        "link": "https://www.peremarquetterailtrail.org/"
+      },
+      "trails": [
+        {
+          "name": "Pere Marquette Trail",
+          "link": "https://www.peremarquetterailtrail.org/"
+        },
+        {
+          "name": "White Pine Trail State Park",
+          "link": "https://www.michigan.org/property/fred-meijer-white-pine-trail-state-park"
+        }
+      ],
+      "trail_notes": "This city park is a 0.4 mile bike ride on a quiet street to the Pere Marquette Trail. The\nPere Marquette Trail intersects the White Pine trail in less than a half of a mile. The Pere\nMarquette Trail is a 30 mile paved trail. The White Pine Trail State Park is a 92 mile linear trail,\nmost of which is asphalt.",
+      "latitude": 43.8847643,
+      "longitude": -85.51455159999999,
+      "placeId": "ChIJkwq0utAlH4gRoIqhMBPz2Q0"
+    },
+    {
+      "city": "Rogers City",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Hoeft State Park",
+        "link": "https://www.michigandnr.com/parksandtrails/Details.aspx?id=456&type=SPRK#overview"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Huron Sunrise Trail",
+        "link": "https://www.us23heritageroute.org/location.asp?ait=cv&cid=31"
+      },
+      "trail_notes": "Near the park's entrance is a connecting trail to the Huron Sunrise Trail. This is an 11\nmile paved trail which runs along Lake Huron shoreline.",
+      "latitude": 45.4637182,
+      "longitude": -83.8835546,
+      "placeId": "ChIJUyFwXcxYNE0Rm8OQdrQH278"
+    },
+    {
+      "city": "South Haven",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Van Buren State Park",
+        "link": "https://www.michigan.org/property/van-buren-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Van Buren State Park Spur Trail",
+        "link": "https://mitrails.org/van-buren-trail-state-park.php"
+      },
+      "trail_notes": "The campground has direct access to the Van Buren State Park Spur Trail which is a\n5.5 mile paved trail which goes to South Haven. Riders can access the Van Buren State Park Trail\nwhich is an additional 12 miles of gravel surface. The Kal-Have State Park Trail connects in South\nHaven and provides an additional 33.5 miles of trail. Kal-Haven State Park Trail is an abandoned\nrailway bed and is made of crushed limestone/slay.",
+      "latitude": 42.3345576,
+      "longitude": -86.3005955,
+      "placeId": "ChIJUV6km4CtEIgRCxTFbPkgQNA"
+    },
+    {
+      "city": "Traverse City",
+      "state": "MI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Traverse City State Park",
+        "link": "https://www2.dnr.state.mi.us/parksandtrails/Details.aspx?type=SPRK&id=501"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "TART",
+        "link": "https://traversetrails.org/"
+      },
+      "trails": [
+        {
+          "name": "TART",
+          "link": "https://traversetrails.org/"
+        },
+        {
+          "name": "Leelanau Trail",
+          "link": "https://traversetrails.org/trails/leelanau-trail/"
+        }
+      ],
+      "trail_notes": "The 10.5 mile paved TART trail runs alongside the park. The Leelanau Trail provides an\nadditional 17 miles of paved trails to ride.",
+      "latitude": 44.7473278,
+      "longitude": -85.5529112,
+      "placeId": "ChIJjZWn9ZfNH4gRifdk2TJliJk"
+    },
+    {
+      "city": "Akeley",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Akeley City Campground",
+        "link": "https://www.akeleycitycampground.com/"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Heartland Trail",
+        "link": "https://www.dnr.state.mn.us/state_trails/heartland/index.html"
+      },
+      "trail_notes": "The campground has direct access to the Heartland Trail. This is a 49 mile multi-use\ntrail. Much of the trail is paved.",
+      "latitude": 47.004337899999996,
+      "longitude": -94.73516149999999,
+      "placeId": "ChIJz-Ah_4MKt1IRRDE602Q_kd8"
+    },
+    {
+      "city": "Bemidji",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lake Bemidji State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00205#trails"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail within the park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00205#trails"
+      },
+      "trails": [
+        {
+          "name": "paved trail within the park",
+          "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00205#trails"
+        },
+        {
+          "name": "Paul Bunyan State Trail",
+          "link": "https://www.dnr.state.mn.us/state_trails/paul_bunyan/index.html"
+        }
+      ],
+      "trail_notes": "The paved trail within the park connects to the Paul Bunyan State Trail which is 115\nmiles long.",
+      "latitude": 47.5351607,
+      "longitude": -94.8268149,
+      "placeId": "ChIJx2xnaCvNuVIRULQYh7imMhI"
+    },
+    {
+      "city": "Brainerd",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Crow Wing State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00139#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "park's trail",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00139#trails"
+      },
+      "trails": [
+        {
+          "name": "park's trail",
+          "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00139#trails"
+        },
+        {
+          "name": "Paul Bunyan State Trail",
+          "link": "https://www.dnr.state.mn.us/state_trails/paul_bunyan/index.html"
+        }
+      ],
+      "trail_notes": "The park's trail is part of the southern section of the Paul Bunyan State Trail which is\n115 miles long.",
+      "latitude": 46.2728199,
+      "longitude": -94.332072,
+      "placeId": "ChIJi86n00KXtlIRN2lglc9B4hQ"
+    },
+    {
+      "city": "Carolton",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Jay Cooke State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00187#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Willard Munger State Trail",
+        "link": "https://www.dnr.state.mn.us/state_trails/willard_munger/index.html"
+      },
+      "trail_notes": "The campground has easy access to the Willard Munger State Trail. This is a 70 mile\npaved trail.",
+      "latitude": 46.6523325,
+      "longitude": -92.3503332,
+      "placeId": "ChIJ_Yd-rEIwrlIRRcla7RTUst8"
+    },
+    {
+      "city": "Centerville",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Rice Creek Chain of Lakes Campground",
+        "link": "https://www.anokacountyparks.com/camping"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "Central Anoka County Regional Trail",
+        "link": "https://www.anokacountyparks.com/central-anoka-county-regional-trail"
+      },
+      "trail_notes": "The campground has easy access to the Central Anoka County Regional Trail. This is a\nwork in progress, but at this time the trail is paved for 16 miles. There are regional trails in the\narea.",
+      "latitude": 45.1716821,
+      "longitude": -93.0695842,
+      "placeId": "ChIJYwGFPsTYslIR4Yren6SJp-w"
+    },
+    {
+      "city": "Duluth",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Spirit Lake Marina & RV",
+        "link": "https://www.spiritlakemarinarv.com/spirit-lake-rv-park/"
+      },
+      "cg_notes": "RV Park. (218) 638-3578",
+      "trail": {
+        "name": "Duluth Lakewalk",
+        "link": "https://duluthmn.gov/parks/parks-listing/lakewalk/"
+      },
+      "trail_notes": "The campground has access to the Duluth Lakewalk. This is an 8 mile paved trail.",
+      "latitude": 46.706778,
+      "longitude": -92.202823,
+      "placeId": "ChIJj-mm0jdJrlIReya7l5OdbDM"
+    },
+    {
+      "city": "East Gull Lake",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Gull Lake Recreation Area",
+        "link": "https://www.recreation.gov/camping/campgrounds/233648"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "East Gull Lake Trail",
+        "link": "https://eastgulllake.govoffice.com/?SEC=ADBEAEB1-F296-4F26-A1A6-F0846E66A2E2"
+      },
+      "trail_notes": "The campground is adjacent to the East Gull Lake Trail. This trail is an 8.5 mile paved\ntrail.",
+      "latitude": 46.410885199999996,
+      "longitude": -94.35259119999999,
+      "placeId": "ChIJTaWGypSUtlIR0zLmHytg46A"
+    },
+    {
+      "city": "Hinckley",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "St. Croix State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00253#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00253#trails"
+      },
+      "trail_notes": "There is a 5.5 mile paved trail which goes from the campground to the beach on Lake\nClayton.",
+      "contributor": "Thanks to John W. for emailing in this campground/trail location!",
+      "latitude": 45.9535558,
+      "longitude": -92.61308869999999,
+      "placeId": "ChIJiQhsKRkMslIRN16qWvGz-ro"
+    },
+    {
+      "city": "Lanesboro",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Sylvan City Park",
+        "link": "https://www.lanesboro.com/list/member/city-of-lanesboro-sylvan-park-campground-3647"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Root River Trail. This is a 42 mile paved trail on an abandoned railroad bed",
+        "link": "https://www.dnr.state.mn.us/state_trails/root_river/index.html"
+      },
+      "trail_notes": "The Root River Trail is a 42 mile paved trail on an abandoned railroad bed.",
+      "latitude": 43.71828,
+      "longitude": -91.97431499999999,
+      "placeId": "ChIJv8hLMZco-ocR4L_TfuvBLTw"
+    },
+    {
+      "city": "Luverne",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Blue Mounds State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00121#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail within the park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00121#trails"
+      },
+      "trail_notes": "There is about 6 miles of paved trail within the park which has connections to another\npaved trail which is 3 miles and goes into Luverne. The total riding is about 15 miles.",
+      "latitude": 43.7048286,
+      "longitude": -96.1892532,
+      "placeId": "ChIJEw2JNSbxi4cRhT60HTA1qRQ"
+    },
+    {
+      "city": "Park Rapids",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Bear Paw Campground",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00181#homepage"
+      },
+      "cg_notes": "State Park. Itasca State Park",
+      "trail": {
+        "name": "six mile paved trail",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00181#trails"
+      },
+      "trail_notes": "There is a six mile paved trail within the park which connects Douglas Lodge to the\nMississippi River headwaters. Cyclists can also ride an additional ten miles on the Wilderness Loop\nDrive; however, it is shared with automobiles.",
+      "latitude": 47.2182909,
+      "longitude": -95.18862999999999,
+      "placeId": "ChIJbaBp7rPzt1IRJdmkocf0rKE"
+    },
+    {
+      "city": "Soudan",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lake Vermilion-Sudan Underground Mine State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00285#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Mesabi Trail",
+        "link": "https://mesabitrail.com/"
+      },
+      "trail_notes": "The Mesabi Trail runs through the state park. This is a 150 mile paved trail.",
+      "latitude": 47.8194422,
+      "longitude": -92.24198349999999,
+      "placeId": "ChIJgzzUFnkRpVIRC7he5F5xwws"
+    },
+    {
+      "city": "Starbuck",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lower Campground",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00166#homepage"
+      },
+      "cg_notes": "State Park. Glacial Lakes State Park",
+      "trail": {
+        "name": "Glacial Ridge Bike Trail",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00166#trails"
+      },
+      "trail_notes": "Take the campground road to the park's entrance. There you can get on the Glacial\nRidge Bike Trail. This is a 5 mile paved trail which goes to the town of Starbuck.",
+      "contributor": "Thanks to John W. for emailing in this campground/trail location!",
+      "latitude": 45.5436135,
+      "longitude": -95.52301469999999,
+      "placeId": "ChIJfV3ox5ddylIRtL3rzp8ReRk"
+    },
+    {
+      "city": "Two Harbors",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Split Rock Lighthouse State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00266#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Gitchi-Gami State Trail",
+        "link": "https://www.dnr.state.mn.us/state_trails/gitchigami/index.html"
+      },
+      "trail_notes": "The Gitchi-Gami State Trail goes through the state park. When completed, this will be\nan 86 mile paved trail. There are currently several sections completed, totaling 33 miles.",
+      "blog_post": "here.\nContributor's Blog: Marie's Meanderings.",
+      "contributor_blog": "Marie's Meanderings.",
+      "contributor_blog_link": "https://mariezhuikov.wordpress.com/",
+      "latitude": 47.193132899999995,
+      "longitude": -91.3942065,
+      "placeId": "ChIJvcX13VhJr1IRdrXFakaY1aI"
+    },
+    {
+      "city": "Waterville",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Sakatah Lake State Park",
+        "link": "https://www.dnr.state.mn.us/state_parks/park.html?id=spk00256#homepage"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Sakatah Singing Hills State Park Trail",
+        "link": "https://www.dnr.state.mn.us/state_trails/sakatah/index.html"
+      },
+      "trail_notes": "The campground has access to the Sakatah Singing Hills State Park Trail. This is a 39\nmile paved trail.",
+      "latitude": 44.2189826,
+      "longitude": -93.5318493,
+      "placeId": "ChIJQ3nu5k-O9ocRIsAuHPc5zno"
+    },
+    {
+      "city": "Winona",
+      "state": "MN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Prairie Island City Campground",
+        "link": "https://www.prairieislandcampground.com/"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Winona",
+        "link": "https://visitwinona.com/faqs/does-winona-have-bike-trails/"
+      },
+      "trail_notes": "There are about seven miles of paved trails in Winona which can be accessed from\nthe campground.",
+      "latitude": 44.075761,
+      "longitude": -91.6792851,
+      "placeId": "ChIJ95aHhFlt-YcRd1A-AkOCJDw"
+    },
+    {
+      "city": "Prentiss",
+      "state": "MS",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lake Jeff Davis",
+        "link": "https://www.mississippilandcan.org/local-resources/Lake-Jeff-Davis-Campground/19673"
+      },
+      "cg_notes": "Conservation. Mississippi Land Conservation Assistance Network. Call for\ninformation: 601 792 8225",
+      "trail": {
+        "name": "Longleaf Trace Trail. This is a 44 mile paved linear trail",
+        "link": "https://www.longleaftrace.org/"
+      },
+      "trail_notes": "The Longleaf Trace Trail is a 44 mile paved linear trail.",
+      "latitude": 31.564870499999998,
+      "longitude": -89.8382992,
+      "placeId": "ChIJoeEzgV3ZnIgROLEpjfjNzRE"
+    },
+    {
+      "city": "Lawson",
+      "state": "MO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Watkins Mill State Park",
+        "link": "https://mostateparks.com/park/watkins-mill-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved bicycle trail",
+        "link": "https://mostateparks.com/page/89871/watkins-mill-state-park-trails"
+      },
+      "trail_notes": "There is a 3.9 paved bicycle trail around the lake in the state park.",
+      "latitude": 39.4035279,
+      "longitude": -94.25972209999999,
+      "placeId": "ChIJda4B5dyvwYcRjR1OYfhMH5I"
+    },
+    {
+      "city": "Park Hills",
+      "state": "MO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "St. Joe State Park",
+        "link": "https://mostateparks.com/park/st-joe-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail",
+        "link": "https://mostateparks.com/sites/mostateparks/files/TrailDetails-PavedBicycleTrail_1.pdf"
+      },
+      "trail_notes": "There is a 12.5 mile paved trail in the state park.",
+      "latitude": 37.808413699999996,
+      "longitude": -90.50320289999999,
+      "placeId": "ChIJv2dvqiBO2IcR-t5ZM5MyS0I"
+    },
+    {
+      "city": "Sedalia",
+      "state": "MO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lazy Liz Horse & RV Campground",
+        "link": "https://www.visitsedaliamo.com/stay/lazy-liz-horse-rv-campground/"
+      },
+      "cg_notes": "RV Park. Phone: (816) 935-2357",
+      "trail": {
+        "name": "Katy Trail",
+        "link": "https://mostateparks.com/park/katy-trail-state-park"
+      },
+      "trail_notes": "The campground is located 0.7 mile from the Katy Trail. The 0.7 mile is on the\nSacajawea Road which is a small country road. The Katy Trail is a 240 mile, crushed limestone\nsurface trail, across Missouri.",
+      "latitude": 38.6720062,
+      "longitude": -93.29016159999999,
+      "placeId": "ChIJUbEObNCJw4cRqMQ_LsLx1OA"
+    },
+    {
+      "city": "Smithville",
+      "state": "MO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Camp Branch or Crow's Creek at Lake Smithville",
+        "link": "https://web2.myvscloud.com/wbwsc/moclaycountywt.wsc/splash.html"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "are 37 miles of 10 foot wide paved asphalt trail",
+        "link": "https://www.claycountymo.gov/departments/commission-departments/parks/trails"
+      },
+      "trail_notes": "There are 37 miles of 10 foot wide paved asphalt trail with the park system.",
+      "latitude": 39.3926789,
+      "longitude": -94.52763329999999,
+      "placeId": "ChIJB8tlzSlQwIcRQGN6rryKEig"
+    },
+    {
+      "city": "Weston",
+      "state": "MO",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Weston Bend State Park",
+        "link": "https://mostateparks.com/park/weston-bend-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "bicycle trail within the park",
+        "link": "https://mostateparks.com/page/89876/weston-bend-state-park-trails"
+      },
+      "trail_notes": "There is a paved 2.8 mile bicycle trail within the park. Also available is the Weston\nBluffs Trail which is a 3.1 mile trail which goes into the town of Weston. Weston Bluffs trail is a\ncombination of asphalt and fined crushed gravel surfaces.",
+      "latitude": 39.392293099999996,
+      "longitude": -94.8656761,
+      "placeId": "ChIJ3ysBpfBvwIcRg4WOtoR02_4"
+    },
+    {
+      "city": "Grand Island",
+      "state": "NE",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "George H Clayton Campground",
+        "link": "https://www.hallcountyne.gov/services/parks_recreation/hall_county_park/camping.php"
+      },
+      "cg_notes": "County Park. This campground has 19 RV sites which are on a first-come, first-served\nbasis. The camping season is April 12 to October 13. The gates are open at 7:30 a.m. until 8:00\np.m",
+      "trail": {
+        "name": "Riverway Trail",
+        "link": "https://www.traillink.com/trail/riverway-trail/"
+      },
+      "trails": [
+        {
+          "name": "Riverway Trail",
+          "link": "https://www.traillink.com/trail/riverway-trail/"
+        },
+        {
+          "name": "St. Joe",
+          "link": "https://www.traillink.com/trail/st-joe-trail/"
+        },
+        {
+          "name": "South Locust Street Trail",
+          "link": "https://www.traillink.com/trail/south-locust-street-trail/"
+        }
+      ],
+      "trail_notes": "The campground is on the 4.5 mile Riverway Trail. This trail does connect to the St.\nJoe Trail and the South Locust Street Trail.",
+      "latitude": 40.8753247,
+      "longitude": -98.37398139999999,
+      "placeId": "ChIJQ1EgGkCEmYcRqmpwu674btM"
+    },
+    {
+      "city": "Kearney",
+      "state": "NE",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Fort Kearny Campground",
+        "link": "https://outdoornebraska.gov/location/fort-kearny-sra/"
+      },
+      "cg_notes": "State Recreation Area. Fort Kearny State Recreation Area. East and West\nCampgrounds",
+      "trail": {
+        "name": "Fort Kearny Hike-Bike Trail",
+        "link": "https://outdoornebraska.gov/location/fort-kearny-shp/"
+      },
+      "trail_notes": "The Fort Kearny Hike-Bike Trail begins at the campground. This is a paved trail. It goes\nfor 1.8 miles to Bassway Strip Wildlife Management Area and then for another 13.2 miles to\nCottonmill Park in Kearney.",
+      "contributor": "Thanks to my friend and fellow blogger, Julia T. for emailing in this location!",
+      "contributor_blog": "Twosnatravels.com.",
+      "contributor_blog_link": "https://norfolkne.gov/government/departments/parks-and-recreation/parks/ta-ha-zouka-park/campground.html",
+      "latitude": 40.65464120000001,
+      "longitude": -98.9894473,
+      "placeId": "ChIJ3eqZK91HmYcR7Wkqre8uU2s"
+    },
+    {
+      "city": "Norfolk",
+      "state": "NE",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Ta-Ha-Zouka Park",
+        "link": "https://norfolkne.gov/government/departments/parks-and-recreation/parks/ta-ha-zouka-park/campground.html"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "The Cowboy Trail",
+        "link": "http://outdoornebraska.gov/cowboytrail/"
+      },
+      "trail_notes": "The Cowboy Trail is a 187 mile Rail-to-Trail of crushed limestone.",
+      "latitude": 42.005055399999996,
+      "longitude": -97.4207998,
+      "placeId": "ChIJbxXmyPE_kIcR7UuKuQEcgeU"
+    },
+    {
+      "city": "Papillion",
+      "state": "NE",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Walnut Creek Campground",
+        "link": "https://www.papillion.org/facilities/facility/details/walnutcreekrecreationarea-14"
+      },
+      "cg_notes": "County Park. Call for reservations: (402) 679-9889",
+      "trail": {
+        "name": "trail around the lake",
+        "link": "https://www.papillion.org/facilities/facility/details/walnutcreekrecreationarea-14"
+      },
+      "trail_notes": "There is a paved 3.1 mile trail around the lake. In addition, there are connecting trails\nto other city trails.",
+      "latitude": 41.1347661,
+      "longitude": -96.07493430000001,
+      "placeId": "ChIJ0WM4OE31k4cRTqT3tYYwDW8"
+    },
+    {
+      "city": "Salamanca",
+      "state": "NY",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Cain Hollow Campground",
+        "link": "https://parks.ny.gov/parks/1/details.aspx"
+      },
+      "cg_notes": "State Park. Allegany State Park",
+      "trail": {
+        "name": "Quaker multi-use trail",
+        "link": "https://parks.ny.gov/parks/1/details.aspx"
+      },
+      "trail_notes": "The Quaker multi-use trail is 7.8 miles and runs from Quaker Beach to Stony Cabin\nTrail. The Quaker multi-use trail can be accessed from the campground.",
+      "latitude": 42.0370919,
+      "longitude": -78.8461837,
+      "placeId": "ChIJg9gsey6d0okR5sQKsZhyynA"
+    },
+    {
+      "city": "Salamanca",
+      "state": "NY",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Red House Campground",
+        "link": "https://parks.ny.gov/parks/73/details.aspx"
+      },
+      "cg_notes": "State Park. Allegany State Park Rte 1",
+      "trail": {
+        "name": "multi-use trail",
+        "link": "https://parks.ny.gov/parks/73/details.aspx"
+      },
+      "trail_notes": "There is a 5.5 mile paved multi-use trail which can be accessed from the A section of\nthe campground.",
+      "latitude": 42.1445742,
+      "longitude": -78.7217855,
+      "placeId": "ChIJVdK9cxKH0okRxMGCKsCo6ns"
+    },
+    {
+      "city": "Bellevue",
+      "state": "OH",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Gotta Getaway RV Park",
+        "link": "https://www.campgroundohio.com/"
+      },
+      "cg_notes": "RV Park. This park does offer a weekly pump out service",
+      "trail": {
+        "name": "North Coast Inland Trail",
+        "link": "https://www.lovemyparks.com/parks/north-coast-inland-trail"
+      },
+      "trail_notes": "The campground is located one-half mile from the North Coast Inland Trail. This is a\n28 mile multi-use trail with crushed limestone and asphalt surfaces. To get to the trail from the\ncampground, cross US 20, go several yards to Sand Hill Road. Take Sand Hill Road to the trail\nentrance. US 20 is a divided road with good visibility.",
+      "contributor": "Thanks to Julia from Alabama for sending in this location!",
+      "contributor_blog": "RetirementRVDream.com.",
+      "contributor_blog_link": "https://www.retirementrvdream.com/",
+      "latitude": 41.2614423,
+      "longitude": -82.7676897,
+      "placeId": "ChIJ72xUd_owOogR833TURuXkaM"
+    },
+    {
+      "city": "Oregon",
+      "state": "OH",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Maumee Bay State Park Campground",
+        "link": "https://ohiodnr.gov/go-and-do/plan-a-visit/find-a-property/maumee-bay-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "bike path in the park",
+        "link": "https://ohiodnr.gov/go-and-do/plan-a-visit/find-a-property/maumee-bay-state-park"
+      },
+      "trail_notes": "There is a 5 mile paved bike path in the park which connects to the City of Oregon\nBike Trail.",
+      "latitude": 41.6778094,
+      "longitude": -83.3913508,
+      "placeId": "ChIJ06eDArudO4gRG54wuhz4iyM"
+    },
+    {
+      "city": "Springfield",
+      "state": "OH",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Buck Creek State Park",
+        "link": "https://ohiodnr.gov/go-and-do/plan-a-visit/find-a-property/buck-creek-state-park"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Buck Creek Trail",
+        "link": "https://www.miamivalleytrails.org/trails/buck-creek-trail"
+      },
+      "trail_notes": "The state park connects to the Buck Creek Trail. This is a paved 6 mile trail which\ndoes connect to other trails.",
+      "latitude": 39.965872999999995,
+      "longitude": -83.729528,
+      "placeId": "ChIJN_AVmSVQP4gR5tuXudNR5Xk"
+    },
+    {
+      "city": "Stow",
+      "state": "OH",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Silver Springs Campground",
+        "link": "https://stowohio.org/338/Stow-Silver-Springs-Campground"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Metro Parks' Bike & Hike Trail",
+        "link": "https://www.summitmetroparks.org/parks-trails/bike-hike-trail/#:~:text=Following%20the%20course%20of%20two,York%20Central%20Railroad%20(NYC)."
+      },
+      "trail_notes": "The campground is adjacent to the Metro Parks' Bike & Hike Trail. This is a 34 mile rail\ntrail.",
+      "latitude": 41.193868099999996,
+      "longitude": -81.40566059999999,
+      "placeId": "ChIJy-4LGwwkMYgR8zR2yQMXclw"
+    },
+    {
+      "city": "Xenia",
+      "state": "OH",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Greene County Expo Center Campground",
+        "link": "https://greenecoexpocenter.com/camping"
+      },
+      "cg_notes": "County Park",
+      "trail": {
+        "name": "Little Miami Scenic Trail",
+        "link": "https://www.miamivalleytrails.org/trails/little-miami-scenic-trail"
+      },
+      "trails": [
+        {
+          "name": "Little Miami Scenic Trail",
+          "link": "https://www.miamivalleytrails.org/trails/little-miami-scenic-trail"
+        },
+        {
+          "name": "Creekside Trail",
+          "link": "https://www.miamivalleytrails.org/trails/creekside-trail"
+        }
+      ],
+      "trail_notes": "The campground has access to the Little Miami Scenic Trail and the Creekside Trail.\nThe Little Miami Scenic Trail is a paved 78 mile trail. The Creekside Trail is a 15 mile paved trail.",
+      "latitude": 39.699408999999996,
+      "longitude": -83.9363755,
+      "placeId": "ChIJiy63RQCZQIgRHfH82UqNSeY"
+    },
+    {
+      "city": "Cascade Locks",
+      "state": "OR",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Viento State Park. Mt. Hood National Forest",
+        "link": "https://stateparks.oregon.gov/index.cfm?do=park.profile&parkId=123"
+      },
+      "cg_notes": "National Forest. Mt. Hood National Forest",
+      "trail": {
+        "name": "Historic Columbia River Highway State Trail",
+        "link": "https://stateparks.oregon.gov/index.cfm?do=park.profile&parkId=113"
+      },
+      "trail_notes": "The campground has access to a 5.6 mile paved section of the Historic Columbia\nRiver Highway State Trail.",
+      "latitude": 45.6957691,
+      "longitude": -121.66603619999998,
+      "placeId": "ChIJa291IjQKllQRzePK1Z3wuk0"
+    },
+    {
+      "city": "Nehalem",
+      "state": "OR",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Nehalem Bay State Park",
+        "link": "https://stateparks.oregon.gov/index.cfm?do=park.profile&parkId=142"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail",
+        "link": "https://stateparks.oregon.gov/index.cfm?do=park.profile&parkId=142"
+      },
+      "trail_notes": "There is a 1.8 mile paved trail which goes through the forest and provides a view of\nthe bay.",
+      "latitude": 45.708626699999996,
+      "longitude": -123.93150809999999,
+      "placeId": "ChIJZ94auTzKlFQRHO6_NKSkCII"
+    },
+    {
+      "city": "Trail",
+      "state": "OR",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Joseph Stewart County Park",
+        "link": "https://jacksoncountyor.gov/departments/parks/camping/joseph_stewart_county_park/index.php"
+      },
+      "trail": {
+        "name": "bike trails within the park",
+        "link": "https://jacksoncountyor.gov/departments/parks/index.php"
+      },
+      "trail_notes": "There are about 6 miles of bike trails within the park.",
+      "latitude": 42.678461399999996,
+      "longitude": -122.6210888,
+      "placeId": "ChIJi3FBdsT6xVQRqV9WOKVp8Qo"
+    },
+    {
+      "city": "Cedar Run",
+      "state": "PA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Pettecote Junction",
+        "link": "https://www.pettecotejunction.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Pine Creek Rail Trail",
+        "link": "https://trails.dcnr.pa.gov/Trails/Trail/TrailView?trailKey=151"
+      },
+      "trail_notes": "The Pine Creek Rail Trail has a hard packed gravel surface and is 62 miles long.",
+      "latitude": 41.5277064,
+      "longitude": -77.4434587,
+      "placeId": "ChIJtQFRMhVHzokRCTe6kfVBt50"
+    },
+    {
+      "city": "Confluence",
+      "state": "PA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Outflow Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/233679"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Great Allegheny Passage",
+        "link": "https://gaptrail.org/"
+      },
+      "trail_notes": "The Great Allegheny Passage is a 150 mile trail.",
+      "latitude": 39.804448,
+      "longitude": -79.3671944,
+      "placeId": "ChIJx7awcUa1yokRKSUNlBgOcqw"
+    },
+    {
+      "city": "Dunbar",
+      "state": "PA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Ohiopyle State Park",
+        "link": "https://www.dcnr.pa.gov/StateParks/FindAPark/OhiopyleStatePark/Pages/default.aspx"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Great Allegheny Passage",
+        "link": "https://gaptrail.org/"
+      },
+      "trail_notes": "The Great Allegheny Passage is a 150 mile trail with 27 miles in Ohiopyle State Park.",
+      "latitude": 39.868021999999996,
+      "longitude": -79.4942011,
+      "placeId": "ChIJncYoN9M1NYgRGQJdA49bkFE"
+    },
+    {
+      "city": "Erie",
+      "state": "PA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lampe Marina Campground",
+        "link": "https://www.porterie.org/lampecampground/"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "Bayfront Bikeway",
+        "link": "https://www.alltrails.com/trail/us/pennsylvania/bayfront-connector-trail-bayfront-bikeway"
+      },
+      "trail_notes": "The campground has a bike path to bay front attractions and to Presque Isle State\nPark. It is about 6.7 miles to the state park. Once at the state park, the trail continues for about\nanother six miles. The campground is also near the Bayfront Bikeway.",
+      "latitude": 42.1505061,
+      "longitude": -80.0782815,
+      "placeId": "ChIJRTKEgJd_LYgRt8mfAbxvwo4"
+    },
+    {
+      "city": "Edisto Island",
+      "state": "SC",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Edisto Beach State Park",
+        "link": null
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "state park",
+        "link": "https://southcarolinaparks.com/edisto-beach"
+      },
+      "trail_notes": "There is a 6.2 mile paved trail which runs right by the campground. Additionally, there\nare several smaller trails within the state park.",
+      "latitude": 32.512746899999996,
+      "longitude": -80.3002291,
+      "placeId": "ChIJoT4sssY6_IgRhCdDMBBFq_Y"
+    },
+    {
+      "city": "Custer",
+      "state": "SD",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Game Lodge Campground",
+        "link": "https://gfp.sd.gov/csp-campgrounds/"
+      },
+      "cg_notes": "State Park. Custer State Park",
+      "trail": {
+        "name": "Creekside Trail",
+        "link": "https://gfp.sd.gov/csp-trails/"
+      },
+      "trail_notes": "The Creekside Trail runs from the Grace Coolidge campground to the park's main\nVisitor Center which is across the street from Game Lodge campground. The trail is about 2 miles\n(one way) and is paved.",
+      "latitude": 43.760774,
+      "longitude": -103.37564689999999,
+      "placeId": "ChIJI5zSquMvfYcRwFGTY44lzIo"
+    },
+    {
+      "city": "Custer",
+      "state": "SD",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Grace Coolidge Campground",
+        "link": "https://gfp.sd.gov/csp-campgrounds/"
+      },
+      "cg_notes": "State Park. Custer State Park",
+      "trail": {
+        "name": "Creekside Trail",
+        "link": "https://gfp.sd.gov/csp-trails/"
+      },
+      "trail_notes": "The Creekside Trail runs from the Grace Coolidge campground to the park's main\nVisitor Center which is across the street from Game Lodge campground. The trail is about 2 miles\n(one way) and is paved.",
+      "latitude": 43.7772325,
+      "longitude": -103.401714,
+      "placeId": "ChIJ67w-pZ4xfYcRTpYO2r8Eb7U"
+    },
+    {
+      "city": "Yankton",
+      "state": "SD",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Chief White Crane Recreation Area",
+        "link": "https://gfp.sd.gov/parks/detail/chief-white-crane-recreation-area/"
+      },
+      "cg_notes": "State Park. South Dakota State Park",
+      "trail_notes": "There is a 7.9 mile paved trail which runs through Lewis & Clark State Recreation\nArea, Pierson Ranch Recreation Area and ends at Chief White Crane Recreation Area. On the west\nside of Pierson Ranch Recreation Area, there is a 4.5 paved trail which takes you into Yankton.",
+      "latitude": 42.8553943,
+      "longitude": -97.461125,
+      "placeId": "ChIJLQyJ4DSfj4cRk67aqfWzTcc"
+    },
+    {
+      "city": "Yankton",
+      "state": "SD",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Cottonwood Recreation Area",
+        "link": "https://www.recreation.gov/camping/campgrounds/233467?tab=info"
+      },
+      "cg_notes": "Army Corps of Engineers. This campground is located near Crofton, NE",
+      "trail": {
+        "name": "paved trail",
+        "link": "https://www.recreation.gov/camping/campgrounds/233467?tab=info"
+      },
+      "trail_notes": "There is a paved trail which runs from Yankton to the Gavins Point Area. There is also\na multi-use trail in the Gavins Point area."
+    },
+    {
+      "city": "Yankton",
+      "state": "SD",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lewis & Clark Recreation Area",
+        "link": "https://gfp.sd.gov/parks/detail/lewis-and-clark-recreation-area/"
+      },
+      "cg_notes": "State Park. South Dakota State Park",
+      "trail_notes": "There is a 7.9 mile paved trail which runs through Lewis & Clark State Recreation\nArea, Pierson Ranch Recreation Area and ends at Chief White Crane Recreation Area. On the west\nside of Pierson Ranch Recreation Area, there is a 4.5 paved trail which takes you into Yankton.",
+      "latitude": 42.867731,
+      "longitude": -97.5217225,
+      "placeId": "ChIJKytYLhScj4cRwsjMnN8r5jk"
+    },
+    {
+      "city": "Yankton",
+      "state": "SD",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Pierson Ranch Recreation Area",
+        "link": "https://gfp.sd.gov/parks/detail/pierson-ranch-recreation-area/"
+      },
+      "cg_notes": "State Park. South Dakota State Park",
+      "trail_notes": "There is a 7.9 mile paved trail which runs through Lewis & Clark State Recreation\nArea, Pierson Ranch Recreation Area and ends at Chief White Crane Recreation Area. On the west\nside of Pierson Ranch Recreation Area, there is a 4.5 paved trail which takes you into Yankton.",
+      "latitude": 42.8731891,
+      "longitude": -97.4854752,
+      "placeId": "ChIJd4mn9uCej4cRZc-VCykGptM"
+    },
+    {
+      "city": "Ashland City",
+      "state": "TN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lock A Recreation Area Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/232627"
+      },
+      "cg_notes": "Army Corps of Engineers. Cheatham Lake",
+      "trail": {
+        "name": "Cumberland River Bicentennial Trail",
+        "link": "http://www.cumberlandrivertrails.org/"
+      },
+      "trail_notes": "The Cumberland River Bicentennial Trail ends at Lock A's day use area. This is a 6.7\nmile paved and compacted gravel trail. The first section of the trail starting from the Lock A area\nis rocky and may be difficult for road bikes.",
+      "latitude": 36.316593,
+      "longitude": -87.1941696,
+      "placeId": "ChIJjwE-4InpZIgRcJwq0tfD7t4"
+    },
+    {
+      "city": "Lawrenceburg",
+      "state": "TN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "David Crockett State Park",
+        "link": "https://tnstateparks.com/parks/david-crockett"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "paved trail",
+        "link": "https://tnstateparks.com/parks/activity-detail/david-crockett-biking"
+      },
+      "trail_notes": "There is a 3 mile paved trail within the park.",
+      "latitude": 35.2547971,
+      "longitude": -87.3587384,
+      "placeId": "ChIJj4DQtEQmY4gR__9NADGnXcw"
+    },
+    {
+      "city": "Tellico Plains",
+      "state": "TN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Indian Boundary Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/232215?tab=info"
+      },
+      "cg_notes": "National Forest. Cherokee National Forest. Trailers and RVs are limited to 26 feet. Call\nthe campground for more information: (423) 253-8400",
+      "trail": {
+        "name": "a 3.2 mile dirt trail",
+        "link": "https://www.alltrails.com/trail/us/tennessee/indian-boundary-lake-trail"
+      },
+      "trail_notes": "There is a 3.2 mile dirt trail which loops around the lake. This is a very popular\ncampground and is in a beautiful area.",
+      "latitude": 35.4014148,
+      "longitude": -84.10606039999999,
+      "placeId": "ChIJY-0K0Z7yXogREJwVAU6xQxQ"
+    },
+    {
+      "city": "Winchester",
+      "state": "TN",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Tims Ford State Park",
+        "link": "https://tnstateparks.com/parks/tims-ford"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "seven miles of paved biking trails",
+        "link": "https://tnstateparks.com/parks/activities/tims-ford"
+      },
+      "trail_notes": "There are seven miles of paved biking trails which connect all the major areas of the\npark. There are also mountain biking trails in the park.",
+      "latitude": 35.2198207,
+      "longitude": -86.2554413,
+      "placeId": "ChIJJVl0oSd-YYgRdCnpPD6i7g0"
+    },
+    {
+      "city": "Georgetown",
+      "state": "TX",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Cedar Breaks Park",
+        "link": "https://www.recreation.gov/camping/campgrounds/232544?tab=info"
+      },
+      "cg_notes": "Army Corps of Engineers",
+      "trail": {
+        "name": "Several paved trails in Georgetown",
+        "link": "https://georgetowntexas.gov/parks/parks_and_trails/trails.php"
+      },
+      "trail_notes": "This trail contains a very steep hill. See the related Blog Post for more info. From\nthe campground, ride the road over the dam to the trail.",
+      "blog_post": "Cedar Breaks Park - Georgetown, Texas",
+      "blog_post_link": "https://chambersontheroad.com/2025/11/04/cedar-breaks-park-georgetown-texas/",
+      "latitude": 30.671143100000002,
+      "longitude": -97.7373576,
+      "placeId": "ChIJjZiKA34qRYYRjUc1BV0dvSg"
+    },
+    {
+      "city": "Mineral Wells",
+      "state": "TX",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Lake Mineral Wells State Park",
+        "link": "https://tpwd.texas.gov/state-parks/lake-mineral-wells"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "The Trailway",
+        "link": "https://tpwd.texas.gov/state-parks/lake-mineral-wells/trailway-1"
+      },
+      "trail_notes": "The Trailway is a 20 mile reclaimed railroad bed which runs through the park.",
+      "latitude": 32.835014099999995,
+      "longitude": -98.0338754,
+      "placeId": "ChIJfV9_5cAdUoYR_sSgJEca924"
+    },
+    {
+      "city": "Needville",
+      "state": "TX",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Brazos Bend State Park",
+        "link": "https://tpwd.texas.gov/state-parks/brazos-bend"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Trails within the Park",
+        "link": "https://tpwd.texas.gov/state-parks/brazos-bend"
+      },
+      "trail_notes": "There are miles of trails within the park. The trails are mostly flat, and the surface is\ndirt and gravel.",
+      "contributor": "Thanks to my friend and fellow blogger, Julia T. for emailing in this location.",
+      "contributor_blog": "Twosnatravels.com.",
+      "contributor_blog_link": "https://twosnatravels.com/",
+      "latitude": 29.370962100000003,
+      "longitude": -95.63192079999999,
+      "placeId": "ChIJmaGBZ5r5QIYRVQmv9bXzvYk"
+    },
+    {
+      "city": "Valley View",
+      "state": "TX",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Johnson Branch",
+        "link": "https://tpwd.texas.gov/state-parks/ray-roberts-lake"
+      },
+      "cg_notes": "Ray Roberts Lake State Park",
+      "trail": {
+        "name": "Cross Timbers Trail",
+        "link": "https://tpwd.texas.gov/state-parks/ray-roberts-lake/jb-trails-info"
+      },
+      "trail_notes": "The Cross Timbers Trail is a 3.9 mile paved path.",
+      "latitude": 33.4297819,
+      "longitude": -97.05646519999999,
+      "placeId": "ChIJ7w5FPo9STIYRhaVZWm01Z3o"
+    },
+    {
+      "city": "Moab",
+      "state": "UT",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Seven Mile RV Park",
+        "link": "https://www.sevenmilervpark.com/"
+      },
+      "cg_notes": "RV Park. Dry and Electric only. Staying 2 or more days grants access to water and\ndump stations",
+      "trail": {
+        "name": "Moab Canyon Pathway",
+        "link": "https://www.discovermoab.com/moab-canyon-pathway/"
+      },
+      "trail_notes": "The Moab Canyon Pathway is located at the entrance to the RV park. This is a 13 mile\npaved trail. Barb from Cottonwood, Arizona reports that from the RV Park entrance, you can do\nthe 12.7 mile ride south to Moab. Then the trail turns and goes up the river. At the intersection\nwhere the trail heads up the river you can hop on the sidewalks and be directly in the town of\nMoab.",
+      "contributor": "Thanks to Barb from Cottonwood, Arizona for emailing in this location!",
+      "latitude": 38.6563446,
+      "longitude": -109.6784227,
+      "placeId": "ChIJeQgomlZzSIcRVyeV1ZPHLOg"
+    },
+    {
+      "city": "Provo",
+      "state": "UT",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Utah Lake Campground",
+        "link": "https://stateparks.utah.gov/parks/utah-lake/"
+      },
+      "cg_notes": "State Park. Utah Lake State Park",
+      "trail": {
+        "name": "Provo River Parkway Trail",
+        "link": "https://www.utahvalley.com/blog/post/provo-river-trail/"
+      },
+      "trail_notes": "The campground is 0.25 mile from the Provo River Parkway Trail. This is a paved,\nmulti-use 15 mile trail.",
+      "contributor": "Thanks to Barb from Cottonwood, Arizona for emailing in this location!",
+      "latitude": 40.2378421,
+      "longitude": -111.7362163,
+      "placeId": "ChIJ3_927sGbTYcRPkn3UMYjQws"
+    },
+    {
+      "city": "Newport",
+      "state": "VT",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Prouty Beach Campground",
+        "link": "https://www.newportrecreation.org/proutybeach.html"
+      },
+      "cg_notes": "City Park",
+      "trail": {
+        "name": "The Newport Recreation Path",
+        "link": "https://www.newportrecreation.org/things-to-do.html"
+      },
+      "trail_notes": "The Newport Recreation Path runs right through the campground. This is a 7 mile rail\ntrail which is crushed stone and paved. The trail runs connects with the Beebe Spur which goes\ninto Canada, so passports would be needed.",
+      "latitude": 44.9476551,
+      "longitude": -72.20829429999999,
+      "placeId": "ChIJraQtv-9xtkwRGseeDUDQV68"
+    },
+    {
+      "city": "Chehalis",
+      "state": "WA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Rainbow Falls State Park",
+        "link": "https://www.parks.wa.gov/570/Rainbow-Falls"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Willapa Hill State Park",
+        "link": "https://www.parks.wa.gov/1023/Willapa-Hills-Trail"
+      },
+      "trail_notes": "The Willapa Hill State Park runs through Rainbow Falls State Park. This is a 56 mile\ntrail with its surface being some asphalt and some compacted gravel.",
+      "latitude": 46.634344,
+      "longitude": -123.2340902,
+      "placeId": "ChIJWYfaJKjCk1QRTZkNmdw7C4c"
+    },
+    {
+      "city": "Cle Elum",
+      "state": "WA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Eagle Valley Campground",
+        "link": "https://www.eaglevalleycamp.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Palouse to Cascades State Trail",
+        "link": "https://www.parks.wa.gov/521/Palouse-to-Cascades-Trail"
+      },
+      "trail_notes": "The campground is about one mile from the Palouse to Cascades State Trail. To reach\nthe trail, ride on from the campground road to Watson Cutoff Road to the trail. The Palouse to\nCascades State Trail is a 250 mile trail with varying surfaces. The state is working to improve the\nsurface of the trail.",
+      "latitude": 47.1658063,
+      "longitude": -120.88160669999999,
+      "placeId": "ChIJ68DHWOoamlQRbA7XUeSMQeQ"
+    },
+    {
+      "city": "Nine Mile Falls",
+      "state": "WA",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Riverside State Park",
+        "link": "https://wa-washingtonstateparks.civicplus.com/573/Riverside"
+      },
+      "cg_notes": "State Park. Nine Mile Recreation Area",
+      "trail": {
+        "name": "Spokane River Centennial Trail",
+        "link": "https://www.parks.wa.gov/487/Centennial-Trail"
+      },
+      "trail_notes": "The Spokane River Centennial Trail goes through the park. This is a 40 mile paved\ntrail",
+      "latitude": 47.751788499999996,
+      "longitude": -117.5436475,
+      "placeId": "ChIJ28vATfUanlQR_2elwnsJrQc"
+    },
+    {
+      "city": "Cairo",
+      "state": "WV",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "North Bend State Park",
+        "link": "https://wvstateparks.com/park/north-bend-state-park/"
+      },
+      "cg_notes": "State Park. River Run Campground",
+      "trail": {
+        "name": "North Bend Rail Trail",
+        "link": "https://wvstateparks.com/park/north-bend-rail-trail/"
+      },
+      "trail_notes": "The North Bend Rail Trail is a 72 mile crushed limestone trail.",
+      "contributor": "Thanks to Tony C. from Detroit, Michigan for emailing in this location!",
+      "latitude": 39.2206591,
+      "longitude": -81.0868344,
+      "placeId": "ChIJcfIsEoWWSYgRXMk-KFpSJQY"
+    },
+    {
+      "city": "Marlinton",
+      "state": "WV",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Riverside Campground",
+        "link": "https://wvstateparks.com/park/watoga-state-park/"
+      },
+      "cg_notes": "State Park. Watoga State Park",
+      "trail": {
+        "name": "Greenbrier River Trail",
+        "link": "https://wvstateparks.com/park/greenbrier-river-trail/"
+      },
+      "trail_notes": "The Greenbrier River Trail can be accessed from the campground by riding on the\nroad to the campground for about one and a half miles to Seebert. The Greenbrier River Trail is a\n78 mile rail trail.",
+      "latitude": 38.111388,
+      "longitude": -80.1779379,
+      "placeId": "ChIJ3zZ284d8TIgR2i7DitRhCHk"
+    },
+    {
+      "city": "Blue Mounds",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Blue Mound State Park",
+        "link": "https://dnr.wisconsin.gov/topic/parks/bluemound"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Military Ridge State Trail",
+        "link": "https://dnr.wisconsin.gov/topic/parks/militaryridge/info"
+      },
+      "trail_notes": "The campground is adjacent to the Military Ridge State Trail. This is a 40 mile trail,\nmostly of crushed stone but with a small section of asphalt.",
+      "latitude": 43.0287108,
+      "longitude": -89.84706369999999,
+      "placeId": "ChIJb5bK862aB4gR6zHDdNiDt48"
+    },
+    {
+      "city": "Cornell",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Brunet Island State Park",
+        "link": "https://dnr.wisconsin.gov/topic/parks/brunetisland"
+      },
+      "cg_notes": "State Park. North Campground is dry camping. South Campground has partial\nhookups",
+      "trail": {
+        "name": "one mile hike/bike connector trail",
+        "link": "https://dnr.wisconsin.gov/topic/parks/brunetisland/recreation/biking"
+      },
+      "trails": [
+        {
+          "name": "one mile hike/bike connector trail",
+          "link": "https://dnr.wisconsin.gov/topic/parks/brunetisland/recreation/biking"
+        },
+        {
+          "name": "Old Abe State Trail",
+          "link": "https://dnr.wisconsin.gov/topic/parks/oldabe"
+        }
+      ],
+      "trail_notes": "There is a one mile hike/bike connector trail from the state park's entrance to the Old\nAbe State Trail which is a 20 mile paved trail.",
+      "latitude": 45.1799484,
+      "longitude": -91.1613807,
+      "placeId": "ChIJA9LS9Z5Zq1IRDicQdHrR4So"
+    },
+    {
+      "city": "Fish Creek",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Peninsula State Park",
+        "link": "https://dnr.wisconsin.gov/topic/parks/peninsula"
+      },
+      "cg_notes": "State Park. There are 5 campgrounds in the park offering dry camping and sites with\nelectrical hook ups",
+      "trail": {
+        "name": "Sunset Trail",
+        "link": "https://dnr.wisconsin.gov/topic/parks/peninsula/recreation/biking"
+      },
+      "trail_notes": "The Sunset Trail is 9.6 miles of fine gravel. The park also offers 12 miles of off road\nbiking.",
+      "latitude": 45.150537,
+      "longitude": -87.2199596,
+      "placeId": "ChIJx0o0bs9HTU0RACXR2HZDZnI"
+    },
+    {
+      "city": "Madison",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "William G. Lunney Lake Farm County Park",
+        "link": "https://www.danecountyparks.com/park/William-G-Lunney-Lake-Farm"
+      },
+      "cg_notes": "County Park. This park is part of Capital Springs Recreation Area. Electrical Hook ups",
+      "trail": {
+        "name": "Capital City State Trail",
+        "link": "https://parks-lwrd.countyofdane.com/Trail/Capital-City-State-Trail"
+      },
+      "trails": [
+        {
+          "name": "Capital City State Trail",
+          "link": "https://parks-lwrd.countyofdane.com/Trail/Capital-City-State-Trail"
+        },
+        {
+          "name": "Lower Yahara River Trail",
+          "link": "https://parks-lwrd.countyofdane.com/Trail/Lower-Yahara-River-Trail"
+        }
+      ],
+      "trail_notes": "This campground has two paved trails going through the park. Capital City State Trail\nis a 20 mile paved trail. The Lower Yahara River Trail is a 2.5 off road connection between\nMadison and McFarland.",
+      "latitude": 43.030875599999995,
+      "longitude": -89.3361752,
+      "placeId": "ChIJgw6E2KVTBogRZcy3tnUl9GY"
+    },
+    {
+      "city": "Trempealeau",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Perrot State Park",
+        "link": "https://dnr.wisconsin.gov/topic/parks/perrot"
+      },
+      "cg_notes": "State Park",
+      "trail": {
+        "name": "Great River State Trail",
+        "link": "https://dnr.wisconsin.gov/topic/parks/greatriver"
+      },
+      "trail_notes": "The park's campground has direct access to the Great River State Trail. This is a 24\nmile trail with a surface of crushed limestone.",
+      "latitude": 44.020212099999995,
+      "longitude": -91.47157,
+      "placeId": "ChIJaTbjRG9B-YcRkyuOWFcjqeI"
+    },
+    {
+      "city": "Two Rivers",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Point Beach State Forest Campground",
+        "link": "https://dnr.wisconsin.gov/topic/parks/pointbeach"
+      },
+      "cg_notes": "State Forest",
+      "trail": {
+        "name": "The Rawley Point Bicycle Trail",
+        "link": "https://dnr.wisconsin.gov/topic/parks/pointbeach/recreation/biking"
+      },
+      "trails": [
+        {
+          "name": "The Rawley Point Bicycle Trail",
+          "link": "https://dnr.wisconsin.gov/topic/parks/pointbeach/recreation/biking"
+        },
+        {
+          "name": "Mariners Trail",
+          "link": "https://www.travelwisconsin.com/road-multi-use-trails/mariners-trail-manitowoc/two-rivers-196450"
+        }
+      ],
+      "trail_notes": "The Rawley Point Bicycle Trail starts at the lodge parking lot and goes for 5 miles. The\ntrail is a hard packed limestone base. The trail then connects to Mariners Trail - a 7 mile paved\ntrail.",
+      "latitude": 44.1826875,
+      "longitude": -87.52733719999999,
+      "placeId": "ChIJo3OcD9jMHIgRD_DoMFhrzjo"
+    },
+    {
+      "city": "Wilton",
+      "state": "WI",
+      "hookup_type": "partial",
+      "campground": {
+        "name": "Tunnel Trail Campground",
+        "link": "https://www.tunneltrail.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Elroy-Sparta Bicycle Trail",
+        "link": "https://www.tunneltrail.com/trail-information"
+      },
+      "trail_notes": "The Elroy-Sparta Bicycle Trail is a 32 mile trail. The surface is crushed limestone.",
+      "latitude": 43.8248155,
+      "longitude": -90.4528788,
+      "placeId": "ChIJFYBTV4F3_ocRcq03w4fyq6E"
     }
   ],
   "metadata": {

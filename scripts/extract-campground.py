@@ -22,6 +22,24 @@ PDF_PATH = "eBook PDF/rving-with-bikes-11-21-2025-final-edition_6920b822.pdf"
 NEW_DATABASE_PATH = "data/campgrounds_new.json"
 GOOGLE_PLACES_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') or os.environ.get('GOOGLE_PLACES_API_KEY')
 
+# State name to abbreviation mapping
+STATE_ABBREV = {
+    'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+    'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+    'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+    'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+    'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+    'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+    'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+    'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+    'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+    'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+}
+
+def get_state_abbrev(state_name: str) -> str:
+    """Convert full state name to abbreviation."""
+    return STATE_ABBREV.get(state_name, state_name)
+
 def extract_links_from_page(pdf_path: str, page_num: int) -> list:
     """Extract all links from a PDF page with their positions."""
     links = []
@@ -64,7 +82,7 @@ def find_link_for_position(links: list, text_y: float) -> str:
     return None
 
 
-def find_entries_on_page(pdf_path: str, page_num: int) -> list:
+def find_entries_on_page(pdf_path: str, page_num: int, part: int = 1) -> list:
     """Find all campground entries on a page and return their text blocks."""
     with pdfplumber.open(pdf_path) as pdf:
         page = pdf.pages[page_num - 1]
@@ -75,26 +93,69 @@ def find_entries_on_page(pdf_path: str, page_num: int) -> list:
     current_entry_lines = []
     current_entry_start = None
     
-    for i, line in enumerate(lines):
-        # Check if this line starts a new entry (City, ST or City, ST (X) pattern)
-        match = re.match(r'^([A-Z][a-zA-Z\s\.\']+),\s+([A-Z]{2})(?:\s+\(([A-Z])\))?$', line.strip())
-        if match:
-            # Save previous entry if exists
-            if current_entry_lines:
-                entries.append({
-                    'start_line': current_entry_start,
-                    'text': '\n'.join(current_entry_lines),
-                    'city': None,  # Will be parsed later
-                    'state': None
-                })
-            # Start new entry
-            current_entry_lines = [line]
-            current_entry_start = i
-        elif current_entry_start is not None:
-            # Skip footer lines
-            if 'RVingwithBikes.Com' in line or line.strip().startswith('Page '):
+    if part == 1:
+        # Part 1 format: "City, ST" or "City, ST (X)"
+        for i, line in enumerate(lines):
+            match = re.match(r'^([A-Z][a-zA-Z\s\.\']+),\s+([A-Z]{2})(?:\s+\(([A-Z])\))?$', line.strip())
+            if match:
+                if current_entry_lines:
+                    entries.append({
+                        'start_line': current_entry_start,
+                        'text': '\n'.join(current_entry_lines),
+                        'city': None,
+                        'state': None
+                    })
+                current_entry_lines = [line]
+                current_entry_start = i
+            elif current_entry_start is not None:
+                if 'RVingwithBikes.Com' in line or line.strip().startswith('Page '):
+                    continue
+                current_entry_lines.append(line)
+    else:
+        # Part 2 format: "State - City" header (or sometimes "City - State")
+        # Valid state names for matching
+        valid_states = set(STATE_ABBREV.keys())
+        
+        for i, line in enumerate(lines):
+            # Skip header lines
+            if 'A Guide to Campgrounds' in line or 'RVing with Bikes' in line:
                 continue
-            current_entry_lines.append(line)
+            if 'Partial Hook Ups' in line:
+                continue
+            
+            # Match "State - City" or "City - State" pattern
+            match = re.match(r'^([A-Z][a-zA-Z\s]+)\s+-\s+([A-Z][a-zA-Z\s\.,\']+)$', line.strip())
+            if match:
+                part1 = match.group(1).strip()
+                part2 = match.group(2).strip()
+                # Check which part is the state
+                if part1 in valid_states:
+                    # Normal format: "State - City"
+                    if current_entry_lines:
+                        entries.append({
+                            'start_line': current_entry_start,
+                            'text': '\n'.join(current_entry_lines),
+                            'city': None,
+                            'state': None
+                        })
+                    current_entry_lines = [line]
+                    current_entry_start = i
+                elif part2 in valid_states:
+                    # Reversed format: "City - State" (e.g., "Baton Rouge - Louisiana")
+                    if current_entry_lines:
+                        entries.append({
+                            'start_line': current_entry_start,
+                            'text': '\n'.join(current_entry_lines),
+                            'city': None,
+                            'state': None
+                        })
+                    current_entry_lines = [line]
+                    current_entry_start = i
+            elif current_entry_start is not None:
+                # Skip header, footer lines
+                if 'RVingwithBikes.Com' in line or line.strip().startswith('Page '):
+                    continue
+                current_entry_lines.append(line)
     
     # Don't forget the last entry
     if current_entry_lines:
@@ -108,13 +169,14 @@ def find_entries_on_page(pdf_path: str, page_num: int) -> list:
     return entries
 
 
-def extract_entry_from_page(pdf_path: str, page_num: int, entry_index: int = 0) -> dict:
+def extract_entry_from_page(pdf_path: str, page_num: int, entry_index: int = 0, part: int = 1) -> dict:
     """Extract campground entry data from a specific PDF page.
     
     Args:
         pdf_path: Path to PDF file
         page_num: Page number (1-indexed)
         entry_index: Which entry on the page (0-indexed, default 0 for first entry)
+        part: Which part of PDF (1 = full hookups, 2 = partial hookups)
     """
     
     with pdfplumber.open(pdf_path) as pdf:
@@ -125,7 +187,7 @@ def extract_entry_from_page(pdf_path: str, page_num: int, entry_index: int = 0) 
     links = extract_links_from_page(pdf_path, page_num)
     
     # Find all entries on this page
-    page_entries = find_entries_on_page(pdf_path, page_num)
+    page_entries = find_entries_on_page(pdf_path, page_num, part)
     
     if not page_entries:
         return {}, full_text, links
@@ -139,15 +201,42 @@ def extract_entry_from_page(pdf_path: str, page_num: int, entry_index: int = 0) 
     
     entry = {}
     
-    # Parse city/state from the entry text
+    # Parse city/state from the entry text based on part format
     lines = text.split('\n')
-    for line in lines:
-        match = re.match(r'^([A-Z][a-zA-Z\s\.\']+),\s+([A-Z]{2})(?:\s+\(([A-Z])\))?$', line.strip())
-        if match:
-            entry['city'] = match.group(1).strip()
-            entry['state'] = match.group(2)
-            entry['hookup_code'] = match.group(3) if match.group(3) else None
-            break
+    if part == 1:
+        # Part 1 format: "City, ST" or "City, ST (X)"
+        for line in lines:
+            match = re.match(r'^([A-Z][a-zA-Z\s\.\']+),\s+([A-Z]{2})(?:\s+\(([A-Z])\))?$', line.strip())
+            if match:
+                entry['city'] = match.group(1).strip()
+                entry['state'] = match.group(2)
+                entry['hookup_code'] = match.group(3) if match.group(3) else None
+                break
+    else:
+        # Part 2 format: "State - City" header (or sometimes "City - State")
+        valid_states = set(STATE_ABBREV.keys())
+        state_abbrevs = set(STATE_ABBREV.values())
+        for line in lines:
+            # Skip header lines
+            if 'A Guide to Campgrounds' in line or 'Partial Hook Ups' in line:
+                continue
+            match = re.match(r'^([A-Z][a-zA-Z\s]+)\s+-\s+([A-Z][a-zA-Z\s\.,\']+)$', line.strip())
+            if match:
+                part1 = match.group(1).strip()
+                part2 = match.group(2).strip()
+                if part1 in valid_states:
+                    # Normal format: "State - City"
+                    entry['state'] = get_state_abbrev(part1)
+                    city = part2
+                    # Clean up city - remove trailing state abbreviation
+                    city_clean = re.sub(r',?\s*[A-Z]{2}$', '', city).strip()
+                    entry['city'] = city_clean
+                    break
+                elif part2 in valid_states:
+                    # Reversed format: "City - State" (e.g., "Baton Rouge - Louisiana")
+                    entry['state'] = get_state_abbrev(part2)
+                    entry['city'] = part1
+                    break
     
     # Campground name and link
     # Find the Nth occurrence of "Campground:" that corresponds to this entry
@@ -462,8 +551,8 @@ def main():
     
     # List mode - show all entries on the page
     if args.list:
-        print(f"\n📖 Entries on page {args.page}:\n")
-        entries = find_entries_on_page(PDF_PATH, args.page)
+        print(f"\n📖 Entries on page {args.page} (Part {args.part}):\n")
+        entries = find_entries_on_page(PDF_PATH, args.page, args.part)
         for i, e in enumerate(entries):
             # Parse city/state from entry text
             lines = e['text'].split('\n')
@@ -477,7 +566,7 @@ def main():
     print(f"\n📖 Extracting from page {args.page}, entry {args.entry} (Part {args.part} - {hookup_type} hookups)...\n")
     
     # Extract entry
-    entry, raw_text, links = extract_entry_from_page(PDF_PATH, args.page, args.entry)
+    entry, raw_text, links = extract_entry_from_page(PDF_PATH, args.page, args.entry, args.part)
     entry['hookup_type'] = hookup_type  # Set hookup type based on part
     
     # Get coordinates
