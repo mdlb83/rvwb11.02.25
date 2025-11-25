@@ -26,6 +26,7 @@ interface PhotoViewerModalProps {
   initialIndex: number;
   placeId?: string;
   getPhotoUrl: (photoReference: string, placeId?: string) => string | null;
+  photoUris?: { [index: number]: string }; // Optional cached photo URIs
   onClose: () => void;
 }
 
@@ -182,6 +183,7 @@ export default function PhotoViewerModal({
   initialIndex,
   placeId,
   getPhotoUrl,
+  photoUris,
   onClose,
 }: PhotoViewerModalProps) {
   const flatListRef = useRef<FlatList>(null);
@@ -239,9 +241,10 @@ export default function PhotoViewerModal({
       );
     }
 
-    const photoUrl = getPhotoUrl(item.photoReference, placeId);
+    // Use cached URI if available, otherwise get URL
+    const photoUri = photoUris?.[index] || getPhotoUrl(item.photoReference, placeId);
     
-    if (!photoUrl) {
+    if (!photoUri) {
       return (
         <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
           <View style={styles.placeholder}>
@@ -255,14 +258,14 @@ export default function PhotoViewerModal({
     return (
       <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
         <ZoomableImage
-          uri={photoUrl}
+          uri={photoUri}
           width={dimensions.width}
           height={dimensions.height}
           onZoomChange={index === currentIndex ? handleZoomChange : undefined}
         />
       </View>
     );
-  }, [dimensions, placeId, getPhotoUrl, currentIndex, handleZoomChange]);
+  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: dimensions.width,

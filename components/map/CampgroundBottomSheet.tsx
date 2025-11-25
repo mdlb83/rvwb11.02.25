@@ -13,6 +13,7 @@ import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getPhotoUri, preloadCampgroundPhotos } from '../../utils/photoCache';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
@@ -190,6 +191,38 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
   const allPhotos = useMemo(() => {
     return googleMapsData?.photos || [];
   }, [googleMapsData?.photos]);
+
+  // State to track photo URIs (cached paths or URLs)
+  const [photoUris, setPhotoUris] = useState<{ [index: number]: string }>({});
+
+  // Preload photos when bottom sheet opens or campground changes
+  useEffect(() => {
+    if (!campgroundId || !googleMapsData?.photos || allPhotos.length === 0) {
+      setPhotoUris({});
+      return;
+    }
+
+    const loadPhotoUris = async () => {
+      const uris: { [index: number]: string } = {};
+      
+      // Load URIs for all photos
+      const uriPromises = allPhotos.map(async (photo, index) => {
+        if (!photo.photoReference) return;
+        
+        const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
+        if (!photoUrl) return;
+        
+        const uri = await getPhotoUri(photoUrl, campgroundId, index, true);
+        uris[index] = uri;
+      });
+
+      await Promise.allSettled(uriPromises);
+      setPhotoUris(uris);
+    };
+
+    loadPhotoUris();
+  }, [campgroundId, allPhotos, googleMapsData?.placeId]);
+
 
   // Load the "don't show instructions" preference on mount
   useEffect(() => {
@@ -1062,8 +1095,9 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                         return (
                           <View key={`stack-${index}`} style={styles.photosStack}>
                             {stackPhotos.map((stackPhoto, stackIndex) => {
-                              const photoUrl = getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
                               const actualIndex = index + stackIndex;
+                              // Use cached URI if available, otherwise fallback to URL
+                              const photoUri = photoUris[actualIndex] || getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
                               
                               return (
                                 <TouchableOpacity
@@ -1075,14 +1109,14 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                                     setPhotoViewerVisible(true);
                                   }}
                                 >
-                                  {photoUrl ? (
+                                  {photoUri ? (
                                     <Image 
-                                      source={{ uri: photoUrl }} 
+                                      source={{ uri: photoUri }} 
                                       style={styles.stackPhotoImage}
                                       resizeMode="cover"
                                       onError={(error) => {
                                         console.error('❌ Stack image load error:', {
-                                          photoUrl: photoUrl.substring(0, 100),
+                                          photoUri: photoUri.substring(0, 100),
                                           error: error.nativeEvent?.error
                                         });
                                       }}
@@ -1106,7 +1140,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                     }
                     
                     // Position 0 or 3, 6, 9... (multiples of 3) - large photo
-                    const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
+                    // Use cached URI if available, otherwise fallback to URL
+                    const photoUri = photoUris[index] || getPhotoUrl(photo.photoReference, googleMapsData.placeId);
                     
                     return (
                       <TouchableOpacity
@@ -1118,14 +1153,14 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
                           setPhotoViewerVisible(true);
                         }}
                       >
-                        {photoUrl ? (
+                        {photoUri ? (
                           <Image 
-                            source={{ uri: photoUrl }} 
+                            source={{ uri: photoUri }} 
                             style={styles.featuredPhotoImage}
                             resizeMode="cover"
                             onError={(error) => {
                               console.error('❌ Image load error:', {
-                                photoUrl: photoUrl.substring(0, 100),
+                                photoUri: photoUri.substring(0, 100),
                                 error: error.nativeEvent?.error
                               });
                             }}
@@ -1292,6 +1327,7 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
           initialIndex={selectedPhotoIndex}
           placeId={googleMapsData.placeId}
           getPhotoUrl={getPhotoUrl}
+          photoUris={photoUris}
           onClose={() => setPhotoViewerVisible(false)}
         />
       )}
