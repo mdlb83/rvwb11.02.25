@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Marker, Callout } from 'react-native-maps';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { CampgroundEntry } from '../../types/campground';
 import { useTheme } from '../../contexts/ThemeContext';
 import { generateCampgroundIdFromEntry } from '../../utils/dataLoader';
@@ -22,6 +22,26 @@ function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
     return null;
   }
 
+  const campgroundName = campground.campground.name || `${campground.city}, ${campground.state}`;
+  const locationText = `${campground.city}, ${campground.state}`;
+
+  // On Android, use default callout so title shows, then auto-open bottom sheet
+  if (Platform.OS === 'android') {
+    return (
+      <Marker
+        coordinate={{
+          latitude: campground.latitude,
+          longitude: campground.longitude,
+        }}
+        pinColor={getMarkerColor()}
+        title={campgroundName}
+        description={locationText}
+        onPress={onPress}
+      />
+    );
+  }
+
+  // On iOS, use custom callout
   return (
     <Marker
       coordinate={{
@@ -29,6 +49,8 @@ function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
         longitude: campground.longitude,
       }}
       pinColor={getMarkerColor()}
+      title={campgroundName}
+      description={locationText}
       onPress={onPress}
     >
       <Callout tooltip>

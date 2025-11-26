@@ -123,16 +123,17 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   const [contentHeight, setContentHeight] = useState<number | null>(null);
   
   // Calculate snap points dynamically based on content height
-  // Default snap points: 30% peek, calculated default (to show separator just below), 90% expanded
+  // Default snap points: 30% peek, calculated default (max 60% to prevent taking too much space), 90% expanded
   const snapPoints = useMemo(() => {
     if (contentHeight && campground) {
       const screenHeight = Dimensions.get('window').height;
       // Calculate percentage to show content up to separator (add small buffer)
-      const percentage = Math.min(90, Math.max(50, (contentHeight / screenHeight) * 100 + 2));
+      // Cap at 60% maximum to prevent taking too much space, especially on devices with large text
+      const percentage = Math.min(60, Math.max(50, (contentHeight / screenHeight) * 100 + 2));
       return ['30%', `${percentage}%`, '90%'];
     }
-    // Fallback to default snap points
-    return ['30%', '65%', '90%'];
+    // Fallback to default snap points - capped at 60% for initial open
+    return ['30%', '60%', '90%'];
   }, [contentHeight, campground]);
   const { preference, loading, savePreference, reload: reloadPreference } = useMapAppPreference();
   const [showPicker, setShowPicker] = useState(false);
