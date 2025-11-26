@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState, Image } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
@@ -35,6 +35,13 @@ export default function MapScreen() {
   const [selectedCampground, setSelectedCampground] = useState<CampgroundEntry | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  
+  // Calculate button spacing - add extra space on Android for better spacing from search bar
+  const buttonSpacing = useMemo(() => {
+    const baseSpacing = 80;
+    const androidExtraSpacing = 35; // Extra spacing on Android to prevent buttons from being too close to search bar
+    return Platform.OS === 'android' ? baseSpacing + androidExtraSpacing : baseSpacing;
+  }, []);
   
   // Check if user has any bookmarks on mount and when app comes to foreground
   useEffect(() => {
@@ -405,8 +412,16 @@ export default function MapScreen() {
   }, [allCampgrounds]);
 
   useEffect(() => {
+    // Android keyboard suggestion bar height (typically 40-50px)
+    const ANDROID_SUGGESTION_BAR_HEIGHT = 45;
+    
     const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
-      setKeyboardHeight(e.endCoordinates.height);
+      // On Android, add extra height for the suggestion bar above the keyboard
+      const baseHeight = e.endCoordinates.height;
+      const adjustedHeight = Platform.OS === 'android' 
+        ? baseHeight + ANDROID_SUGGESTION_BAR_HEIGHT
+        : baseHeight;
+      setKeyboardHeight(adjustedHeight);
     });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardHeight(0);
@@ -827,8 +842,8 @@ export default function MapScreen() {
               styles.locationButtonContainer,
               {
                 bottom: keyboardHeight > 0 
-                  ? keyboardHeight + 80 
-                  : (insets.bottom + 80),
+                  ? keyboardHeight + buttonSpacing 
+                  : (insets.bottom + buttonSpacing),
               },
             ]}
             pointerEvents="box-none"
@@ -842,8 +857,8 @@ export default function MapScreen() {
               styles.zoomButtonsContainer,
               {
                 bottom: keyboardHeight > 0 
-                  ? keyboardHeight + 80 
-                  : (insets.bottom + 80),
+                  ? keyboardHeight + buttonSpacing 
+                  : (insets.bottom + buttonSpacing),
               },
             ]}
             pointerEvents="box-none"
@@ -883,8 +898,8 @@ export default function MapScreen() {
                 styles.bookmarkButtonContainer,
                 {
                   bottom: keyboardHeight > 0 
-                    ? keyboardHeight + 80 
-                    : (insets.bottom + 80),
+                    ? keyboardHeight + buttonSpacing 
+                    : (insets.bottom + buttonSpacing),
                 },
               ]}
               pointerEvents="box-none"
@@ -915,8 +930,8 @@ export default function MapScreen() {
               total={allCampgrounds.length}
               gpsButtonBottom={
                 keyboardHeight > 0 
-                  ? keyboardHeight + 80 
-                  : insets.bottom + 80
+                  ? keyboardHeight + buttonSpacing 
+                  : insets.bottom + buttonSpacing
               }
             />
           )}
