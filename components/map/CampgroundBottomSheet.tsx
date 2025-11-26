@@ -14,6 +14,9 @@ import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getPhotoUri, preloadCampgroundPhotos } from '../../utils/photoCache';
+import SubscriptionBlur from '../subscription/SubscriptionBlur';
+import PaywallModal from '../subscription/PaywallModal';
+import { useSubscription } from '../../hooks/useSubscription';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
@@ -118,9 +121,11 @@ interface CampgroundBottomSheetProps {
 
 export default function CampgroundBottomSheet({ campground, onClose, onBookmarkChange }: CampgroundBottomSheetProps) {
   const { theme, resolvedThemeMode } = useTheme();
+  const { isPremium } = useSubscription();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
   
   // Calculate snap points dynamically based on content height
   // Default snap points: 30% peek, calculated default (max 60% to prevent taking too much space), 90% expanded
@@ -1347,6 +1352,11 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             );
           })()
         ) : null}
+        
+        {/* Subscription Blur Overlay - shows when not subscribed */}
+        {campground && !isPremium && (
+          <SubscriptionBlur onPress={() => setShowPaywall(true)} />
+        )}
       </BottomSheetScrollView>
       <MapAppPickerModal
         visible={showPicker}
@@ -1374,6 +1384,14 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           onClose={() => setPhotoViewerVisible(false)}
         />
       )}
+      <PaywallModal
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onPurchaseComplete={() => {
+          setShowPaywall(false);
+          // Subscription status will update automatically via listener
+        }}
+      />
     </BottomSheet>
   );
 }

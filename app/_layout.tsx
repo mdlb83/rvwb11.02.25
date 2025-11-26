@@ -8,6 +8,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { isFirstLaunch, setHasLaunched } from '../utils/firstLaunch';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 
 // Prevent the splash screen from auto-hiding before we're ready
 SplashScreen.preventAutoHideAsync();
@@ -60,17 +61,19 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <SafeAreaProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-              }}
-            />
-          </SafeAreaProvider>
-        </GestureHandlerRootView>
-      </ThemeProvider>
+      <SubscriptionProvider>
+        <ThemeProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                }}
+              />
+            </SafeAreaProvider>
+          </GestureHandlerRootView>
+        </ThemeProvider>
+      </SubscriptionProvider>
     </ErrorBoundary>
   );
 }

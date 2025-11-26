@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { MapApp, getAvailableMapApps } from '../../utils/mapAppPreferences';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useSubscription } from '../../hooks/useSubscription';
+import CustomerCenterModal from '../subscription/CustomerCenterModal';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -21,7 +23,9 @@ interface SettingsModalProps {
 export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
+  const { isPremium, customerInfo } = useSubscription();
   const availableApps = getAvailableMapApps();
+  const [showCustomerCenter, setShowCustomerCenter] = useState(false);
 
   const handleAppSelect = async (app: MapApp) => {
     await savePreference(app);
@@ -138,11 +142,42 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                     ))
                   )}
                 </View>
+
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>Subscription</Text>
+                  <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
+                    {isPremium ? 'You have an active premium subscription' : 'Upgrade to premium for full access'}
+                  </Text>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      { backgroundColor: theme.surfaceSecondary },
+                    ]}
+                    onPress={() => setShowCustomerCenter(true)}
+                  >
+                    <View style={styles.optionContent}>
+                      <Ionicons 
+                        name={isPremium ? "checkmark-circle" : "lock-closed"} 
+                        size={20} 
+                        color={isPremium ? theme.primary : theme.iconSecondary} 
+                      />
+                      <Text style={[styles.optionText, { color: theme.text }]}>
+                        {isPremium ? 'Manage Subscription' : 'View Subscription Options'}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={theme.iconSecondary} />
+                  </TouchableOpacity>
+                </View>
               </ScrollView>
             </View>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+      <CustomerCenterModal
+        visible={showCustomerCenter}
+        onClose={() => setShowCustomerCenter(false)}
+      />
     </Modal>
   );
 }

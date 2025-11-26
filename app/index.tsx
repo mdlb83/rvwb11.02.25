@@ -21,6 +21,10 @@ import { getCampgroundCoordinates } from '../utils/mapUtils';
 import { getBookmarks } from '../utils/bookmarks';
 import SettingsModal from '../components/settings/SettingsModal';
 import { useTheme } from '../contexts/ThemeContext';
+import { addViewedCampground } from '../utils/campgroundViews';
+import { generateCampgroundIdFromEntry } from '../utils/dataLoader';
+import PaywallModal from '../components/subscription/PaywallModal';
+import { useSubscription } from '../hooks/useSubscription';
 
 export default function MapScreen() {
   const { theme, toggleTheme, resolvedThemeMode } = useTheme();
@@ -35,6 +39,8 @@ export default function MapScreen() {
   const [selectedCampground, setSelectedCampground] = useState<CampgroundEntry | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { isPremium } = useSubscription();
   
   // Calculate button spacing - add extra space on Android for better spacing from search bar
   const buttonSpacing = useMemo(() => {
@@ -438,7 +444,7 @@ export default function MapScreen() {
               // Auto-select the single campground after zoom animation completes
               // Reset the auto-selecting flag after a delay to allow selectedCampground effect to skip
               setTimeout(() => {
-                setSelectedCampground(singleCampground);
+                handleCampgroundSelect(singleCampground);
                 // Reset flag after selectedCampground effect has had a chance to check it
                 setTimeout(() => {
                   isAutoSelectingRef.current = false;
@@ -514,7 +520,7 @@ export default function MapScreen() {
           }
 
           if (campground) {
-            setSelectedCampground(campground);
+            handleCampgroundSelect(campground);
             // Optionally center map on campground
             mapRef.current?.animateToRegion({
               latitude: campground.latitude,
@@ -677,12 +683,63 @@ export default function MapScreen() {
     };
   }, [selectedCampground]);
 
-  // Show loading state
+  // Handle search input changes (user typing - doesn't trigger filtering)
+  const handleSearchChange = useCallback((text: string) => {
+    try {
+      const safeText = typeof text === 'string' ? text : '';
+      setSearchInput(safeText);
+    } catch (err) {
+      console.error('Error in handleSearchChange:', err, { text });
+      setSearchInput('');
+    }
+  }, []);
+
+  // Handle search submission (user hits enter - just dismiss keyboard since filtering is real-time)
+  const handleSearchSubmit = useCallback(() => {
+    Keyboard.dismiss();
+  }, []);
+
+  // Handle clearing search (clears input - filtering happens in real-time)
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('');
+    // Reset filter state ref so zoom can happen again if filters are re-applied
+    lastFilterStateRef.current = '';
+  }, []);
+
+  // Handle hookup type changes - reset filter state ref when switching to "all" to ensure zoom works
+  const handleHookupTypeChange = useCallback((type: 'full' | 'partial' | 'none' | 'all') => {
+    // Don't update previousHookupTypeRef here - let the effect handle it to avoid race conditions
+    setSelectedHookupType(type);
+    // Always reset filter state ref when switching to "all" so zoom logic can properly detect the change
+    // This ensures we zoom out when clearing the hookup filter
+    if (type === 'all' && selectedHookupType !== 'all') {
+      lastFilterStateRef.current = '';
+    }
+  }, [selectedHookupType]);
+
+  // Handle campground selection with view tracking
+  const handleCampgroundSelect = useCallback(async (campground: CampgroundEntry) => {
+    setSelectedCampground(campground);
+    
+    // Only track views if not premium (for analytics, but don't auto-show paywall)
+    if (!isPremium) {
+      // Track view
+      const campgroundId = generateCampgroundIdFromEntry(campground);
+      await addViewedCampground(campgroundId);
+      // Don't automatically show paywall - user must click "Unlock Premium" button
+    }
+  }, [isPremium]);
+
+  const handleMapPress = useCallback(() => {
+    Keyboard.dismiss();
+  }, []);
+
+  // Show loading state (MUST be after all hooks)
   if (loading) {
     return <LoadingState />;
   }
 
-  // Show error state
+  // Show error state (MUST be after all hooks)
   if (error) {
     return (
       <ErrorState
@@ -694,44 +751,6 @@ export default function MapScreen() {
       />
     );
   }
-
-  // Handle search input changes (user typing - doesn't trigger filtering)
-  const handleSearchChange = (text: string) => {
-    try {
-      const safeText = typeof text === 'string' ? text : '';
-      setSearchInput(safeText);
-    } catch (err) {
-      console.error('Error in handleSearchChange:', err, { text });
-      setSearchInput('');
-    }
-  };
-
-  // Handle search submission (user hits enter - just dismiss keyboard since filtering is real-time)
-  const handleSearchSubmit = () => {
-    Keyboard.dismiss();
-  };
-
-  // Handle clearing search (clears input - filtering happens in real-time)
-  const handleClearSearch = () => {
-    setSearchInput('');
-    // Reset filter state ref so zoom can happen again if filters are re-applied
-    lastFilterStateRef.current = '';
-  };
-
-  // Handle hookup type changes - reset filter state ref when switching to "all" to ensure zoom works
-  const handleHookupTypeChange = (type: 'full' | 'partial' | 'none' | 'all') => {
-    // Don't update previousHookupTypeRef here - let the effect handle it to avoid race conditions
-    setSelectedHookupType(type);
-    // Always reset filter state ref when switching to "all" so zoom logic can properly detect the change
-    // This ensures we zoom out when clearing the hookup filter
-    if (type === 'all' && selectedHookupType !== 'all') {
-      lastFilterStateRef.current = '';
-    }
-  };
-
-  const handleMapPress = () => {
-    Keyboard.dismiss();
-  };
 
   const handleSuggestCampground = () => {
     const subject = encodeURIComponent('Suggest a New Campground');
@@ -901,7 +920,7 @@ export default function MapScreen() {
         <CampgroundMap
           key={`map-${campgrounds.length}-${searchInput.trim()}-${selectedHookupType}-${showBookmarked}`}
           campgrounds={Array.isArray(campgrounds) ? campgrounds : []}
-          onMarkerPress={setSelectedCampground}
+          onMarkerPress={handleCampgroundSelect}
           onMapPress={handleMapPress}
           mapRef={mapRef}
           onRegionChangeComplete={(region) => {
@@ -1123,6 +1142,14 @@ export default function MapScreen() {
       <SettingsModal
         visible={showSettings}
         onClose={() => setShowSettings(false)}
+      />
+      <PaywallModal
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onPurchaseComplete={() => {
+          setShowPaywall(false);
+          // Subscription status will update automatically via listener
+        }}
       />
     </View>
   );

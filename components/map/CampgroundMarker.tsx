@@ -3,6 +3,7 @@ import { Marker, Callout } from 'react-native-maps';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { CampgroundEntry } from '../../types/campground';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useSubscription } from '../../hooks/useSubscription';
 import { generateCampgroundIdFromEntry } from '../../utils/dataLoader';
 
 interface CampgroundMarkerProps {
@@ -12,6 +13,7 @@ interface CampgroundMarkerProps {
 
 function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
   const { theme } = useTheme();
+  const { isPremium } = useSubscription();
   
   const getMarkerColor = () => {
     return campground.hookup_type === 'full' ? theme.primary : theme.warning;
@@ -26,6 +28,7 @@ function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
   const locationText = `${campground.city}, ${campground.state}`;
 
   // On Android, use default callout so title shows, then auto-open bottom sheet
+  // Only show title/description if premium
   if (Platform.OS === 'android') {
     return (
       <Marker
@@ -34,14 +37,14 @@ function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
           longitude: campground.longitude,
         }}
         pinColor={getMarkerColor()}
-        title={campgroundName}
-        description={locationText}
+        title={isPremium ? campgroundName : undefined}
+        description={isPremium ? locationText : undefined}
         onPress={onPress}
       />
     );
   }
 
-  // On iOS, use custom callout
+  // On iOS, use custom callout (only show if premium)
   return (
     <Marker
       coordinate={{
@@ -49,35 +52,37 @@ function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
         longitude: campground.longitude,
       }}
       pinColor={getMarkerColor()}
-      title={campgroundName}
-      description={locationText}
+      title={isPremium ? campgroundName : undefined}
+      description={isPremium ? locationText : undefined}
       onPress={onPress}
     >
-      <Callout tooltip>
-        <View style={styles.calloutWrapper}>
-          <View style={[
-            styles.calloutContainer,
-            {
-              backgroundColor: theme.surface,
-              shadowColor: theme.shadow,
-            }
-          ]}>
-            <Text style={[styles.calloutTitle, { color: theme.text }]}>
-              {campground.campground.name || `${campground.city}, ${campground.state}`}
-            </Text>
-            <Text style={[styles.calloutDescription, { color: theme.textSecondary }]}>
-              {campground.city}, {campground.state}
-            </Text>
+      {isPremium && (
+        <Callout tooltip>
+          <View style={styles.calloutWrapper}>
+            <View style={[
+              styles.calloutContainer,
+              {
+                backgroundColor: theme.surface,
+                shadowColor: theme.shadow,
+              }
+            ]}>
+              <Text style={[styles.calloutTitle, { color: theme.text }]}>
+                {campground.campground.name || `${campground.city}, ${campground.state}`}
+              </Text>
+              <Text style={[styles.calloutDescription, { color: theme.textSecondary }]}>
+                {campground.city}, {campground.state}
+              </Text>
+            </View>
+            <View style={[
+              styles.calloutPointer,
+              {
+                borderTopColor: theme.surface,
+                shadowColor: theme.shadow,
+              }
+            ]} />
           </View>
-          <View style={[
-            styles.calloutPointer,
-            {
-              borderTopColor: theme.surface,
-              shadowColor: theme.shadow,
-            }
-          ]} />
-        </View>
-      </Callout>
+        </Callout>
+      )}
     </Marker>
   );
 }
