@@ -188,7 +188,14 @@ export default function MapScreen() {
     // If filters are cleared, zoom out to show all campgrounds
     if (!hasActiveFilters && !loading && !error && allCampgrounds.length > 0) {
       const currentFilterState = 'no-filters';
-      if (lastFilterStateRef.current === currentFilterState) {
+      // Check if we're switching from a filtered state to "all"
+      // If the previous state was a filtered state (not 'no-filters' and not empty), we need to zoom
+      const wasFiltered = lastFilterStateRef.current !== '' && 
+                          lastFilterStateRef.current !== 'no-filters' &&
+                          !lastFilterStateRef.current.startsWith('all-');
+      
+      // Only skip if we've already zoomed to show all AND we weren't previously filtered
+      if (lastFilterStateRef.current === currentFilterState && !wasFiltered) {
         return; // Already zoomed to show all
       }
       
@@ -588,6 +595,15 @@ export default function MapScreen() {
     lastFilterStateRef.current = '';
   };
 
+  // Handle hookup type changes - reset filter state ref when switching to "all" to ensure zoom works
+  const handleHookupTypeChange = (type: 'full' | 'partial' | 'all') => {
+    setSelectedHookupType(type);
+    // Reset filter state ref when switching to "all" so zoom logic can properly detect the change
+    if (type === 'all') {
+      lastFilterStateRef.current = '';
+    }
+  };
+
   const handleMapPress = () => {
     Keyboard.dismiss();
   };
@@ -707,7 +723,7 @@ export default function MapScreen() {
           <View style={styles.searchRow}>
             <FilterButton
               selectedHookupType={selectedHookupType}
-              onHookupTypeChange={setSelectedHookupType}
+              onHookupTypeChange={handleHookupTypeChange}
               showBookmarked={false}
               onBookmarkedChange={() => {}}
             />
