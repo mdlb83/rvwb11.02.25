@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, Alert, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, Alert, Image, ScrollView, Dimensions, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { CampgroundEntry } from '../../types/campground';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
@@ -144,6 +144,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   const [googleMapsData, setGoogleMapsData] = useState<GoogleMapsData | undefined>(undefined);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const isInteractingWithPhotosRef = useRef(false);
   // Use ref to store pending action immediately, avoiding React state update delays
   const pendingActionRef = useRef<PendingMapAction | null>(null);
   
@@ -725,6 +726,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       index={sheetIndex}
       snapPoints={snapPoints}
       enablePanDownToClose={true}
+      activeOffsetY={[-1, 1]}
+      failOffsetX={[-5, 5]}
       onChange={(index) => {
         if (index === -1) {
           onClose();
@@ -1078,6 +1081,42 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                   style={styles.photosScrollView}
                   snapToInterval={0}
                   decelerationRate="fast"
+                  nestedScrollEnabled={Platform.OS === 'android'}
+                  scrollEventThrottle={16}
+                  directionalLockEnabled={true}
+                  bounces={false}
+                  removeClippedSubviews={false}
+                  onStartShouldSetResponder={() => {
+                    isInteractingWithPhotosRef.current = true;
+                    return true;
+                  }}
+                  onMoveShouldSetResponder={(evt, gestureState) => {
+                    // Claim responder for horizontal movements
+                    const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+                    if (isHorizontal) {
+                      isInteractingWithPhotosRef.current = true;
+                      return true;
+                    }
+                    return false;
+                  }}
+                  onResponderRelease={() => {
+                    setTimeout(() => {
+                      isInteractingWithPhotosRef.current = false;
+                    }, 100);
+                  }}
+                  onScrollBeginDrag={() => {
+                    isInteractingWithPhotosRef.current = true;
+                  }}
+                  onScrollEndDrag={() => {
+                    setTimeout(() => {
+                      isInteractingWithPhotosRef.current = false;
+                    }, 100);
+                  }}
+                  onMomentumScrollEnd={() => {
+                    setTimeout(() => {
+                      isInteractingWithPhotosRef.current = false;
+                    }, 100);
+                  }}
                 >
                   <View style={styles.photosLayout}>
                   {/* Pattern: Large, Stack(2 small), Large, Stack(2 small), ... */}
