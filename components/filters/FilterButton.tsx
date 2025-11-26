@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ToiletIcon from '../icons/ToiletIcon';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface FilterButtonProps {
-  selectedHookupType: 'full' | 'partial' | 'all';
-  onHookupTypeChange: (type: 'full' | 'partial' | 'all') => void;
+  selectedHookupType: 'full' | 'partial' | 'none' | 'all';
+  onHookupTypeChange: (type: 'full' | 'partial' | 'none' | 'all') => void;
   showBookmarked?: boolean;
   onBookmarkedChange?: (show: boolean) => void;
 }
@@ -26,6 +25,8 @@ export default function FilterButton({
         return 'Full';
       case 'partial':
         return 'Partial';
+      case 'none':
+        return 'None';
       default:
         return 'All';
     }
@@ -33,7 +34,7 @@ export default function FilterButton({
 
   const hasActiveFilter = selectedHookupType !== 'all';
 
-  const handleSelect = (type: 'full' | 'partial' | 'all') => {
+  const handleSelect = (type: 'full' | 'partial' | 'none' | 'all') => {
     onHookupTypeChange(type);
     setModalVisible(false);
   };
@@ -52,7 +53,8 @@ export default function FilterButton({
         onPress={() => setModalVisible(true)}
       >
         {selectedHookupType === 'full' ? (
-          <ToiletIcon
+          <Ionicons
+            name="water-outline"
             size={20}
             color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
           />
@@ -62,9 +64,15 @@ export default function FilterButton({
             size={20}
             color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
           />
+        ) : selectedHookupType === 'none' ? (
+          <Ionicons
+            name="close-circle-outline"
+            size={20}
+            color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
+          />
         ) : (
           <Ionicons
-            name="filter"
+            name="funnel-outline"
             size={20}
             color={hasActiveFilter ? theme.buttonText : theme.iconSecondary}
           />
@@ -96,7 +104,7 @@ export default function FilterButton({
               onPress={() => handleSelect('all')}
             >
               <View style={styles.optionContent}>
-                <Ionicons name="filter" size={20} color={selectedHookupType === 'all' ? theme.primary : theme.iconSecondary} />
+                <Ionicons name="funnel-outline" size={20} color={selectedHookupType === 'all' ? theme.primary : theme.iconSecondary} />
                 <Text
                   style={[
                     styles.optionText,
@@ -124,7 +132,7 @@ export default function FilterButton({
               onPress={() => handleSelect('full')}
             >
               <View style={styles.optionContent}>
-                <ToiletIcon size={20} color={selectedHookupType === 'full' ? theme.primary : theme.iconSecondary} />
+                <Ionicons name="water-outline" size={20} color={selectedHookupType === 'full' ? theme.primary : theme.iconSecondary} />
                 <Text
                   style={[
                     styles.optionText,
@@ -166,6 +174,34 @@ export default function FilterButton({
                 </Text>
               </View>
               {selectedHookupType === 'partial' && (
+                <Ionicons name="checkmark" size={20} color={theme.primary} />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.option,
+                {
+                  backgroundColor: selectedHookupType === 'none' ? theme.surfaceSecondary : theme.surfaceSecondary,
+                },
+              ]}
+              onPress={() => handleSelect('none')}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons name="close-circle-outline" size={20} color={selectedHookupType === 'none' ? theme.primary : theme.iconSecondary} />
+                <Text
+                  style={[
+                    styles.optionText,
+                    {
+                      color: selectedHookupType === 'none' ? theme.primary : theme.text,
+                      fontWeight: selectedHookupType === 'none' ? '600' : '400',
+                    },
+                  ]}
+                >
+                  No Hookup
+                </Text>
+              </View>
+              {selectedHookupType === 'none' && (
                 <Ionicons name="checkmark" size={20} color={theme.primary} />
               )}
             </TouchableOpacity>

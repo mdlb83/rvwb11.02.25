@@ -28,7 +28,7 @@ export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
   // Search input state - filtering happens in real-time as user types
   const [searchInput, setSearchInput] = useState('');
-  const [selectedHookupType, setSelectedHookupType] = useState<'full' | 'partial' | 'all'>('all');
+  const [selectedHookupType, setSelectedHookupType] = useState<'full' | 'partial' | 'none' | 'all'>('all');
   const [showBookmarked, setShowBookmarked] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [hasBookmarks, setHasBookmarks] = useState(false);
@@ -154,6 +154,9 @@ export default function MapScreen() {
   const lastFilterStateRef = useRef<string>('');
   // Track if we're currently processing a zoom to prevent race conditions
   const isZoomingRef = useRef<boolean>(false);
+  // Track previous hookup type to detect transitions to "all"
+  // Initialize with current value to avoid false positives on mount
+  const previousHookupTypeRef = useRef<'full' | 'partial' | 'none' | 'all'>(selectedHookupType);
   // Track last keyboard height to detect significant changes
   const lastKeyboardHeightRef = useRef<number>(0);
   // Track current map region to preserve zoom level
@@ -183,19 +186,133 @@ export default function MapScreen() {
     hideSplash();
   }, [loading, splashHidden]);
 
+  // Brute force Android-only: zoom when "all" is selected (simple approach, no complex state tracking)
+  useEffect(() => {
+    if (Platform.OS === 'android' && 
+        selectedHookupType === 'all' && 
+        previousHookupTypeRef.current !== 'all' &&
+        !loading && 
+        !error && 
+        allCampgrounds.length > 0 &&
+        !searchInput.trim() &&
+        !showBookmarked) {
+      
+      // Update ref immediately to prevent duplicate zooms
+      previousHookupTypeRef.current = selectedHookupType;
+      
+      // Longer delay on Android to ensure everything is settled (campgrounds updated, etc.)
+      const timeoutId = setTimeout(() => {
+        if (!mapRef.current) {
+          return;
+        }
+        
+        // Simply always zoom - brute force, no complex checks
+        try {
+          const coordinates = getCampgroundCoordinates(allCampgrounds);
+          if (coordinates.length > 0) {
+            mapRef.current.fitToCoordinates(coordinates, {
+              edgePadding: {
+                top: 100,
+                right: 50,
+                bottom: 200,
+                left: 50,
+              },
+              animated: true,
+            });
+          }
+        } catch (err) {
+          console.error('Error zooming to all campgrounds (Android):', err);
+        }
+      }, 500); // Longer delay for Android to ensure state is fully settled
+      
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+    return undefined;
+  }, [selectedHookupType, loading, error, allCampgrounds.length, searchInput, showBookmarked]);
+
+  // iOS and fallback: zoom out when switching to "all" hookup type with no other filters
+  // Wait for campgrounds to update to match allCampgrounds before zooming
+  useEffect(() => {
+    // Skip on Android - handled by brute force effect above
+    if (Platform.OS === 'android') {
+      previousHookupTypeRef.current = selectedHookupType;
+      return;
+    }
+    
+    // Capture the previous value BEFORE checking conditions
+    const previousType = previousHookupTypeRef.current;
+    const justSwitchedToAll = selectedHookupType === 'all' && previousType !== 'all';
+    
+    // Only trigger when switching to "all" from a filtered state, with no other active filters
+    if (justSwitchedToAll && 
+        !loading && 
+        !error && 
+        allCampgrounds.length > 0 &&
+        !searchInput.trim() &&
+        !showBookmarked) {
+      
+      // Wait for campgrounds to actually update to match allCampgrounds
+      // This ensures the filtered data has been updated before we zoom
+      if (campgrounds.length !== allCampgrounds.length) {
+        // campgrounds haven't updated yet, wait for next render
+        return;
+      }
+      
+      // Small delay to ensure state is settled
+      const timeoutId = setTimeout(() => {
+        if (isZoomingRef.current || !mapRef.current) {
+          return;
+        }
+        
+        // Double-check campgrounds still match allCampgrounds
+        if (campgrounds.length !== allCampgrounds.length) {
+          return;
+        }
+        
+        isZoomingRef.current = true;
+        try {
+          const coordinates = getCampgroundCoordinates(allCampgrounds);
+          if (coordinates.length > 0) {
+            mapRef.current.fitToCoordinates(coordinates, {
+              edgePadding: {
+                top: 100,
+                right: 50,
+                bottom: 200,
+                left: 50,
+              },
+              animated: true,
+            });
+          }
+        } catch (err) {
+          console.error('Error zooming to all campgrounds:', err);
+        } finally {
+          setTimeout(() => {
+            isZoomingRef.current = false;
+          }, 100);
+        }
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+    
+    // Update the ref AFTER we've processed the zoom logic
+    previousHookupTypeRef.current = selectedHookupType;
+    
+    return undefined;
+  }, [selectedHookupType, loading, error, allCampgrounds.length, campgrounds.length, searchInput, showBookmarked]);
+
   // Zoom to search/filter results when they change
   useEffect(() => {
-    // If filters are cleared, zoom out to show all campgrounds
+    // If filters are cleared, zoom out to show all campgrounds (fallback for other cases)
     if (!hasActiveFilters && !loading && !error && allCampgrounds.length > 0) {
       const currentFilterState = 'no-filters';
-      // Check if we're switching from a filtered state to "all"
-      // If the previous state was a filtered state (not 'no-filters' and not empty), we need to zoom
-      const wasFiltered = lastFilterStateRef.current !== '' && 
-                          lastFilterStateRef.current !== 'no-filters' &&
-                          !lastFilterStateRef.current.startsWith('all-');
       
-      // Only skip if we've already zoomed to show all AND we weren't previously filtered
-      if (lastFilterStateRef.current === currentFilterState && !wasFiltered) {
+      // Only skip if we've already zoomed to show all
+      if (lastFilterStateRef.current === currentFilterState && !isZoomingRef.current) {
         return; // Already zoomed to show all
       }
       
@@ -203,6 +320,12 @@ export default function MapScreen() {
       const timeoutId = setTimeout(() => {
         if (isZoomingRef.current) {
           return;
+        }
+        
+        // Re-check hasActiveFilters using current selectedHookupType
+        const currentHasActiveFilters = selectedHookupType !== 'all' || searchInput.trim().length >= 2 || showBookmarked;
+        if (currentHasActiveFilters) {
+          return; // Filters became active during debounce
         }
         
         isZoomingRef.current = true;
@@ -596,10 +719,12 @@ export default function MapScreen() {
   };
 
   // Handle hookup type changes - reset filter state ref when switching to "all" to ensure zoom works
-  const handleHookupTypeChange = (type: 'full' | 'partial' | 'all') => {
+  const handleHookupTypeChange = (type: 'full' | 'partial' | 'none' | 'all') => {
+    // Don't update previousHookupTypeRef here - let the effect handle it to avoid race conditions
     setSelectedHookupType(type);
-    // Reset filter state ref when switching to "all" so zoom logic can properly detect the change
-    if (type === 'all') {
+    // Always reset filter state ref when switching to "all" so zoom logic can properly detect the change
+    // This ensures we zoom out when clearing the hookup filter
+    if (type === 'all' && selectedHookupType !== 'all') {
       lastFilterStateRef.current = '';
     }
   };
@@ -701,7 +826,7 @@ export default function MapScreen() {
                 ? 'No bookmarked campgrounds found. Bookmark campgrounds to see them here.'
                 : searchInput.trim().length >= 2
                 ? `No campgrounds match "${searchInput.trim()}". Try adjusting your search or filters.`
-                : `No ${selectedHookupType === 'full' ? 'full hookup' : 'partial hookup'} campgrounds found. Try adjusting your filters.`
+                : `No ${selectedHookupType === 'full' ? 'full hookup' : selectedHookupType === 'partial' ? 'partial hookup' : selectedHookupType === 'none' ? 'no hookup' : ''} campgrounds found. Try adjusting your filters.`
             }
             icon="map-outline"
           />
