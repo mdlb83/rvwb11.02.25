@@ -61,14 +61,16 @@ Follow these steps to finish setting up your app in App Store Connect.
 
    **Description:**
    ```
-   Find RV campgrounds with easy access to paved bike trails across the United States. Discover 385+ campground locations with full and partial hookups, detailed trail information, and directions.
+   Find RV campgrounds with easy access to paved bike trails across the United States. Discover 430+ campground locations with full and partial hookups, detailed trail information, and directions. 
+   
+   No bike rack loading needed!
 
    KEY FEATURES:
-   • Comprehensive campground database with 385+ locations
+   • Exclusive and ONLY campground database with these 430+ locations
    • Filter by hookup type (full hookups, partial hookups, or no hookups)
    • Interactive map with detailed campground markers
    • High-quality photos of each campground
-   • Detailed information including amenities, pricing, and contact details
+   • Detailed information including ratings, reviews, amenities, websites, and contact details
    • Get directions using your preferred map app
    • Bookmark your favorite campgrounds for quick access
    • Search by campground name or location
