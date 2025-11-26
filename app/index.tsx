@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -74,20 +74,21 @@ export default function MapScreen() {
     loadBookmarks();
   }, [showBookmarked]);
 
+  // Function to refresh bookmarks state - can be called from anywhere
+  const refreshBookmarks = useCallback(async () => {
+    const bookmarks = await getBookmarks();
+    setHasBookmarks(bookmarks.length > 0);
+    if (showBookmarked) {
+      setBookmarkedIds(bookmarks);
+      // If filtering by bookmarks but no bookmarks exist, turn off the filter
+      if (bookmarks.length === 0) {
+        setShowBookmarked(false);
+      }
+    }
+  }, [showBookmarked]);
+
   // Refresh bookmarks when app comes back to focus (e.g., after bookmarking)
   useEffect(() => {
-    const refreshBookmarks = async () => {
-      const bookmarks = await getBookmarks();
-      setHasBookmarks(bookmarks.length > 0);
-      if (showBookmarked) {
-        setBookmarkedIds(bookmarks);
-        // If filtering by bookmarks but no bookmarks exist, turn off the filter
-        if (bookmarks.length === 0) {
-          setShowBookmarked(false);
-        }
-      }
-    };
-    
     // Refresh immediately and also set up a focus listener
     refreshBookmarks();
     
@@ -101,7 +102,7 @@ export default function MapScreen() {
     return () => {
       subscription?.remove();
     };
-  }, [showBookmarked]);
+  }, [refreshBookmarks]);
 
   // Create stable key for bookmarkedIds to prevent unnecessary filter recalculations
   const bookmarkedIdsKey = useMemo(() => {
@@ -976,6 +977,7 @@ export default function MapScreen() {
       <CampgroundBottomSheet
         campground={selectedCampground}
         onClose={() => setSelectedCampground(null)}
+        onBookmarkChange={refreshBookmarks}
       />
       <SettingsModal
         visible={showSettings}

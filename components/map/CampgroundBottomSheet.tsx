@@ -113,9 +113,10 @@ interface PendingMapAction {
 interface CampgroundBottomSheetProps {
   campground: CampgroundEntry | null;
   onClose: () => void;
+  onBookmarkChange?: () => void; // Callback when bookmark is toggled
 }
 
-export default function CampgroundBottomSheet({ campground, onClose }: CampgroundBottomSheetProps) {
+export default function CampgroundBottomSheet({ campground, onClose, onBookmarkChange }: CampgroundBottomSheetProps) {
   const { theme, resolvedThemeMode } = useTheme();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
@@ -562,6 +563,8 @@ export default function CampgroundBottomSheet({ campground, onClose }: Campgroun
     
     const newBookmarkState = await toggleBookmark(campgroundId);
     setIsBookmarkedState(newBookmarkState);
+    // Notify parent component that bookmarks have changed
+    onBookmarkChange?.();
   };
 
 
