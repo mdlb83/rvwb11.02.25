@@ -14,6 +14,7 @@ import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSubscription } from '../../hooks/useSubscription';
 import CustomerCenterModal from '../subscription/CustomerCenterModal';
+import PaywallModal from '../subscription/PaywallModal';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -23,9 +24,10 @@ interface SettingsModalProps {
 export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
-  const { isPremium, customerInfo } = useSubscription();
+  const { isPremium } = useSubscription();
   const availableApps = getAvailableMapApps();
   const [showCustomerCenter, setShowCustomerCenter] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleAppSelect = async (app: MapApp) => {
     await savePreference(app);
@@ -154,7 +156,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                       styles.option,
                       { backgroundColor: theme.surfaceSecondary },
                     ]}
-                    onPress={() => setShowCustomerCenter(true)}
+                    onPress={() => {
+                      if (isPremium) {
+                        setShowCustomerCenter(true);
+                      } else {
+                        setShowPaywall(true);
+                      }
+                    }}
                   >
                     <View style={styles.optionContent}>
                       <Ionicons 
@@ -177,6 +185,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
       <CustomerCenterModal
         visible={showCustomerCenter}
         onClose={() => setShowCustomerCenter(false)}
+      />
+      <PaywallModal
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onPurchaseComplete={() => {
+          setShowPaywall(false);
+        }}
       />
     </Modal>
   );
