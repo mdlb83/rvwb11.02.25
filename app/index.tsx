@@ -1142,6 +1142,7 @@ export default function MapScreen() {
       <SettingsModal
         visible={showSettings}
         onClose={() => setShowSettings(false)}
+        onShowPaywall={() => setShowPaywall(true)}
       />
       <PaywallModal
         visible={showPaywall}

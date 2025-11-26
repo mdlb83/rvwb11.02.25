@@ -19,9 +19,29 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
     purchasePackage, 
     restorePurchases, 
     isLoading,
-    checkSubscription 
+    checkSubscription,
+    getOfferings
   } = useSubscription();
   const [isPurchasing, setIsPurchasing] = useState(false);
+
+  // Debug logging and refresh offerings when modal opens
+  React.useEffect(() => {
+    if (visible) {
+      console.log('PaywallModal visible:', visible);
+      console.log('currentOffering:', currentOffering);
+      console.log('isLoading:', isLoading);
+      
+      // If no offering, try to refresh
+      if (!currentOffering && !isLoading) {
+        console.log('No offering found, attempting to refresh...');
+        getOfferings().then((offering) => {
+          console.log('Refresh result:', offering ? offering.identifier : 'null');
+        }).catch((error) => {
+          console.error('Error refreshing offerings:', error);
+        });
+      }
+    }
+  }, [visible, currentOffering, isLoading, getOfferings]);
 
   // Show RevenueCat Paywall UI
   const handleShowRevenueCatPaywall = async () => {
@@ -107,6 +127,10 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
 
   const yearlyPackage = getPackageById('yearly');
   const lifetimePackage = getPackageById('lifetime');
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <Modal

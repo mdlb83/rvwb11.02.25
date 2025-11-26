@@ -71,13 +71,28 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const loadOfferings = useCallback(async () => {
     try {
       if (!Purchases || typeof Purchases.getOfferings !== 'function') {
+        console.warn('Purchases.getOfferings not available');
         return;
       }
+      console.log('Loading offerings from RevenueCat...');
       const offerings = await Purchases.getOfferings();
+      console.log('Offerings response:', {
+        current: offerings.current ? 'exists' : 'null',
+        all: Object.keys(offerings.all),
+        count: Object.keys(offerings.all).length
+      });
+      
       if (offerings.current !== null) {
+        console.log('Setting current offering:', offerings.current.identifier);
         setCurrentOffering(offerings.current);
       } else {
-        console.warn('No current offering available');
+        console.warn('No current offering available. Available offerings:', Object.keys(offerings.all));
+        // Try to use the first available offering if no current
+        const offeringKeys = Object.keys(offerings.all);
+        if (offeringKeys.length > 0) {
+          console.log('Using first available offering:', offeringKeys[0]);
+          setCurrentOffering(offerings.all[offeringKeys[0]]);
+        }
       }
     } catch (error) {
       console.error('Error loading offerings:', error);
@@ -104,7 +119,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       }
 
       // Configure RevenueCat
+      console.log('Configuring RevenueCat with API key:', apiKey.substring(0, 10) + '...');
       await Purchases.configure({ apiKey });
+      console.log('RevenueCat configured successfully');
       
       // Set user attributes (optional but recommended)
       // Note: Some reserved attributes like $appVersion may not be settable
@@ -118,11 +135,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       }
 
       // Load initial customer info and offerings
+      console.log('Loading customer info and offerings...');
       await Promise.all([
         checkSubscription(),
         loadOfferings(),
       ]);
 
+      console.log('RevenueCat initialization complete');
       setIsInitialized(true);
     } catch (error) {
       console.error('Error initializing RevenueCat:', error);
@@ -206,8 +225,28 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const getOfferings = async (): Promise<PurchasesOffering | null> => {
     try {
+      console.log('Manually fetching offerings...');
       const offerings = await Purchases.getOfferings();
-      return offerings.current;
+      console.log('Fetched offerings:', {
+        current: offerings.current ? offerings.current.identifier : 'null',
+        all: Object.keys(offerings.all),
+        count: Object.keys(offerings.all).length
+      });
+      
+      if (offerings.current !== null) {
+        setCurrentOffering(offerings.current);
+        return offerings.current;
+      } else {
+        // Try to use the first available offering if no current
+        const offeringKeys = Object.keys(offerings.all);
+        if (offeringKeys.length > 0) {
+          console.log('No current offering, using first available:', offeringKeys[0]);
+          const firstOffering = offerings.all[offeringKeys[0]];
+          setCurrentOffering(firstOffering);
+          return firstOffering;
+        }
+      }
+      return null;
     } catch (error) {
       console.error('Error getting offerings:', error);
       return null;
