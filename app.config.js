@@ -27,7 +27,7 @@ module.exports = {
       "assets/favicon.png"
     ],
     ios: {
-      supportsTablet: true,
+      supportsTablet: false, // iPhone only
       bundleIdentifier: "com.rvingwithbikes.app",
       buildNumber: "1",
       config: {
@@ -40,12 +40,6 @@ module.exports = {
         ITSAppUsesNonExemptEncryption: false,
         UISupportedInterfaceOrientations: [
           "UIInterfaceOrientationPortrait",
-          "UIInterfaceOrientationLandscapeLeft",
-          "UIInterfaceOrientationLandscapeRight"
-        ],
-        "UISupportedInterfaceOrientations~ipad": [
-          "UIInterfaceOrientationPortrait",
-          "UIInterfaceOrientationPortraitUpsideDown",
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
         ]

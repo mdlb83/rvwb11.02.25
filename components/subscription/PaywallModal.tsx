@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PurchasesUI from 'react-native-purchases-ui';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { REVENUECAT_API_KEY } from '../../constants/revenuecat';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -44,6 +45,7 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
   }, [visible, currentOffering, isLoading, getOfferings]);
 
   // Show RevenueCat Paywall UI
+  // Note: This doesn't work in Preview API mode (test keys), so we'll use manual buttons instead
   const handleShowRevenueCatPaywall = async () => {
     try {
       if (!currentOffering) {
@@ -57,7 +59,18 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
         return;
       }
 
-      // Present RevenueCat's built-in paywall
+      // Check if we're using a test key (Preview API mode)
+      // Test keys start with 'test_', production keys start with 'appl_' or 'goog_'
+      const isTestMode = REVENUECAT_API_KEY.startsWith('test_');
+      
+      if (isTestMode) {
+        // In Preview/Test mode, RevenueCat UI paywall doesn't work
+        // Show manual purchase buttons instead (they're already visible below)
+        console.log('Preview API mode detected - using manual purchase buttons instead of RevenueCat UI');
+        return;
+      }
+
+      // Present RevenueCat's built-in paywall (only works with production keys)
       const result = await PurchasesUI.presentPaywall({
         offering: currentOffering,
         mode: 'normal', // or 'condensed'
@@ -154,70 +167,127 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
               Get unlimited access to all campground details, photos, and premium features.
             </Text>
 
-            {/* RevenueCat Paywall Button (Recommended) */}
-            <TouchableOpacity
-              style={[styles.revenueCatButton, { backgroundColor: theme.primary }]}
-              onPress={handleShowRevenueCatPaywall}
-              disabled={isLoading || !currentOffering}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={theme.buttonText} />
+            {/* RevenueCat Paywall Button (Only show in production mode) */}
+            {(() => {
+              const isTestMode = REVENUECAT_API_KEY.startsWith('test_');
+              
+              // Only show RevenueCat UI button in production mode
+              // In Preview/Test mode, RevenueCat UI paywall doesn't work, so we hide this button
+              if (!isTestMode && currentOffering) {
+                return (
+                  <TouchableOpacity
+                    style={[styles.revenueCatButton, { backgroundColor: theme.primary }]}
+                    onPress={handleShowRevenueCatPaywall}
+                    disabled={isLoading || !currentOffering}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color={theme.buttonText} />
+                    ) : (
+                      <Text style={[styles.revenueCatButtonText, { color: theme.buttonText }]}>
+                        View Subscription Options
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Manual Package Selection - Show buttons even if offering not loaded yet */}
+            <View style={styles.packagesContainer}>
+              {currentOffering && yearlyPackage ? (
+                <TouchableOpacity
+                  style={[
+                    styles.packageButton,
+                    { 
+                      backgroundColor: theme.surfaceSecondary,
+                      borderColor: theme.border,
+                    }
+                  ]}
+                  onPress={() => handlePurchase(yearlyPackage)}
+                  disabled={isPurchasing}
+                >
+                  <View style={styles.packageContent}>
+                    <Text style={[styles.packageTitle, { color: theme.text }]}>
+                      Yearly
+                    </Text>
+                    <Text style={[styles.packagePrice, { color: theme.primary }]}>
+                      {formatPrice(yearlyPackage)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               ) : (
-                <Text style={[styles.revenueCatButtonText, { color: theme.buttonText }]}>
-                  View Subscription Options
-                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.packageButton,
+                    { 
+                      backgroundColor: theme.surfaceSecondary,
+                      borderColor: theme.border,
+                      opacity: 0.6,
+                    }
+                  ]}
+                  disabled
+                >
+                  <View style={styles.packageContent}>
+                    <Text style={[styles.packageTitle, { color: theme.textSecondary }]}>
+                      Yearly
+                    </Text>
+                    <Text style={[styles.packagePrice, { color: theme.textSecondary }]}>
+                      {isLoading ? 'Loading...' : '$9.99/year'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
 
-            {/* Manual Package Selection (Alternative) */}
-            {currentOffering && (
-              <View style={styles.packagesContainer}>
-                {yearlyPackage && (
-                  <TouchableOpacity
-                    style={[
-                      styles.packageButton,
-                      { 
-                        backgroundColor: theme.surfaceSecondary,
-                        borderColor: theme.border,
-                      }
-                    ]}
-                    onPress={() => handlePurchase(yearlyPackage)}
-                    disabled={isPurchasing}
-                  >
-                    <View style={styles.packageContent}>
-                      <Text style={[styles.packageTitle, { color: theme.text }]}>
-                        Yearly
-                      </Text>
-                      <Text style={[styles.packagePrice, { color: theme.primary }]}>
-                        {formatPrice(yearlyPackage)}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
+              {currentOffering && lifetimePackage ? (
+                <TouchableOpacity
+                  style={[
+                    styles.packageButton,
+                    { 
+                      backgroundColor: theme.surfaceSecondary,
+                      borderColor: theme.border,
+                    }
+                  ]}
+                  onPress={() => handlePurchase(lifetimePackage)}
+                  disabled={isPurchasing}
+                >
+                  <View style={styles.packageContent}>
+                    <Text style={[styles.packageTitle, { color: theme.text }]}>
+                      Lifetime
+                    </Text>
+                    <Text style={[styles.packagePrice, { color: theme.primary }]}>
+                      {formatPrice(lifetimePackage)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.packageButton,
+                    { 
+                      backgroundColor: theme.surfaceSecondary,
+                      borderColor: theme.border,
+                      opacity: 0.6,
+                    }
+                  ]}
+                  disabled
+                >
+                  <View style={styles.packageContent}>
+                    <Text style={[styles.packageTitle, { color: theme.textSecondary }]}>
+                      Lifetime
+                    </Text>
+                    <Text style={[styles.packagePrice, { color: theme.textSecondary }]}>
+                      {isLoading ? 'Loading...' : 'One-time purchase'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
 
-                {lifetimePackage && (
-                  <TouchableOpacity
-                    style={[
-                      styles.packageButton,
-                      { 
-                        backgroundColor: theme.surfaceSecondary,
-                        borderColor: theme.border,
-                      }
-                    ]}
-                    onPress={() => handlePurchase(lifetimePackage)}
-                    disabled={isPurchasing}
-                  >
-                    <View style={styles.packageContent}>
-                      <Text style={[styles.packageTitle, { color: theme.text }]}>
-                        Lifetime
-                      </Text>
-                      <Text style={[styles.packagePrice, { color: theme.primary }]}>
-                        {formatPrice(lifetimePackage)}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
-              </View>
+            {!currentOffering && !isLoading && (
+              <Text style={[styles.description, { color: theme.textSecondary, marginTop: 16, fontSize: 14 }]}>
+                Subscription options will appear once products are configured. Check console logs for details.
+              </Text>
             )}
 
             <TouchableOpacity 

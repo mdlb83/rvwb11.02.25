@@ -142,7 +142,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       ]);
 
       console.log('RevenueCat initialization complete');
+      console.log('Final state - currentOffering:', currentOffering ? currentOffering.identifier : 'null');
       setIsInitialized(true);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error initializing RevenueCat:', error);
       // Don't block app if RevenueCat fails - allow app to continue
