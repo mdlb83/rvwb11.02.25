@@ -77,13 +77,22 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       console.log('Loading offerings from RevenueCat...');
       const offerings = await Purchases.getOfferings();
       console.log('Offerings response:', {
-        current: offerings.current ? 'exists' : 'null',
+        current: offerings.current ? {
+          identifier: offerings.current.identifier,
+          serverDescription: offerings.current.serverDescription,
+          packages: offerings.current.availablePackages.map(pkg => ({
+            identifier: pkg.identifier,
+            productId: pkg.product.identifier,
+            priceString: pkg.product.priceString
+          }))
+        } : 'null',
         all: Object.keys(offerings.all),
         count: Object.keys(offerings.all).length
       });
       
       if (offerings.current !== null) {
         console.log('Setting current offering:', offerings.current.identifier);
+        console.log('Available packages:', offerings.current.availablePackages.map(p => p.identifier));
         setCurrentOffering(offerings.current);
       } else {
         console.warn('No current offering available. Available offerings:', Object.keys(offerings.all));
@@ -91,11 +100,19 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         const offeringKeys = Object.keys(offerings.all);
         if (offeringKeys.length > 0) {
           console.log('Using first available offering:', offeringKeys[0]);
-          setCurrentOffering(offerings.all[offeringKeys[0]]);
+          const firstOffering = offerings.all[offeringKeys[0]];
+          console.log('First offering packages:', firstOffering.availablePackages.map(p => p.identifier));
+          setCurrentOffering(firstOffering);
+        } else {
+          console.error('No offerings available at all. Make sure offerings are configured in RevenueCat dashboard.');
         }
       }
     } catch (error) {
       console.error('Error loading offerings:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
     }
   }, []);
 
@@ -120,8 +137,19 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       // Configure RevenueCat
       console.log('Configuring RevenueCat with API key:', apiKey.substring(0, 10) + '...');
+      console.log('Using test/sandbox store:', apiKey.startsWith('test_'));
+      
+      // Configure RevenueCat - test keys automatically use sandbox/test store
       await Purchases.configure({ apiKey });
       console.log('RevenueCat configured successfully');
+      
+      // Log store type (will be 'APP_STORE' for production, 'APP_STORE' for sandbox with test keys)
+      try {
+        const appUserID = await Purchases.getAppUserID();
+        console.log('RevenueCat App User ID:', appUserID);
+      } catch (e) {
+        console.warn('Could not get App User ID:', e);
+      }
       
       // Set user attributes (optional but recommended)
       // Note: Some reserved attributes like $appVersion may not be settable

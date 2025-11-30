@@ -28,21 +28,42 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
   // Debug logging and refresh offerings when modal opens
   React.useEffect(() => {
     if (visible) {
-      console.log('PaywallModal visible:', visible);
-      console.log('currentOffering:', currentOffering);
+      console.log('=== PaywallModal Opened ===');
+      console.log('currentOffering:', currentOffering ? {
+        identifier: currentOffering.identifier,
+        packages: currentOffering.availablePackages.map(p => ({
+          identifier: p.identifier,
+          productId: p.product.identifier,
+          price: p.product.priceString
+        }))
+      } : 'null');
       console.log('isLoading:', isLoading);
       
-      // If no offering, try to refresh
-      if (!currentOffering && !isLoading) {
-        console.log('No offering found, attempting to refresh...');
-        getOfferings().then((offering) => {
-          console.log('Refresh result:', offering ? offering.identifier : 'null');
-        }).catch((error) => {
-          console.error('Error refreshing offerings:', error);
+      // Always try to refresh offerings when modal opens to ensure we have the latest
+      console.log('Refreshing offerings...');
+      getOfferings()
+        .then((offering) => {
+          if (offering) {
+            console.log('✅ Offerings refreshed successfully:', {
+              identifier: offering.identifier,
+              packages: offering.availablePackages.map(p => ({
+                identifier: p.identifier,
+                productId: p.product.identifier,
+                price: p.product.priceString
+              }))
+            });
+          } else {
+            console.warn('⚠️ No offering returned from refresh');
+          }
+        })
+        .catch((error) => {
+          console.error('❌ Error refreshing offerings:', error);
+          if (error instanceof Error) {
+            console.error('Error details:', error.message);
+          }
         });
-      }
     }
-  }, [visible, currentOffering, isLoading, getOfferings]);
+  }, [visible, getOfferings]);
 
   // Show RevenueCat Paywall UI
   // Note: This doesn't work in Preview API mode (test keys), so we'll use manual buttons instead
@@ -285,9 +306,17 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
             </View>
 
             {!currentOffering && !isLoading && (
-              <Text style={[styles.description, { color: theme.textSecondary, marginTop: 16, fontSize: 14 }]}>
-                Subscription options will appear once products are configured. Check console logs for details.
-              </Text>
+              <View style={styles.errorContainer}>
+                <Text style={[styles.description, { color: theme.textSecondary, marginTop: 16, fontSize: 14 }]}>
+                  Subscription options will appear once products are configured.
+                </Text>
+                <Text style={[styles.description, { color: theme.textSecondary, marginTop: 8, fontSize: 12 }]}>
+                  Check console logs for details. Make sure offerings are configured in RevenueCat dashboard.
+                </Text>
+                <Text style={[styles.description, { color: theme.textSecondary, marginTop: 8, fontSize: 12 }]}>
+                  Test Mode: {REVENUECAT_API_KEY.startsWith('test_') ? 'Enabled' : 'Disabled'}
+                </Text>
+              </View>
             )}
 
             <TouchableOpacity 
@@ -380,6 +409,11 @@ const styles = StyleSheet.create({
   restoreText: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  errorContainer: {
+    width: '100%',
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
 });
 
