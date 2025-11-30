@@ -5,29 +5,31 @@ import Constants from 'expo-constants';
 // Detect if running in Expo Go
 const isExpoGo = Constants.executionEnvironment === 'storeClient';
 
-// TEST MODE: Set to true to force test API key and sandbox store
-// When true, uses test API key regardless of environment variables
-export const USE_TEST_STORE = true; // Set to false for production
-
 // Test API key (for sandbox/testing)
 const TEST_API_KEY = 'test_yaRuLvxTUeNPPARrILZCqxOERQJ';
 
-// Get API key from environment variable (set in .env file) or expo config extra
-// For production builds, set REVENUECAT_API_KEY in your .env file
-// For Expo Go, always use test key (RevenueCat doesn't work in Expo Go anyway, but this prevents errors)
-// For development builds, you can use the test key as fallback
+// Get production API key from environment variable or expo config extra
+// Set REVENUECAT_API_KEY in your .env file or EAS Secrets for preview/production builds
+const PRODUCTION_API_KEY = process.env.REVENUECAT_API_KEY || Constants.expoConfig?.extra?.revenuecatApiKey || '';
+
+// Determine which API key to use:
+// - Always use test key in Expo Go (RevenueCat doesn't work in Expo Go anyway)
+// - Use production key if available (for preview/production builds)
+// - Fallback to test key for development builds
 export const REVENUECAT_API_KEY = 
-  USE_TEST_STORE || isExpoGo
-    ? TEST_API_KEY // Force test key when USE_TEST_STORE is true or in Expo Go
-    : (process.env.REVENUECAT_API_KEY || 
-       Constants.expoConfig?.extra?.revenuecatApiKey || 
-       TEST_API_KEY); // Fallback to test key for development
+  isExpoGo
+    ? TEST_API_KEY // Always use test key in Expo Go
+    : (PRODUCTION_API_KEY || TEST_API_KEY); // Use production key if available, otherwise test key
+
+// Determine if we're using test store
+export const USE_TEST_STORE = REVENUECAT_API_KEY.startsWith('test_');
 
 // Log which mode we're using
 console.log('RevenueCat Configuration:', {
-  useTestStore: USE_TEST_STORE || isExpoGo,
+  useTestStore: USE_TEST_STORE,
   apiKeyPrefix: REVENUECAT_API_KEY.substring(0, 10) + '...',
-  isExpoGo
+  isExpoGo,
+  hasProductionKey: !!PRODUCTION_API_KEY
 });
 
 // Entitlement ID (matches what you set up in RevenueCat dashboard)
