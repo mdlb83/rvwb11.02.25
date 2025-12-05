@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PurchasesUI from 'react-native-purchases-ui';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { REVENUECAT_API_KEY } from '../../constants/revenuecat';
+import { REVENUECAT_API_KEY, PRODUCT_IDS } from '../../constants/revenuecat';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -94,7 +94,6 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
       // Present RevenueCat's built-in paywall (only works with production keys)
       const result = await PurchasesUI.presentPaywall({
         offering: currentOffering,
-        mode: 'normal', // or 'condensed'
       });
 
       if (result === 'PURCHASED' || result === 'RESTORED') {
@@ -154,13 +153,52 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
     return pkg.product.priceString;
   };
 
-  // Get package by identifier
+  // Get package by identifier (case-insensitive)
   const getPackageById = (identifier: string) => {
-    return currentOffering?.availablePackages.find(pkg => pkg.identifier === identifier);
+    if (!currentOffering) return undefined;
+    // Try exact match first
+    let pkg = currentOffering.availablePackages.find(pkg => pkg.identifier === identifier);
+    if (pkg) return pkg;
+    // Try case-insensitive match
+    pkg = currentOffering.availablePackages.find(pkg => 
+      pkg.identifier.toLowerCase() === identifier.toLowerCase()
+    );
+    return pkg;
   };
 
-  const yearlyPackage = getPackageById('yearly');
-  const lifetimePackage = getPackageById('lifetime');
+  // Get package by product ID (fallback if identifier doesn't match)
+  const getPackageByProductId = (productId: string) => {
+    return currentOffering?.availablePackages.find(pkg => pkg.product.identifier === productId);
+  };
+
+  // Try to find packages - first by identifier (case-insensitive), then by product ID
+  // Try both lowercase and capitalized versions
+  const yearlyPackage = getPackageById('yearly') || getPackageById('Yearly') || getPackageByProductId(PRODUCT_IDS.YEARLY);
+  const lifetimePackage = getPackageById('lifetime') || getPackageById('Lifetime') || getPackageByProductId(PRODUCT_IDS.LIFETIME);
+
+  // Log all available packages for debugging
+  React.useEffect(() => {
+    if (visible && currentOffering) {
+      console.log('=== Available Packages ===');
+      currentOffering.availablePackages.forEach((pkg, index) => {
+        console.log(`Package ${index + 1}:`, {
+          identifier: pkg.identifier,
+          productId: pkg.product.identifier,
+          price: pkg.product.priceString,
+          title: pkg.product.title
+        });
+      });
+      console.log('Looking for packages:');
+      console.log('- yearlyPackage found:', !!yearlyPackage, yearlyPackage ? {
+        identifier: yearlyPackage.identifier,
+        productId: yearlyPackage.product.identifier
+      } : 'not found');
+      console.log('- lifetimePackage found:', !!lifetimePackage, lifetimePackage ? {
+        identifier: lifetimePackage.identifier,
+        productId: lifetimePackage.product.identifier
+      } : 'not found');
+    }
+  }, [visible, currentOffering, yearlyPackage, lifetimePackage]);
 
   if (!visible) {
     return null;
@@ -216,6 +254,38 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
 
             {/* Manual Package Selection - Show buttons even if offering not loaded yet */}
             <View style={styles.packagesContainer}>
+              {/* Show all available packages if expected ones aren't found (for debugging) */}
+              {currentOffering && !yearlyPackage && !lifetimePackage && currentOffering.availablePackages.length > 0 ? (
+                <>
+                  {currentOffering.availablePackages.map((pkg, index) => (
+                    <TouchableOpacity
+                      key={pkg.identifier || index}
+                      style={[
+                        styles.packageButton,
+                        { 
+                          backgroundColor: theme.surfaceSecondary,
+                          borderColor: theme.border,
+                        }
+                      ]}
+                      onPress={() => handlePurchase(pkg)}
+                      disabled={isPurchasing}
+                    >
+                      <View style={styles.packageContent}>
+                        <Text style={[styles.packageTitle, { color: theme.text }]}>
+                          {pkg.product.title || pkg.identifier || `Package ${index + 1}`}
+                        </Text>
+                        <Text style={[styles.packagePrice, { color: theme.primary }]}>
+                          {formatPrice(pkg)}
+                        </Text>
+                      </View>
+                      <Text style={[styles.packageDebug, { color: theme.textSecondary, fontSize: 10 }]}>
+                        ID: {pkg.identifier} | Product: {pkg.product.identifier}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </>
+              ) : (
+                <>
               {currentOffering && yearlyPackage ? (
                 <TouchableOpacity
                   style={[
@@ -302,6 +372,8 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
                     </Text>
                   </View>
                 </TouchableOpacity>
+              )}
+                </>
               )}
             </View>
 
@@ -402,6 +474,11 @@ const styles = StyleSheet.create({
   packagePrice: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  packageDebug: {
+    fontSize: 10,
+    marginTop: 4,
+    fontFamily: 'monospace',
   },
   restoreButton: {
     padding: 12,
