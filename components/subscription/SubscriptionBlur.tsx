@@ -10,8 +10,17 @@ interface SubscriptionBlurProps {
 }
 
 export default function SubscriptionBlur({ onPress }: SubscriptionBlurProps) {
-  const { isPremium } = useSubscription();
+  const { isPremium, customerInfo } = useSubscription();
   const { theme, resolvedThemeMode } = useTheme();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('SubscriptionBlur - isPremium:', isPremium);
+    console.log('SubscriptionBlur - customerInfo:', customerInfo ? {
+      entitlements: Object.keys(customerInfo.entitlements.active),
+      hasPremium: !!customerInfo.entitlements.active.premium
+    } : 'null');
+  }, [isPremium, customerInfo]);
 
   if (isPremium) {
     return null; // Don't show blur if subscribed

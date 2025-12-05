@@ -121,11 +121,27 @@ interface CampgroundBottomSheetProps {
 
 export default function CampgroundBottomSheet({ campground, onClose, onBookmarkChange }: CampgroundBottomSheetProps) {
   const { theme, resolvedThemeMode } = useTheme();
-  const { isPremium } = useSubscription();
+  const { isPremium, checkSubscription } = useSubscription();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+
+  // Log subscription status changes for debugging
+  useEffect(() => {
+    console.log('CampgroundBottomSheet - isPremium changed:', isPremium);
+  }, [isPremium]);
+
+  // Refresh subscription status when paywall closes (in case purchase completed)
+  useEffect(() => {
+    if (!showPaywall) {
+      // Small delay to allow purchase to complete
+      const timer = setTimeout(() => {
+        checkSubscription();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showPaywall, checkSubscription]);
   
   // Calculate snap points dynamically based on content height
   // Default snap points: 30% peek, calculated default (max 60% to prevent taking too much space), 90% expanded

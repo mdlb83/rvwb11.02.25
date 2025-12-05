@@ -7,7 +7,7 @@ import Purchases, {
   PURCHASES_ERROR_CODE,
   PurchasesError
 } from 'react-native-purchases';
-import { REVENUECAT_API_KEY, ENTITLEMENT_ID } from '../constants/revenuecat';
+import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE, PRODUCT_IDS } from '../constants/revenuecat';
 
 interface SubscriptionContextType {
   // Subscription state
@@ -35,6 +35,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [currentOffering, setCurrentOffering] = useState<PurchasesOffering | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  // Test mode: simulate premium subscription in Expo Go
+  const [expoGoTestPremium, setExpoGoTestPremium] = useState(false);
 
   // Define updateSubscriptionStatus before it's used
   const updateSubscriptionStatus = useCallback((info: CustomerInfo) => {
@@ -69,6 +71,45 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   // Define loadOfferings before it's used
   const loadOfferings = useCallback(async () => {
+    // Test mode: create mock offerings for Expo Go
+    if (EXPO_GO_TEST_MODE) {
+      console.log('⚠️ EXPO GO TEST MODE: Creating mock offerings for UI testing');
+      // Create a mock offering with mock packages
+      const mockOffering = {
+        identifier: 'default',
+        serverDescription: 'Mock offering for Expo Go test mode',
+        metadata: {},
+        availablePackages: [
+          {
+            identifier: 'yearly',
+            packageType: 'ANNUAL',
+            product: {
+              identifier: PRODUCT_IDS.YEARLY,
+              description: 'Yearly Premium Subscription',
+              title: 'Yearly Premium',
+              price: 9.99,
+              priceString: '$9.99',
+              currencyCode: 'USD',
+            },
+          },
+          {
+            identifier: 'lifetime',
+            packageType: 'LIFETIME',
+            product: {
+              identifier: PRODUCT_IDS.LIFETIME,
+              description: 'Lifetime Premium Purchase',
+              title: 'Lifetime Premium',
+              price: 29.99,
+              priceString: '$29.99',
+              currencyCode: 'USD',
+            },
+          },
+        ],
+      } as PurchasesOffering;
+      setCurrentOffering(mockOffering);
+      return;
+    }
+    
     try {
       if (!Purchases || typeof Purchases.getOfferings !== 'function') {
         console.warn('Purchases.getOfferings not available');
@@ -130,9 +171,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       // Check if Purchases is available (required for development builds, not Expo Go)
       if (!Purchases || typeof Purchases.configure !== 'function') {
-        console.warn('RevenueCat SDK not available. This requires a development build, not Expo Go.');
-        setIsLoading(false);
-        return;
+        if (EXPO_GO_TEST_MODE) {
+          console.warn('⚠️ EXPO GO TEST MODE: RevenueCat SDK not available in Expo Go. Using test mode to simulate subscriptions.');
+          console.warn('⚠️ This is for UI testing only. Real subscriptions require a development build.');
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        } else {
+          console.warn('RevenueCat SDK not available. This requires a development build, not Expo Go.');
+          setIsLoading(false);
+          return;
+        }
       }
 
       // Configure RevenueCat
@@ -205,11 +254,50 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [initializeRevenueCat, updateSubscriptionStatus]);
 
   const purchasePackage = async (pkg: PurchasesPackage): Promise<CustomerInfo> => {
+    // Test mode: simulate purchase in Expo Go
+    if (EXPO_GO_TEST_MODE) {
+      console.log('⚠️ EXPO GO TEST MODE: Simulating purchase (RevenueCat not available in Expo Go)');
+      setIsLoading(true);
+      // Simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setExpoGoTestPremium(true);
+      setIsSubscribed(true);
+      setIsLoading(false);
+      // Return a mock customerInfo
+      return {
+        entitlements: {
+          active: {
+            [ENTITLEMENT_ID]: {
+              identifier: ENTITLEMENT_ID,
+              isActive: true,
+              willRenew: false,
+              periodType: 'NORMAL',
+              latestPurchaseDate: new Date().toISOString(),
+              originalPurchaseDate: new Date().toISOString(),
+              expirationDate: null,
+              store: 'APP_STORE',
+              productIdentifier: pkg.product.identifier,
+              isSandbox: true,
+              unsubscribeDetectedAt: null,
+              billingIssuesDetectedAt: null,
+            }
+          },
+          all: {}
+        }
+      } as CustomerInfo;
+    }
+    
     try {
       setIsLoading(true);
       const { customerInfo } = await Purchases.purchasePackage(pkg);
+      console.log('Purchase completed - customerInfo:', {
+        entitlements: Object.keys(customerInfo.entitlements.active),
+        hasPremium: !!customerInfo.entitlements.active[ENTITLEMENT_ID],
+        premiumEntitlement: customerInfo.entitlements.active[ENTITLEMENT_ID]
+      });
       setCustomerInfo(customerInfo);
       updateSubscriptionStatus(customerInfo);
+      console.log('Purchase completed - subscription status updated, isSubscribed:', customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined);
       return customerInfo;
     } catch (error) {
       const purchasesError = error as PurchasesError;
@@ -284,9 +372,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   };
 
   const hasEntitlement = useCallback((entitlementId: string): boolean => {
+    // Test mode: simulate premium in Expo Go
+    if (EXPO_GO_TEST_MODE && expoGoTestPremium && entitlementId === ENTITLEMENT_ID) {
+      return true;
+    }
     if (!customerInfo) return false;
     return customerInfo.entitlements.active[entitlementId] !== undefined;
-  }, [customerInfo]);
+  }, [customerInfo, expoGoTestPremium]);
 
   return (
     <SubscriptionContext.Provider

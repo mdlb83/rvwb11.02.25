@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert, ActivityIndicat
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import PurchasesUI from 'react-native-purchases-ui';
+import Purchases from 'react-native-purchases';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { REVENUECAT_API_KEY, PRODUCT_IDS } from '../../constants/revenuecat';
@@ -116,10 +117,28 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
   const handlePurchase = async (pkg: any) => {
     try {
       setIsPurchasing(true);
-      await purchasePackage(pkg);
+      const customerInfo = await purchasePackage(pkg);
+      console.log('Purchase completed in PaywallModal, customerInfo:', {
+        entitlements: Object.keys(customerInfo.entitlements.active),
+        hasPremium: !!customerInfo.entitlements.active.premium
+      });
+      
+      // Explicitly check subscription status after purchase to ensure UI updates
+      await checkSubscription();
+      
+      // Double-check by fetching fresh customer info
+      const freshInfo = await Purchases.getCustomerInfo();
+      console.log('Fresh customerInfo after purchase:', {
+        entitlements: Object.keys(freshInfo.entitlements.active),
+        hasPremium: !!freshInfo.entitlements.active.premium
+      });
+      
       Alert.alert('Success!', 'Your subscription is now active.');
       onPurchaseComplete?.();
-      onClose();
+      // Small delay to ensure state updates propagate before closing
+      setTimeout(() => {
+        onClose();
+      }, 300);
     } catch (error: any) {
       if (error.message === 'Purchase cancelled') {
         // User cancelled, do nothing
@@ -137,9 +156,14 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
     try {
       setIsPurchasing(true);
       await restorePurchases();
+      // Explicitly check subscription status after restore to ensure UI updates
+      await checkSubscription();
       Alert.alert('Success', 'Purchases restored successfully.');
       onPurchaseComplete?.();
-      onClose();
+      // Small delay to ensure state updates propagate before closing
+      setTimeout(() => {
+        onClose();
+      }, 100);
     } catch (error) {
       Alert.alert('Error', 'No purchases found to restore.');
     } finally {
@@ -172,9 +196,9 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
   };
 
   // Try to find packages - first by identifier (case-insensitive), then by product ID
-  // Try both lowercase and capitalized versions
-  const yearlyPackage = getPackageById('yearly') || getPackageById('Yearly') || getPackageByProductId(PRODUCT_IDS.YEARLY);
-  const lifetimePackage = getPackageById('lifetime') || getPackageById('Lifetime') || getPackageByProductId(PRODUCT_IDS.LIFETIME);
+  // getPackageById handles case-insensitive matching internally, so 'yearly' will match 'yearly', 'Yearly', 'YEARLY', etc.
+  const yearlyPackage = getPackageById('yearly') || getPackageByProductId(PRODUCT_IDS.YEARLY);
+  const lifetimePackage = getPackageById('lifetime') || getPackageByProductId(PRODUCT_IDS.LIFETIME);
 
   // Log all available packages for debugging
   React.useEffect(() => {

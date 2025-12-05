@@ -3,7 +3,10 @@
 import Constants from 'expo-constants';
 
 // Detect if running in Expo Go
-const isExpoGo = Constants.executionEnvironment === 'storeClient';
+export const isExpoGo = Constants.executionEnvironment === 'storeClient';
+
+// Test mode flag - set to true to simulate premium subscription in Expo Go (for UI testing only)
+export const EXPO_GO_TEST_MODE = isExpoGo && __DEV__;
 
 // Test API key (for sandbox/testing)
 const TEST_API_KEY = 'test_yaRuLvxTUeNPPARrILZCqxOERQJ';
