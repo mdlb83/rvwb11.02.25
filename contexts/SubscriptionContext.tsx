@@ -7,7 +7,7 @@ import Purchases, {
   PURCHASES_ERROR_CODE,
   PurchasesError
 } from 'react-native-purchases';
-import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE } from '../constants/revenuecat';
+import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE, OFFERING_ID } from '../constants/revenuecat';
 
 interface SubscriptionContextType {
   // Subscription state
@@ -98,13 +98,20 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         count: Object.keys(offerings.all).length
       });
       
-      if (offerings.current !== null) {
+      // Priority 1: Try to find the specific offering ID if configured
+      if (OFFERING_ID && offerings.all[OFFERING_ID]) {
+        console.log('Found specific offering ID:', OFFERING_ID);
+        const specificOffering = offerings.all[OFFERING_ID];
+        console.log('Available packages:', specificOffering.availablePackages.map(p => p.identifier));
+        setCurrentOffering(specificOffering);
+      } else if (offerings.current !== null) {
+        // Priority 2: Use current offering if available
         console.log('Setting current offering:', offerings.current.identifier);
         console.log('Available packages:', offerings.current.availablePackages.map(p => p.identifier));
         setCurrentOffering(offerings.current);
       } else {
+        // Priority 3: Use first available offering
         console.warn('No current offering available. Available offerings:', Object.keys(offerings.all));
-        // Try to use the first available offering if no current
         const offeringKeys = Object.keys(offerings.all);
         if (offeringKeys.length > 0) {
           console.log('Using first available offering:', offeringKeys[0]);
@@ -315,22 +322,35 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       console.log('Fetched offerings:', {
         current: offerings.current ? offerings.current.identifier : 'null',
         all: Object.keys(offerings.all),
-        count: Object.keys(offerings.all).length
+        count: Object.keys(offerings.all).length,
+        lookingFor: OFFERING_ID
       });
       
+      // Priority 1: Try to find the specific offering ID if configured
+      if (OFFERING_ID && offerings.all[OFFERING_ID]) {
+        console.log('Found specific offering ID:', OFFERING_ID);
+        const specificOffering = offerings.all[OFFERING_ID];
+        setCurrentOffering(specificOffering);
+        return specificOffering;
+      }
+      
+      // Priority 2: Use current offering if available
       if (offerings.current !== null) {
+        console.log('Using current offering:', offerings.current.identifier);
         setCurrentOffering(offerings.current);
         return offerings.current;
-      } else {
-        // Try to use the first available offering if no current
-        const offeringKeys = Object.keys(offerings.all);
-        if (offeringKeys.length > 0) {
-          console.log('No current offering, using first available:', offeringKeys[0]);
-          const firstOffering = offerings.all[offeringKeys[0]];
-          setCurrentOffering(firstOffering);
-          return firstOffering;
-        }
       }
+      
+      // Priority 3: Use first available offering
+      const offeringKeys = Object.keys(offerings.all);
+      if (offeringKeys.length > 0) {
+        console.log('No current offering, using first available:', offeringKeys[0]);
+        const firstOffering = offerings.all[offeringKeys[0]];
+        setCurrentOffering(firstOffering);
+        return firstOffering;
+      }
+      
+      console.error('No offerings available at all');
       return null;
     } catch (error) {
       console.error('Error getting offerings:', error);

@@ -43,6 +43,11 @@ console.log('RevenueCat Configuration:', {
 // Entitlement ID (matches what you set up in RevenueCat dashboard)
 export const ENTITLEMENT_ID = 'premium';
 
+// Offering ID (the specific offering identifier from RevenueCat dashboard)
+// If you have a specific offering you want to use, set it here
+// Otherwise, the code will use the "current" offering or first available
+export const OFFERING_ID = 'ofrng81bf31b09b';
+
 // Product identifiers (must match App Store Connect / Google Play Console)
 // Format: bundleId.productId
 export const PRODUCT_IDS = {
