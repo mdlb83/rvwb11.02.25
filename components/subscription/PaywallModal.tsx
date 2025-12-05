@@ -23,7 +23,68 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
   const [isPresentingPaywall, setIsPresentingPaywall] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Automatically present RevenueCat paywall when modal opens and offering is available
+  const attemptPresentPaywall = async () => {
+    // Wait for offerings to load if still loading
+    if (isLoading) {
+      console.log('Waiting for offerings to load...');
+      return;
+    }
+
+    // Check if PurchasesUI is available first
+    if (!PurchasesUI || typeof PurchasesUI.presentPaywall !== 'function') {
+      setError('Subscription features require a development build. RevenueCat SDK is not available.');
+      console.error('PurchasesUI.presentPaywall not available');
+      return;
+    }
+
+    try {
+      setIsPresentingPaywall(true);
+      setError(null);
+      
+      // Refresh offerings to ensure we have the latest
+      console.log('Fetching offerings from RevenueCat...');
+      const offering = await getOfferings();
+      
+      if (!offering) {
+        setError('No subscription packages available. Please check your RevenueCat configuration:\n\n1. Verify offerings are configured in RevenueCat dashboard\n2. Ensure at least one offering is set as "current"\n3. Check that products are linked to the offering\n4. Verify API key is correct');
+        console.error('No offering available after fetch');
+        setIsPresentingPaywall(false);
+        return;
+      }
+
+      console.log('Presenting RevenueCat paywall with offering:', offering.identifier);
+      
+      // Present RevenueCat's built-in paywall
+      const result = await PurchasesUI.presentPaywall({
+        offering: offering,
+      });
+
+      console.log('Paywall result:', result);
+
+      if (result === 'PURCHASED' || result === 'RESTORED') {
+        await checkSubscription();
+        Alert.alert('Success!', 'Your subscription is now active.');
+        onPurchaseComplete?.();
+        onClose();
+      } else if (result === 'CANCELLED') {
+        // User cancelled, just close the modal
+        onClose();
+      }
+    } catch (error: any) {
+      console.error('Error presenting paywall:', error);
+      if (error.userCancelled) {
+        // User cancelled, just close
+        onClose();
+      } else {
+        const errorMessage = error?.message || 'Unknown error';
+        setError(`Failed to load subscription options: ${errorMessage}\n\nPlease check:\n1. RevenueCat dashboard configuration\n2. Network connection\n3. API key validity`);
+      }
+    } finally {
+      setIsPresentingPaywall(false);
+    }
+  };
+
+  // Automatically present RevenueCat paywall when modal opens
   useEffect(() => {
     if (!visible) {
       setError(null);
@@ -31,65 +92,7 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
       return;
     }
 
-    const presentPaywall = async () => {
-      // Wait for offerings to load if still loading
-      if (isLoading) {
-        console.log('Waiting for offerings to load...');
-        return;
-      }
-
-      // Refresh offerings to ensure we have the latest
-      const offering = await getOfferings();
-      
-      if (!offering) {
-        setError('No subscription packages available. Please check your RevenueCat configuration.');
-        console.error('No offering available');
-        return;
-      }
-
-      // Check if PurchasesUI is available
-      if (!PurchasesUI || typeof PurchasesUI.presentPaywall !== 'function') {
-        setError('Subscription features require a development build. RevenueCat SDK is not available.');
-        console.error('PurchasesUI.presentPaywall not available');
-        return;
-      }
-
-      try {
-        setIsPresentingPaywall(true);
-        setError(null);
-        
-        console.log('Presenting RevenueCat paywall with offering:', offering.identifier);
-        
-        // Present RevenueCat's built-in paywall
-        const result = await PurchasesUI.presentPaywall({
-          offering: offering,
-        });
-
-        console.log('Paywall result:', result);
-
-        if (result === 'PURCHASED' || result === 'RESTORED') {
-          await checkSubscription();
-          Alert.alert('Success!', 'Your subscription is now active.');
-          onPurchaseComplete?.();
-          onClose();
-        } else if (result === 'CANCELLED') {
-          // User cancelled, just close the modal
-          onClose();
-        }
-      } catch (error: any) {
-        console.error('Error presenting paywall:', error);
-        if (error.userCancelled) {
-          // User cancelled, just close
-          onClose();
-        } else {
-          setError('Failed to load subscription options. Please try again.');
-        }
-      } finally {
-        setIsPresentingPaywall(false);
-      }
-    };
-
-    presentPaywall();
+    attemptPresentPaywall();
   }, [visible, isLoading, currentOffering, getOfferings, checkSubscription, onPurchaseComplete, onClose]);
 
 
@@ -127,14 +130,25 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
                 <Text style={[styles.description, { color: theme.textSecondary, marginTop: 16 }]}>
                   {error}
                 </Text>
-                <TouchableOpacity
-                  style={[styles.retryButton, { backgroundColor: theme.primary, marginTop: 24 }]}
-                  onPress={onClose}
-                >
-                  <Text style={[styles.retryButtonText, { color: theme.buttonText }]}>
-                    Close
-                  </Text>
-                </TouchableOpacity>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.retryButton, { backgroundColor: theme.primary, marginTop: 24 }]}
+                    onPress={attemptPresentPaywall}
+                    disabled={isPresentingPaywall}
+                  >
+                    <Text style={[styles.retryButtonText, { color: theme.buttonText }]}>
+                      {isPresentingPaywall ? 'Retrying...' : 'Retry'}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.retryButton, { backgroundColor: theme.surfaceSecondary, marginTop: 12 }]}
+                    onPress={onClose}
+                  >
+                    <Text style={[styles.retryButtonText, { color: theme.text }]}>
+                      Close
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </>
             ) : (
               <>
@@ -197,6 +211,10 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
 });
 
