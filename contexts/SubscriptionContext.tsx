@@ -7,7 +7,7 @@ import Purchases, {
   PURCHASES_ERROR_CODE,
   PurchasesError
 } from 'react-native-purchases';
-import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE, PRODUCT_IDS } from '../constants/revenuecat';
+import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE } from '../constants/revenuecat';
 
 interface SubscriptionContextType {
   // Subscription state
@@ -71,42 +71,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   // Define loadOfferings before it's used
   const loadOfferings = useCallback(async () => {
-    // Test mode: create mock offerings for Expo Go
+    // Test mode: In Expo Go, RevenueCat SDK is not available, so skip loading
     if (EXPO_GO_TEST_MODE) {
-      console.log('⚠️ EXPO GO TEST MODE: Creating mock offerings for UI testing');
-      // Create a mock offering with mock packages
-      const mockOffering = {
-        identifier: 'default',
-        serverDescription: 'Mock offering for Expo Go test mode',
-        metadata: {},
-        availablePackages: [
-          {
-            identifier: 'yearly',
-            packageType: 'ANNUAL',
-            product: {
-              identifier: PRODUCT_IDS.YEARLY,
-              description: 'Yearly Premium Subscription',
-              title: 'Yearly Premium',
-              price: 9.99,
-              priceString: '$9.99',
-              currencyCode: 'USD',
-            },
-          },
-          {
-            identifier: 'lifetime',
-            packageType: 'LIFETIME',
-            product: {
-              identifier: PRODUCT_IDS.LIFETIME,
-              description: 'Lifetime Premium Purchase',
-              title: 'Lifetime Premium',
-              price: 29.99,
-              priceString: '$29.99',
-              currencyCode: 'USD',
-            },
-          },
-        ],
-      } as PurchasesOffering;
-      setCurrentOffering(mockOffering);
+      console.warn('⚠️ EXPO GO TEST MODE: RevenueCat SDK not available in Expo Go. Use a development build to test subscriptions.');
       return;
     }
     

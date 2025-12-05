@@ -17,12 +17,17 @@ const PRODUCTION_API_KEY = process.env.REVENUECAT_API_KEY || Constants.expoConfi
 
 // Determine which API key to use:
 // - Always use test key in Expo Go (RevenueCat doesn't work in Expo Go anyway)
-// - Use production key if available (for preview/production builds)
-// - Fallback to test key for development builds
+// - Preview and production builds MUST use production API key (set via EAS Secrets)
+// - Development builds can fallback to test key if production key not available
 export const REVENUECAT_API_KEY = 
   isExpoGo
     ? TEST_API_KEY // Always use test key in Expo Go
     : (PRODUCTION_API_KEY || TEST_API_KEY); // Use production key if available, otherwise test key
+
+// Warn if production key is missing in non-Expo Go builds (preview/production should have it)
+if (!isExpoGo && !PRODUCTION_API_KEY) {
+  console.warn('⚠️ WARNING: Production RevenueCat API key not found. Preview and production builds require REVENUECAT_API_KEY to be set in EAS Secrets.');
+}
 
 // Determine if we're using test store
 export const USE_TEST_STORE = REVENUECAT_API_KEY.startsWith('test_');
