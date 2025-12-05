@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,15 +15,21 @@ interface PaywallModalProps {
 export default function PaywallModal({ visible, onClose, onPurchaseComplete }: PaywallModalProps) {
   const { theme } = useTheme();
   const { 
-    currentOffering, 
     isLoading,
     checkSubscription,
     getOfferings
   } = useSubscription();
   const [isPresentingPaywall, setIsPresentingPaywall] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasAttemptedRef = useRef(false);
+  const isPresentingRef = useRef(false);
 
   const attemptPresentPaywall = async () => {
+    // Prevent multiple simultaneous attempts
+    if (isPresentingRef.current) {
+      console.log('Paywall presentation already in progress, skipping...');
+      return;
+    }
     // Wait for offerings to load if still loading
     if (isLoading) {
       console.log('Waiting for offerings to load...');
@@ -38,6 +44,7 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
     }
 
     try {
+      isPresentingRef.current = true;
       setIsPresentingPaywall(true);
       setError(null);
       
@@ -80,6 +87,7 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
         setError(`Failed to load subscription options: ${errorMessage}\n\nPlease check:\n1. RevenueCat dashboard configuration\n2. Network connection\n3. API key validity`);
       }
     } finally {
+      isPresentingRef.current = false;
       setIsPresentingPaywall(false);
     }
   };
@@ -87,13 +95,23 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
   // Automatically present RevenueCat paywall when modal opens
   useEffect(() => {
     if (!visible) {
+      // Reset when modal closes
       setError(null);
       setIsPresentingPaywall(false);
+      hasAttemptedRef.current = false;
+      isPresentingRef.current = false;
       return;
     }
 
-    attemptPresentPaywall();
-  }, [visible, isLoading, currentOffering, getOfferings, checkSubscription, onPurchaseComplete, onClose]);
+    // Only attempt once when modal becomes visible
+    if (!hasAttemptedRef.current && !isLoading) {
+      hasAttemptedRef.current = true;
+      attemptPresentPaywall();
+    } else if (isLoading) {
+      // Reset attempt flag if still loading, so we can try again when loading completes
+      hasAttemptedRef.current = false;
+    }
+  }, [visible, isLoading]); // Only depend on visible and isLoading
 
 
   if (!visible) {
