@@ -41,6 +41,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   // Define updateSubscriptionStatus before it's used
   const updateSubscriptionStatus = useCallback((info: CustomerInfo) => {
     const hasEntitlement = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
+    console.log('🔄 updateSubscriptionStatus:', {
+      hasEntitlement,
+      entitlementId: ENTITLEMENT_ID,
+      activeEntitlements: Object.keys(info.entitlements.active),
+      premiumEntitlement: info.entitlements.active[ENTITLEMENT_ID] ? {
+        identifier: info.entitlements.active[ENTITLEMENT_ID].identifier,
+        isActive: info.entitlements.active[ENTITLEMENT_ID].isActive,
+      } : null
+    });
     setIsSubscribed(hasEntitlement);
   }, []);
 
@@ -50,14 +59,25 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setIsLoading(true);
       // Check if Purchases is available before calling
       if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') {
+        console.log('🔍 checkSubscription: Purchases SDK not available');
         setIsLoading(false);
         return;
       }
+      console.log('🔍 checkSubscription: Fetching customer info from RevenueCat...');
       const info = await Purchases.getCustomerInfo();
+      console.log('🔍 checkSubscription: Customer info received:', {
+        entitlements: Object.keys(info.entitlements.active),
+        hasPremiumEntitlement: !!info.entitlements.active[ENTITLEMENT_ID],
+        premiumEntitlement: info.entitlements.active[ENTITLEMENT_ID] ? {
+          identifier: info.entitlements.active[ENTITLEMENT_ID].identifier,
+          isActive: info.entitlements.active[ENTITLEMENT_ID].isActive,
+        } : null
+      });
       setCustomerInfo(info);
       updateSubscriptionStatus(info);
+      console.log('🔍 checkSubscription: Subscription status updated');
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('❌ Error checking subscription:', error);
       const purchasesError = error as PurchasesError;
       
       // Handle specific error codes
@@ -361,10 +381,24 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const hasEntitlement = useCallback((entitlementId: string): boolean => {
     // Test mode: simulate premium in Expo Go
     if (EXPO_GO_TEST_MODE && expoGoTestPremium && entitlementId === ENTITLEMENT_ID) {
+      console.log('✅ hasEntitlement: Test mode premium active');
       return true;
     }
-    if (!customerInfo) return false;
-    return customerInfo.entitlements.active[entitlementId] !== undefined;
+    if (!customerInfo) {
+      console.log('❌ hasEntitlement: No customerInfo available');
+      return false;
+    }
+    const hasEntitlementValue = customerInfo.entitlements.active[entitlementId] !== undefined;
+    console.log('🔍 hasEntitlement:', {
+      entitlementId,
+      hasEntitlement: hasEntitlementValue,
+      activeEntitlements: Object.keys(customerInfo.entitlements.active),
+      premiumEntitlement: customerInfo.entitlements.active[entitlementId] ? {
+        identifier: customerInfo.entitlements.active[entitlementId].identifier,
+        isActive: customerInfo.entitlements.active[entitlementId].isActive,
+      } : null
+    });
+    return hasEntitlementValue;
   }, [customerInfo, expoGoTestPremium]);
 
   return (

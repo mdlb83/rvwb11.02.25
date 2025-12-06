@@ -121,7 +121,7 @@ interface CampgroundBottomSheetProps {
 
 export default function CampgroundBottomSheet({ campground, onClose, onBookmarkChange }: CampgroundBottomSheetProps) {
   const { theme, resolvedThemeMode } = useTheme();
-  const { isPremium, checkSubscription } = useSubscription();
+  const { isPremium, checkSubscription, syncPurchases } = useSubscription();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
@@ -129,8 +129,9 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
 
   // Log subscription status changes for debugging
   useEffect(() => {
-    console.log('CampgroundBottomSheet - isPremium changed:', isPremium);
-  }, [isPremium]);
+    console.log('📋 CampgroundBottomSheet - isPremium changed:', isPremium);
+    console.log('📋 CampgroundBottomSheet - Will show blur overlay:', !isPremium && !!campground);
+  }, [isPremium, campground]);
 
   // Refresh subscription status when paywall closes (in case purchase completed)
   useEffect(() => {
@@ -1379,8 +1380,9 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
         ) : null}
         
         {/* Subscription Blur Overlay - shows when not subscribed */}
+        {/* Key prop forces React to unmount/remount when isPremium changes */}
         {campground && !isPremium && (
-          <SubscriptionBlur onPress={() => setShowPaywall(true)} />
+          <SubscriptionBlur key={`blur-${isPremium}`} onPress={() => setShowPaywall(true)} />
         )}
       </BottomSheetScrollView>
       <MapAppPickerModal
@@ -1416,14 +1418,24 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           setShowPaywall(false);
           // Explicitly refresh subscription status immediately after purchase
           // This ensures the bottom sheet updates even if the listener hasn't fired yet
+          // Use syncPurchases first if available, then checkSubscription
+          try {
+            if (syncPurchases) {
+              console.log('🔄 CampgroundBottomSheet: Syncing purchases...');
+              await syncPurchases();
+            }
+          } catch (error) {
+            console.warn('⚠️ Error syncing purchases:', error);
+          }
+          
           await checkSubscription();
-          // Also retry a couple times to handle any delays in RevenueCat processing
-          setTimeout(async () => {
-            await checkSubscription();
-          }, 1000);
+          // Also retry a couple times to handle sandbox delays (longer delays for sandbox)
           setTimeout(async () => {
             await checkSubscription();
           }, 2000);
+          setTimeout(async () => {
+            await checkSubscription();
+          }, 4000);
         }}
       />
     </BottomSheet>

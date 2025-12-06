@@ -71,38 +71,64 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
       console.log('Paywall result:', result);
 
       if (result === 'PURCHASED' || result === 'RESTORED') {
-        // Refresh subscription status with retry logic to ensure it's updated
-        let retries = 3;
+        // CRITICAL: In sandbox mode, sync purchases first to ensure RevenueCat has processed the purchase
+        // Then refresh subscription status with retry logic
+        let retries = 5; // Increased retries for sandbox mode
         let subscriptionUpdated = false;
         
         // Only do retry logic if Purchases SDK is available (not in Expo Go test mode)
         if (Purchases && typeof Purchases.getCustomerInfo === 'function') {
+          // First, sync purchases to ensure RevenueCat has the latest purchase info
+          try {
+            console.log('🔄 Syncing purchases with RevenueCat...');
+            await Purchases.syncPurchases();
+            console.log('✅ Purchases synced');
+          } catch (syncError) {
+            console.warn('⚠️ Error syncing purchases (non-fatal):', syncError);
+          }
+          
+          // Then check subscription status with retries
           while (retries > 0 && !subscriptionUpdated) {
             await checkSubscription();
             
-            // Small delay to allow RevenueCat to process the purchase
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Longer delay for sandbox mode - RevenueCat needs time to process
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Check if subscription is now active
             try {
               const info = await Purchases.getCustomerInfo();
-              if (info?.entitlements.active[ENTITLEMENT_ID]) {
+              const hasEntitlement = info?.entitlements.active[ENTITLEMENT_ID] !== undefined;
+              console.log(`🔍 Purchase verification attempt ${6 - retries}/5:`, {
+                hasEntitlement,
+                activeEntitlements: Object.keys(info.entitlements.active),
+                premiumEntitlement: info.entitlements.active[ENTITLEMENT_ID] ? {
+                  identifier: info.entitlements.active[ENTITLEMENT_ID].identifier,
+                  isActive: info.entitlements.active[ENTITLEMENT_ID].isActive,
+                } : null
+              });
+              
+              if (hasEntitlement) {
                 subscriptionUpdated = true;
-                console.log('Subscription status confirmed active');
+                console.log('✅ Subscription status confirmed active');
               } else {
                 retries--;
-                console.log(`Subscription status not yet updated, retries remaining: ${retries}`);
+                console.log(`⏳ Subscription status not yet updated, retries remaining: ${retries}`);
                 if (retries > 0) {
-                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  // Longer delay between retries for sandbox mode
+                  await new Promise(resolve => setTimeout(resolve, 1500));
                 }
               }
             } catch (error) {
-              console.warn('Error checking customer info:', error);
+              console.warn('❌ Error checking customer info:', error);
               retries--;
               if (retries > 0) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
               }
             }
+          }
+          
+          if (!subscriptionUpdated) {
+            console.warn('⚠️ Subscription status not confirmed after all retries - customer info listener should update it');
           }
         } else {
           // In test mode or when Purchases is not available, just check once

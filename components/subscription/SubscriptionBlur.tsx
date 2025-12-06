@@ -15,16 +15,20 @@ export default function SubscriptionBlur({ onPress }: SubscriptionBlurProps) {
 
   // Debug logging
   React.useEffect(() => {
-    console.log('SubscriptionBlur - isPremium:', isPremium);
-    console.log('SubscriptionBlur - customerInfo:', customerInfo ? {
+    console.log('🔒 SubscriptionBlur - isPremium:', isPremium);
+    console.log('🔒 SubscriptionBlur - customerInfo:', customerInfo ? {
       entitlements: Object.keys(customerInfo.entitlements.active),
       hasPremium: !!customerInfo.entitlements.active.premium
     } : 'null');
+    console.log('🔒 SubscriptionBlur - Will render blur overlay:', !isPremium);
   }, [isPremium, customerInfo]);
 
   if (isPremium) {
+    console.log('✅ SubscriptionBlur - Returning null (user is premium)');
     return null; // Don't show blur if subscribed
   }
+  
+  console.log('❌ SubscriptionBlur - Rendering blur overlay (user is NOT premium)');
 
   // Match blur tint to theme mode
   const blurTint = resolvedThemeMode === 'dark' ? 'dark' : 'light';
