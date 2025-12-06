@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert, ActivityIndicat
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import PurchasesUI from 'react-native-purchases-ui';
+import Purchases from 'react-native-purchases';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { ENTITLEMENT_ID } from '../../constants/revenuecat';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -69,7 +71,44 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
       console.log('Paywall result:', result);
 
       if (result === 'PURCHASED' || result === 'RESTORED') {
-        await checkSubscription();
+        // Refresh subscription status with retry logic to ensure it's updated
+        let retries = 3;
+        let subscriptionUpdated = false;
+        
+        // Only do retry logic if Purchases SDK is available (not in Expo Go test mode)
+        if (Purchases && typeof Purchases.getCustomerInfo === 'function') {
+          while (retries > 0 && !subscriptionUpdated) {
+            await checkSubscription();
+            
+            // Small delay to allow RevenueCat to process the purchase
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Check if subscription is now active
+            try {
+              const info = await Purchases.getCustomerInfo();
+              if (info?.entitlements.active[ENTITLEMENT_ID]) {
+                subscriptionUpdated = true;
+                console.log('Subscription status confirmed active');
+              } else {
+                retries--;
+                console.log(`Subscription status not yet updated, retries remaining: ${retries}`);
+                if (retries > 0) {
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+              }
+            } catch (error) {
+              console.warn('Error checking customer info:', error);
+              retries--;
+              if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+            }
+          }
+        } else {
+          // In test mode or when Purchases is not available, just check once
+          await checkSubscription();
+        }
+        
         Alert.alert('Success!', 'Your subscription is now active.');
         onPurchaseComplete?.();
         onClose();

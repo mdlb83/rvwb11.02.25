@@ -135,9 +135,18 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   // Refresh subscription status when paywall closes (in case purchase completed)
   useEffect(() => {
     if (!showPaywall) {
-      // Small delay to allow purchase to complete
+      // Retry logic to ensure subscription status is updated after purchase
+      let retries = 3;
+      const checkWithRetry = async () => {
+        await checkSubscription();
+        retries--;
+        if (retries > 0) {
+          setTimeout(checkWithRetry, 1000);
+        }
+      };
+      // Initial delay to allow purchase to complete, then retry
       const timer = setTimeout(() => {
-        checkSubscription();
+        checkWithRetry();
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -1403,9 +1412,18 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       <PaywallModal
         visible={showPaywall}
         onClose={() => setShowPaywall(false)}
-        onPurchaseComplete={() => {
+        onPurchaseComplete={async () => {
           setShowPaywall(false);
-          // Subscription status will update automatically via listener
+          // Explicitly refresh subscription status immediately after purchase
+          // This ensures the bottom sheet updates even if the listener hasn't fired yet
+          await checkSubscription();
+          // Also retry a couple times to handle any delays in RevenueCat processing
+          setTimeout(async () => {
+            await checkSubscription();
+          }, 1000);
+          setTimeout(async () => {
+            await checkSubscription();
+          }, 2000);
         }}
       />
     </BottomSheet>
