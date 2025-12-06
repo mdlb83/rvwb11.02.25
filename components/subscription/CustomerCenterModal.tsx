@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PurchasesUI from 'react-native-purchases-ui';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { ENTITLEMENT_ID } from '../../constants/revenuecat';
 
 interface CustomerCenterModalProps {
   visible: boolean;
@@ -57,14 +58,14 @@ export default function CustomerCenterModal({ visible, onClose }: CustomerCenter
           </View>
 
           <View style={styles.content}>
-            {customerInfo?.entitlements.active.premium ? (
+            {customerInfo?.entitlements.active[ENTITLEMENT_ID] ? (
               <View style={styles.subscriptionInfo}>
                 <Ionicons name="checkmark-circle" size={48} color={theme.primary} />
                 <Text style={[styles.statusText, { color: theme.text }]}>
                   Premium Active
                 </Text>
                 <Text style={[styles.detailText, { color: theme.textSecondary }]}>
-                  Expires: {formatDate(customerInfo.entitlements.active.premium.expirationDate)}
+                  Expires: {formatDate(customerInfo.entitlements.active[ENTITLEMENT_ID].expirationDate)}
                 </Text>
               </View>
             ) : (

@@ -41,7 +41,8 @@ console.log('RevenueCat Configuration:', {
 });
 
 // Entitlement ID (matches what you set up in RevenueCat dashboard)
-export const ENTITLEMENT_ID = 'premium';
+// Using the actual RevenueCat entitlement identifier: entlf5553617ee
+export const ENTITLEMENT_ID = 'entlf5553617ee';
 
 // Offering ID (the specific offering identifier from RevenueCat dashboard)
 // If you have a specific offering you want to use, set it here

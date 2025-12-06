@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTheme } from '../../contexts/ThemeContext';
+import { ENTITLEMENT_ID } from '../../constants/revenuecat';
 
 interface SubscriptionBlurProps {
   onPress: () => void;
@@ -18,7 +19,7 @@ export default function SubscriptionBlur({ onPress }: SubscriptionBlurProps) {
     console.log('🔒 SubscriptionBlur - isPremium:', isPremium);
     console.log('🔒 SubscriptionBlur - customerInfo:', customerInfo ? {
       entitlements: Object.keys(customerInfo.entitlements.active),
-      hasPremium: !!customerInfo.entitlements.active.premium
+      hasPremium: !!customerInfo.entitlements.active[ENTITLEMENT_ID]
     } : 'null');
     console.log('🔒 SubscriptionBlur - Will render blur overlay:', !isPremium);
   }, [isPremium, customerInfo]);
