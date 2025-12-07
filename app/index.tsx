@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState, Image, Platform } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert, TouchableOpacity, AppState, Image, Platform, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
@@ -21,10 +21,11 @@ import { getCampgroundCoordinates } from '../utils/mapUtils';
 import { getBookmarks } from '../utils/bookmarks';
 import SettingsModal from '../components/settings/SettingsModal';
 import { useTheme } from '../contexts/ThemeContext';
-import { addViewedCampground } from '../utils/campgroundViews';
+import { addViewedCampground, getRemainingViews, resetViewCount } from '../utils/campgroundViews';
 import { generateCampgroundIdFromEntry } from '../utils/dataLoader';
 import PaywallModal from '../components/subscription/PaywallModal';
 import { useSubscription } from '../hooks/useSubscription';
+import Constants from 'expo-constants';
 
 export default function MapScreen() {
   const { theme, toggleTheme, resolvedThemeMode } = useTheme();
@@ -41,6 +42,7 @@ export default function MapScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const { isPremium } = useSubscription();
+  const [remainingViews, setRemainingViews] = useState<number | null>(null);
   
   // Calculate button spacing - add extra space on Android for better spacing from search bar
   const buttonSpacing = useMemo(() => {
@@ -726,9 +728,45 @@ export default function MapScreen() {
       // Track view
       const campgroundId = generateCampgroundIdFromEntry(campground);
       await addViewedCampground(campgroundId);
+      // Update remaining views count
+      const remaining = await getRemainingViews();
+      setRemainingViews(remaining);
       // Don't automatically show paywall - user must click "Unlock Premium" button
+    } else {
+      setRemainingViews(null);
     }
   }, [isPremium]);
+
+  // Update remaining views on mount and when premium status changes
+  useEffect(() => {
+    const updateRemainingViews = async () => {
+      if (isPremium) {
+        setRemainingViews(null);
+      } else {
+        const remaining = await getRemainingViews();
+        setRemainingViews(remaining);
+      }
+    };
+    updateRemainingViews();
+  }, [isPremium]);
+
+  // Handle reset view count (dev only)
+  const handleResetViews = useCallback(async () => {
+    // Only allow reset in dev mode (not preview or production builds)
+    // Preview/production builds have executionEnvironment === 'standalone'
+    // Dev builds have __DEV__ === true or executionEnvironment === 'storeClient' (Expo Go)
+    const isDev = __DEV__ || Constants.executionEnvironment === 'storeClient';
+    const isProduction = Constants.executionEnvironment === 'standalone' && !__DEV__;
+    
+    if (isProduction) {
+      return; // Don't allow reset in production/preview builds
+    }
+    
+    await resetViewCount();
+    const remaining = await getRemainingViews();
+    setRemainingViews(remaining);
+    Alert.alert('Reset', 'View count has been reset');
+  }, []);
 
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
@@ -1011,6 +1049,26 @@ export default function MapScreen() {
             collapsable={false}
             removeClippedSubviews={false}
           >
+            {/* Remaining Views Badge - above GPS button */}
+            {!isPremium && remainingViews !== null && (
+              <TouchableOpacity
+                style={[
+                  styles.remainingViewsBadge,
+                  {
+                    backgroundColor: theme.primary,
+                    marginBottom: 24,
+                  }
+                ]}
+                onPress={handleResetViews}
+                activeOpacity={0.7}
+                disabled={Constants.executionEnvironment === 'standalone' && !__DEV__}
+              >
+                <Ionicons name="eye-outline" size={16} color={theme.buttonText} style={styles.remainingViewsIcon} />
+                <Text style={[styles.remainingViewsText, { color: theme.buttonText }]}>
+                  {remainingViews} free {remainingViews === 1 ? 'view' : 'views'} left
+                </Text>
+              </TouchableOpacity>
+            )}
             <LocationButton onPress={handleLocationPress} />
           </View>
           <View
@@ -1296,6 +1354,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  remainingViewsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  remainingViewsIcon: {
+    marginRight: 6,
+  },
+  remainingViewsText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

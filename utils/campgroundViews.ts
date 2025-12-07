@@ -36,6 +36,18 @@ export async function getViewCount(): Promise<number> {
   return viewed.length;
 }
 
+export async function getRemainingViews(): Promise<number | null> {
+  try {
+    const { SUBSCRIPTION_CONFIG } = await import('./subscriptionConfig');
+    const viewCount = await getViewCount();
+    const remaining = Math.max(0, SUBSCRIPTION_CONFIG.maxCampgroundViews - viewCount);
+    return remaining;
+  } catch (error) {
+    console.error('Error getting remaining views:', error);
+    return null;
+  }
+}
+
 export async function getDaysSinceFirstView(): Promise<number> {
   try {
     const firstViewDate = await AsyncStorage.getItem(FIRST_VIEW_DATE_KEY);
@@ -61,6 +73,15 @@ export async function shouldShowPaywall(): Promise<boolean> {
   } else {
     const days = await getDaysSinceFirstView();
     return days >= SUBSCRIPTION_CONFIG.maxDays;
+  }
+}
+
+export async function resetViewCount(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(VIEWED_CAMPGROUNDS_KEY);
+    await AsyncStorage.removeItem(FIRST_VIEW_DATE_KEY);
+  } catch (error) {
+    console.error('Error resetting view count:', error);
   }
 }
 

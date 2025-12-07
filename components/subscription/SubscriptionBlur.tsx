@@ -8,9 +8,10 @@ import { ENTITLEMENT_ID } from '../../constants/revenuecat';
 
 interface SubscriptionBlurProps {
   onPress: () => void;
+  remainingViews?: number | null;
 }
 
-export default function SubscriptionBlur({ onPress }: SubscriptionBlurProps) {
+export default function SubscriptionBlur({ onPress, remainingViews }: SubscriptionBlurProps) {
   const { isPremium, customerInfo } = useSubscription();
   const { theme, resolvedThemeMode } = useTheme();
 

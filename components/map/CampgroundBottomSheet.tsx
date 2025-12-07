@@ -17,6 +17,8 @@ import { getPhotoUri, preloadCampgroundPhotos } from '../../utils/photoCache';
 import SubscriptionBlur from '../subscription/SubscriptionBlur';
 import PaywallModal from '../subscription/PaywallModal';
 import { useSubscription } from '../../hooks/useSubscription';
+import { addViewedCampground, getViewCount } from '../../utils/campgroundViews';
+import { SUBSCRIPTION_CONFIG } from '../../utils/subscriptionConfig';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
@@ -126,6 +128,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   const contentBeforeSeparatorRef = useRef<View>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [remainingViews, setRemainingViews] = useState<number | null>(null);
+  const [shouldShowBlur, setShouldShowBlur] = useState(false);
 
   // Log subscription status changes for debugging
   useEffect(() => {
@@ -288,6 +292,39 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     };
     loadBookmarkState();
   }, [campgroundId]);
+
+  // Track campground view and update remaining views count
+  useEffect(() => {
+    const trackViewAndUpdateRemaining = async () => {
+      if (!campground || isPremium) {
+        setRemainingViews(null);
+        setShouldShowBlur(false);
+        return;
+      }
+
+      // Check current count first before tracking
+      const currentViewCount = await getViewCount();
+      
+      // Only track if we haven't reached the limit yet
+      // (Still track even if at limit to ensure accurate count, but check first)
+      if (campgroundId) {
+        await addViewedCampground(campgroundId);
+      }
+
+      // Recalculate after tracking (in case count changed)
+      const viewCount = await getViewCount();
+      const remaining = Math.max(0, SUBSCRIPTION_CONFIG.maxCampgroundViews - viewCount);
+      setRemainingViews(remaining);
+      
+      // Show blur if limit reached
+      setShouldShowBlur(viewCount >= SUBSCRIPTION_CONFIG.maxCampgroundViews);
+    };
+
+    // Only run when campground changes (not when campgroundId changes, as it's derived from campground)
+    if (campground) {
+      trackViewAndUpdateRemaining();
+    }
+  }, [campground, isPremium]); // Removed campgroundId from dependencies since it's derived from campground
 
   // Load Google Maps data when campground changes
   useEffect(() => {
@@ -1379,11 +1416,16 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           })()
         ) : null}
         
-        {/* Subscription Blur Overlay - shows when not subscribed */}
+        {/* Subscription Blur Overlay - shows when not subscribed and view limit reached */}
         {/* Key prop forces React to unmount/remount when isPremium changes */}
-        {campground && !isPremium && (
-          <SubscriptionBlur key={`blur-${isPremium}`} onPress={() => setShowPaywall(true)} />
+        {campground && !isPremium && shouldShowBlur && (
+          <SubscriptionBlur 
+            key={`blur-${isPremium}`} 
+            onPress={() => setShowPaywall(true)}
+            remainingViews={remainingViews}
+          />
         )}
+        
       </BottomSheetScrollView>
       <MapAppPickerModal
         visible={showPicker}
