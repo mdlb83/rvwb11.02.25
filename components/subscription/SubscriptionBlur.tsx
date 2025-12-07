@@ -41,7 +41,7 @@ export default function SubscriptionBlur({ onPress, remainingViews }: Subscripti
       activeOpacity={1}
       onPress={onPress}
     >
-      <BlurView intensity={15} tint={blurTint} style={StyleSheet.absoluteFill}>
+      <BlurView intensity={30} tint={blurTint} style={StyleSheet.absoluteFill}>
         <View style={styles.overlay}>
           <Ionicons name="lock-closed" size={48} color={theme.text} />
           <Text style={[styles.text, { color: theme.text }]}>

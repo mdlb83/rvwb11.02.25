@@ -4,7 +4,7 @@ export const SUBSCRIPTION_CONFIG = {
   triggerType: 'campgrounds' as 'campgrounds' | 'days',
   
   // If triggerType is 'campgrounds', show paywall after this many views
-  maxCampgroundViews: 5,
+  maxCampgroundViews: 3,
   
   // If triggerType is 'days', show paywall after this many days
   maxDays: 7,
