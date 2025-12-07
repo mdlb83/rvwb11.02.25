@@ -17,7 +17,7 @@ import { getPhotoUri, preloadCampgroundPhotos } from '../../utils/photoCache';
 import SubscriptionBlur from '../subscription/SubscriptionBlur';
 import PaywallModal from '../subscription/PaywallModal';
 import { useSubscription } from '../../hooks/useSubscription';
-import { addViewedCampground, getViewCount } from '../../utils/campgroundViews';
+import { getViewCount } from '../../utils/campgroundViews';
 import { SUBSCRIPTION_CONFIG } from '../../utils/subscriptionConfig';
 
 /**
@@ -293,38 +293,30 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     loadBookmarkState();
   }, [campgroundId]);
 
-  // Track campground view and update remaining views count
+  // Update remaining views and blur state when campground changes
+  // Note: View tracking happens in handleCampgroundSelect, not here
   useEffect(() => {
-    const trackViewAndUpdateRemaining = async () => {
+    const updateRemainingViews = async () => {
       if (!campground || isPremium) {
         setRemainingViews(null);
         setShouldShowBlur(false);
         return;
       }
 
-      // Check current count first before tracking
-      const currentViewCount = await getViewCount();
-      
-      // Only track if we haven't reached the limit yet
-      // (Still track even if at limit to ensure accurate count, but check first)
-      if (campgroundId) {
-        await addViewedCampground(campgroundId);
-      }
-
-      // Recalculate after tracking (in case count changed)
+      // Check current view count (views are tracked in handleCampgroundSelect)
       const viewCount = await getViewCount();
       const remaining = Math.max(0, SUBSCRIPTION_CONFIG.maxCampgroundViews - viewCount);
       setRemainingViews(remaining);
       
-      // Show blur if limit reached
+      // Show blur if limit reached (after viewing maxCampgroundViews, user has used all free views)
       setShouldShowBlur(viewCount >= SUBSCRIPTION_CONFIG.maxCampgroundViews);
     };
 
-    // Only run when campground changes (not when campgroundId changes, as it's derived from campground)
+    // Only run when campground changes
     if (campground) {
-      trackViewAndUpdateRemaining();
+      updateRemainingViews();
     }
-  }, [campground, isPremium]); // Removed campgroundId from dependencies since it's derived from campground
+  }, [campground, isPremium]);
 
   // Load Google Maps data when campground changes
   useEffect(() => {
