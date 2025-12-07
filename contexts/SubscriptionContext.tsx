@@ -22,6 +22,7 @@ interface SubscriptionContextType {
   restorePurchases: () => Promise<void>;
   syncPurchases: () => Promise<void>;
   getOfferings: () => Promise<PurchasesOffering | null>;
+  setCustomerAttributes: (attributes: { [key: string]: string }) => Promise<void>;
   
   // Entitlement checking
   hasEntitlement: (entitlementId: string) => boolean;
@@ -75,6 +76,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       });
       setCustomerInfo(info);
       updateSubscriptionStatus(info);
+      
+      // Sync campground views from RevenueCat attributes (for reinstall persistence)
+      try {
+        const { syncFromRevenueCat } = await import('../utils/campgroundViews');
+        await syncFromRevenueCat();
+      } catch (syncError) {
+        console.warn('⚠️ Error syncing campground views from RevenueCat (non-fatal):', syncError);
+      }
+      
       console.log('🔍 checkSubscription: Subscription status updated');
     } catch (error) {
       console.error('❌ Error checking subscription:', error);
@@ -401,6 +411,25 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return hasEntitlementValue;
   }, [customerInfo, expoGoTestPremium]);
 
+  const setCustomerAttributes = useCallback(async (attributes: { [key: string]: string }): Promise<void> => {
+    // Test mode: skip setting attributes in Expo Go
+    if (EXPO_GO_TEST_MODE) {
+      console.log('⚠️ EXPO GO TEST MODE: Skipping setCustomerAttributes');
+      return;
+    }
+    
+    try {
+      if (!Purchases || typeof Purchases.setAttributes !== 'function') {
+        console.warn('Purchases.setAttributes not available');
+        return;
+      }
+      await Purchases.setAttributes(attributes);
+      console.log('✅ Customer attributes set:', Object.keys(attributes));
+    } catch (error) {
+      console.error('Error setting customer attributes:', error);
+    }
+  }, []);
+
   return (
     <SubscriptionContext.Provider
       value={{
@@ -413,6 +442,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         restorePurchases,
         syncPurchases,
         getOfferings,
+        setCustomerAttributes,
         hasEntitlement,
       }}
     >
