@@ -752,14 +752,19 @@ export default function MapScreen() {
 
   // Handle reset view count (dev only)
   const handleResetViews = useCallback(async () => {
-    // Only allow reset in dev mode (not preview or production builds)
-    // Preview/production builds have executionEnvironment === 'standalone'
-    // Dev builds have __DEV__ === true or executionEnvironment === 'storeClient' (Expo Go)
-    const isDev = __DEV__ || Constants.executionEnvironment === 'storeClient';
-    const isProduction = Constants.executionEnvironment === 'standalone' && !__DEV__;
+    // Only allow reset in Expo Go (storeClient) - not in standalone builds (preview/production)
+    // Standalone builds include both preview and production, and preview builds may have __DEV__ enabled
+    const isStandalone = Constants.executionEnvironment === 'standalone';
+    const isExpoGo = Constants.executionEnvironment === 'storeClient';
     
-    if (isProduction) {
-      return; // Don't allow reset in production/preview builds
+    // Only allow reset in Expo Go, not in standalone builds (preview/production)
+    if (isStandalone) {
+      return; // Don't allow reset in preview/production builds
+    }
+    
+    // Only allow reset in Expo Go
+    if (!isExpoGo) {
+      return;
     }
     
     await resetViewCount();
@@ -1061,7 +1066,7 @@ export default function MapScreen() {
                 ]}
                 onPress={handleResetViews}
                 activeOpacity={0.7}
-                disabled={Constants.executionEnvironment === 'standalone' && !__DEV__}
+                disabled={Constants.executionEnvironment === 'standalone'}
               >
                 <Ionicons name="eye-outline" size={16} color={theme.buttonText} style={styles.remainingViewsIcon} />
                 <Text style={[styles.remainingViewsText, { color: theme.buttonText }]}>
