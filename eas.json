@@ -15,6 +15,17 @@
         "gradleCommand": ":app:assembleDebug"
       }
     },
+    "development-device": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "node": "20.18.0",
