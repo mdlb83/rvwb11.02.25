@@ -8,50 +8,126 @@ const REVENUECAT_FIRST_VIEW_DATE_KEY = 'first_view_date';
 
 export async function syncFromRevenueCat(): Promise<void> {
   try {
+    console.log('🔄 syncFromRevenueCat: Starting sync from RevenueCat...');
+    
     // Try to get attributes from RevenueCat
-    if (Purchases && typeof Purchases.getCustomerInfo === 'function') {
-      const customerInfo = await Purchases.getCustomerInfo();
-      const attributes = customerInfo.attributes;
-      
-      // Sync viewed campgrounds from RevenueCat
-      if (attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY]?.value) {
-        try {
-          const viewedCampgrounds = JSON.parse(attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY].value);
-          await AsyncStorage.setItem(VIEWED_CAMPGROUNDS_KEY, JSON.stringify(viewedCampgrounds));
-          console.log('✅ Synced viewed campgrounds from RevenueCat:', viewedCampgrounds.length);
-        } catch (parseError) {
-          console.warn('Error parsing viewed campgrounds from RevenueCat:', parseError);
-        }
-      }
-      
-      // Sync first view date from RevenueCat
-      if (attributes[REVENUECAT_FIRST_VIEW_DATE_KEY]?.value) {
-        await AsyncStorage.setItem(FIRST_VIEW_DATE_KEY, attributes[REVENUECAT_FIRST_VIEW_DATE_KEY].value);
-        console.log('✅ Synced first view date from RevenueCat');
-      }
+    if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') {
+      console.log('⚠️ syncFromRevenueCat: Purchases SDK not available');
+      return;
     }
+    
+    // Get app user ID for logging
+    try {
+      const appUserID = await Purchases.getAppUserID();
+      console.log('📱 syncFromRevenueCat: RevenueCat App User ID:', appUserID);
+    } catch (e) {
+      console.warn('⚠️ syncFromRevenueCat: Could not get App User ID:', e);
+    }
+    
+    const customerInfo = await Purchases.getCustomerInfo();
+    const attributes = customerInfo.attributes;
+    
+    console.log('📊 syncFromRevenueCat: Customer attributes:', {
+      attributeKeys: Object.keys(attributes),
+      viewedCampgroundsAttr: attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY] ? {
+        exists: true,
+        value: attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY].value?.substring(0, 100) + '...',
+        valueLength: attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY].value?.length
+      } : { exists: false },
+      firstViewDateAttr: attributes[REVENUECAT_FIRST_VIEW_DATE_KEY] ? {
+        exists: true,
+        value: attributes[REVENUECAT_FIRST_VIEW_DATE_KEY].value
+      } : { exists: false }
+    });
+    
+    // Check local storage before syncing
+    const localViewed = await AsyncStorage.getItem(VIEWED_CAMPGROUNDS_KEY);
+    const localViewedCount = localViewed ? JSON.parse(localViewed).length : 0;
+    console.log('📊 syncFromRevenueCat: Local storage before sync:', {
+      localViewedCount,
+      hasLocalData: !!localViewed
+    });
+    
+    // Sync viewed campgrounds from RevenueCat
+    if (attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY]?.value) {
+      try {
+        const viewedCampgrounds = JSON.parse(attributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY].value);
+        await AsyncStorage.setItem(VIEWED_CAMPGROUNDS_KEY, JSON.stringify(viewedCampgrounds));
+        console.log('✅ syncFromRevenueCat: Synced viewed campgrounds from RevenueCat:', {
+          count: viewedCampgrounds.length,
+          campgrounds: viewedCampgrounds
+        });
+      } catch (parseError) {
+        console.error('❌ syncFromRevenueCat: Error parsing viewed campgrounds from RevenueCat:', parseError);
+      }
+    } else {
+      console.log('ℹ️ syncFromRevenueCat: No viewed campgrounds attribute found in RevenueCat');
+    }
+    
+    // Sync first view date from RevenueCat
+    if (attributes[REVENUECAT_FIRST_VIEW_DATE_KEY]?.value) {
+      await AsyncStorage.setItem(FIRST_VIEW_DATE_KEY, attributes[REVENUECAT_FIRST_VIEW_DATE_KEY].value);
+      console.log('✅ syncFromRevenueCat: Synced first view date from RevenueCat:', attributes[REVENUECAT_FIRST_VIEW_DATE_KEY].value);
+    } else {
+      console.log('ℹ️ syncFromRevenueCat: No first view date attribute found in RevenueCat');
+    }
+    
+    // Check local storage after syncing
+    const localViewedAfter = await AsyncStorage.getItem(VIEWED_CAMPGROUNDS_KEY);
+    const localViewedCountAfter = localViewedAfter ? JSON.parse(localViewedAfter).length : 0;
+    console.log('📊 syncFromRevenueCat: Local storage after sync:', {
+      localViewedCountAfter,
+      hasLocalData: !!localViewedAfter
+    });
   } catch (error) {
-    console.warn('Error syncing from RevenueCat (non-fatal):', error);
+    console.error('❌ syncFromRevenueCat: Error syncing from RevenueCat:', error);
   }
 }
 
 async function syncToRevenueCat(viewedCampgrounds: string[], firstViewDate?: string): Promise<void> {
   try {
+    console.log('🔄 syncToRevenueCat: Starting sync to RevenueCat...', {
+      viewedCampgroundsCount: viewedCampgrounds.length,
+      hasFirstViewDate: !!firstViewDate
+    });
+    
     // Sync to RevenueCat attributes
-    if (Purchases && typeof Purchases.setAttributes === 'function') {
-      const attributes: { [key: string]: string } = {
-        [REVENUECAT_VIEWED_CAMPGROUNDS_KEY]: JSON.stringify(viewedCampgrounds),
-      };
-      
-      if (firstViewDate) {
-        attributes[REVENUECAT_FIRST_VIEW_DATE_KEY] = firstViewDate;
-      }
-      
-      await Purchases.setAttributes(attributes);
-      console.log('✅ Synced view data to RevenueCat');
+    if (!Purchases || typeof Purchases.setAttributes !== 'function') {
+      console.log('⚠️ syncToRevenueCat: Purchases SDK not available');
+      return;
+    }
+    
+    const attributes: { [key: string]: string } = {
+      [REVENUECAT_VIEWED_CAMPGROUNDS_KEY]: JSON.stringify(viewedCampgrounds),
+    };
+    
+    if (firstViewDate) {
+      attributes[REVENUECAT_FIRST_VIEW_DATE_KEY] = firstViewDate;
+    }
+    
+    console.log('📤 syncToRevenueCat: Setting attributes:', {
+      viewedCampgroundsKey: REVENUECAT_VIEWED_CAMPGROUNDS_KEY,
+      viewedCampgroundsValue: JSON.stringify(viewedCampgrounds),
+      firstViewDateKey: firstViewDate ? REVENUECAT_FIRST_VIEW_DATE_KEY : undefined,
+      firstViewDateValue: firstViewDate
+    });
+    
+    await Purchases.setAttributes(attributes);
+    console.log('✅ syncToRevenueCat: Successfully synced view data to RevenueCat');
+    
+    // Verify the sync by reading back
+    try {
+      const customerInfo = await Purchases.getCustomerInfo();
+      const syncedAttributes = customerInfo.attributes;
+      console.log('✅ syncToRevenueCat: Verified sync - attributes now in RevenueCat:', {
+        viewedCampgroundsExists: !!syncedAttributes[REVENUECAT_VIEWED_CAMPGROUNDS_KEY],
+        firstViewDateExists: !!syncedAttributes[REVENUECAT_FIRST_VIEW_DATE_KEY]
+      });
+    } catch (verifyError) {
+      console.warn('⚠️ syncToRevenueCat: Could not verify sync:', verifyError);
     }
   } catch (error) {
-    console.warn('Error syncing to RevenueCat (non-fatal):', error);
+    console.error('❌ syncToRevenueCat: Error syncing to RevenueCat:', error);
   }
 }
 

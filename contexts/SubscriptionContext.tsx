@@ -79,10 +79,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       
       // Sync campground views from RevenueCat attributes (for reinstall persistence)
       try {
+        const appUserID = await Purchases.getAppUserID();
+        console.log('🔄 checkSubscription: Syncing campground views from RevenueCat for user:', appUserID);
         const { syncFromRevenueCat } = await import('../utils/campgroundViews');
         await syncFromRevenueCat();
+        console.log('✅ checkSubscription: Finished syncing campground views from RevenueCat');
       } catch (syncError) {
-        console.warn('⚠️ Error syncing campground views from RevenueCat (non-fatal):', syncError);
+        console.warn('⚠️ checkSubscription: Error syncing campground views from RevenueCat (non-fatal):', syncError);
       }
       
       console.log('🔍 checkSubscription: Subscription status updated');
