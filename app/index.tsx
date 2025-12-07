@@ -1070,7 +1070,7 @@ export default function MapScreen() {
               >
                 <Ionicons name="eye-outline" size={16} color={theme.buttonText} style={styles.remainingViewsIcon} />
                 <Text style={[styles.remainingViewsText, { color: theme.buttonText }]}>
-                  {remainingViews} free {remainingViews === 1 ? 'view' : 'views'} left
+                  {remainingViews} free {remainingViews === 1 ? 'campground' : 'campgrounds'} left
                 </Text>
               </TouchableOpacity>
             )}
