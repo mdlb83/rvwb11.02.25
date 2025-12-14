@@ -22,6 +22,6 @@ web-build/
 *.aab
 *.ipa
 
-# Photos - excluded from build, downloaded to device storage instead
-assets/google-maps-photos/
+# Photos are now included in the build
+# assets/google-maps-photos/
 

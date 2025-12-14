@@ -39,10 +39,14 @@
     "production": {
       "node": "20.18.0",
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-large"
       },
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_NO_METRO_LAZY": "1"
       }
     }
   },
