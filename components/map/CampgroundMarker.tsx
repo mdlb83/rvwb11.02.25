@@ -16,7 +16,14 @@ function CampgroundMarker({ campground, onPress }: CampgroundMarkerProps) {
   const { isPremium } = useSubscription();
   
   const getMarkerColor = () => {
-    return campground.hookup_type === 'full' ? theme.primary : theme.warning;
+    if (campground.hookup_type === 'full') {
+      return theme.primary;
+    } else if (campground.hookup_type === 'partial') {
+      return theme.warning;
+    } else {
+      // 'none' - no hookups
+      return 'black';
+    }
   };
 
   // Handle null campground data
