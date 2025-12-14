@@ -921,13 +921,6 @@ export default function MapScreen() {
               onClear={handleClearSearch}
               autoFocus={searchInput.length > 0}
             />
-            <TouchableOpacity
-              style={[styles.addButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
-              onPress={handleSuggestCampground}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={20} color={theme.buttonText} />
-            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -976,6 +969,24 @@ export default function MapScreen() {
         />
         {!selectedCampground && (
           <>
+            <TouchableOpacity
+              style={[
+                styles.suggestButton,
+                {
+                  top: insets.top + 16,
+                  left: 16,
+                  backgroundColor: theme.mapControlBackground,
+                  shadowColor: theme.shadow,
+                }
+              ]}
+              onPress={handleSuggestCampground}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add-circle-outline" size={20} color={theme.mapControlIcon} />
+              <Text style={[styles.suggestButtonText, { color: theme.mapControlIcon }]}>
+                Suggest a campground
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.themeButton, 
@@ -1186,13 +1197,6 @@ export default function MapScreen() {
                 onSubmit={handleSearchSubmit}
                 onClear={handleClearSearch}
               />
-              <TouchableOpacity
-                style={[styles.addButton, { backgroundColor: theme.primary, borderColor: theme.primary }]}
-                onPress={handleSuggestCampground}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="add" size={20} color={theme.buttonText} />
-              </TouchableOpacity>
             </View>
           </View>
         </>
@@ -1259,16 +1263,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     minWidth: 44,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    minWidth: 44, // Match filter button minimum width
   },
   locationButtonContainer: {
     position: 'absolute',
@@ -1358,6 +1352,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  suggestButton: {
+    position: 'absolute',
+    zIndex: 2,
+    borderRadius: 24,
+    height: 48,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  suggestButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   remainingViewsBadge: {
     flexDirection: 'row',
