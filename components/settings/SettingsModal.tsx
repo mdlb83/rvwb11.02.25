@@ -38,6 +38,16 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
     }
   };
 
+  const handleOpenTermsOfUse = async () => {
+    const url = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      console.error("Don't know how to open URI: " + url);
+    }
+  };
+
   const themeOptions = [
     { value: 'system' as const, label: 'System', icon: 'phone-portrait-outline' },
     { value: 'light' as const, label: 'Light', icon: 'sunny' },
@@ -171,6 +181,26 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                       />
                       <Text style={[styles.optionText, { color: theme.text }]}>
                         Privacy Policy
+                      </Text>
+                    </View>
+                    <Ionicons name="open-outline" size={20} color={theme.iconSecondary} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      { backgroundColor: theme.surfaceSecondary },
+                    ]}
+                    onPress={handleOpenTermsOfUse}
+                  >
+                    <View style={styles.optionContent}>
+                      <Ionicons 
+                        name="document-text-outline" 
+                        size={20} 
+                        color={theme.iconSecondary} 
+                      />
+                      <Text style={[styles.optionText, { color: theme.text }]}>
+                        Terms of Use
                       </Text>
                     </View>
                     <Ionicons name="open-outline" size={20} color={theme.iconSecondary} />
