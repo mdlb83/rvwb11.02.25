@@ -152,6 +152,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       }, 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [showPaywall, checkSubscription]);
   
   // Calculate snap points dynamically based on content height
@@ -230,6 +231,15 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   // State to track photo URIs (cached paths, URLs, or bundled require() results)
   const [photoUris, setPhotoUris] = useState<{ [index: number]: string | any }>({});
 
+  // Generate a unique ID for the campground for deep linking
+  const campgroundId = useMemo(() => {
+    if (!campground) return '';
+    const name = campground.campground?.name || '';
+    const city = campground.city || '';
+    const state = campground.state || '';
+    return `${city}-${state}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }, [campground]);
+
   // Preload photos when bottom sheet opens or campground changes
   useEffect(() => {
     if (!campgroundId || !googleMapsData?.photos || allPhotos.length === 0) {
@@ -283,15 +293,6 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     };
     loadPreference();
   }, []);
-
-  // Generate a unique ID for the campground for deep linking
-  const campgroundId = useMemo(() => {
-    if (!campground) return '';
-    const name = campground.campground?.name || '';
-    const sanitizedName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const sanitizedCity = campground.city.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    return `${sanitizedCity}-${campground.state.toLowerCase()}-${sanitizedName}`;
-  }, [campground]);
 
   // Load bookmark state when campground changes
   useEffect(() => {
@@ -1145,7 +1146,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             <Text style={[styles.blogPostButtonLabel, { color: theme.buttonText }]}>Read blog post</Text>
             <View style={[styles.blogPostButtonDivider, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }]} />
             <Text style={[styles.blogPostButtonText, { color: theme.buttonText }]} numberOfLines={2}>
-              {campground.blog_post || 'Related Blog Post'}
+              {campground.blog_post?.replace(/\.$/, '') || 'Related Blog Post'}
             </Text>
           </TouchableOpacity>
         )}
@@ -1269,9 +1270,11 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                     isInteractingWithPhotosRef.current = true;
                     return true;
                   }}
-                  onMoveShouldSetResponder={(evt, gestureState) => {
+                  onMoveShouldSetResponder={(evt) => {
                     // Claim responder for horizontal movements
-                    const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+                    // Note: gestureState is deprecated in newer React Native versions
+                    const touchEvent = evt.nativeEvent;
+                    const isHorizontal = Math.abs(touchEvent.pageX - touchEvent.locationX) > Math.abs(touchEvent.pageY - touchEvent.locationY);
                     if (isHorizontal) {
                       isInteractingWithPhotosRef.current = true;
                       return true;

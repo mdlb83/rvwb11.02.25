@@ -51,6 +51,7 @@ export default function Confetti({ visible, onComplete, color = '#FFD700', count
       }, 8000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [visible, onComplete]);
 
   if (!visible) return null;
