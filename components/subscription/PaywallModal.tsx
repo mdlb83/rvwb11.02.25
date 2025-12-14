@@ -109,26 +109,19 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
               
               if (hasEntitlement) {
                 subscriptionUpdated = true;
-                console.log('✅ Subscription status confirmed active');
               } else {
                 retries--;
-                console.log(`⏳ Subscription status not yet updated, retries remaining: ${retries}`);
                 if (retries > 0) {
                   // Longer delay between retries for sandbox mode
                   await new Promise(resolve => setTimeout(resolve, 1500));
                 }
               }
             } catch (error) {
-              console.warn('❌ Error checking customer info:', error);
               retries--;
               if (retries > 0) {
                 await new Promise(resolve => setTimeout(resolve, 1500));
               }
             }
-          }
-          
-          if (!subscriptionUpdated) {
-            console.warn('⚠️ Subscription status not confirmed after all retries - customer info listener should update it');
           }
         } else {
           // In test mode or when Purchases is not available, just check once

@@ -42,15 +42,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   // Define updateSubscriptionStatus before it's used
   const updateSubscriptionStatus = useCallback((info: CustomerInfo) => {
     const hasEntitlement = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
-    console.log('🔄 updateSubscriptionStatus:', {
-      hasEntitlement,
-      entitlementId: ENTITLEMENT_ID,
-      activeEntitlements: Object.keys(info.entitlements.active),
-      premiumEntitlement: info.entitlements.active[ENTITLEMENT_ID] ? {
-        identifier: info.entitlements.active[ENTITLEMENT_ID].identifier,
-        isActive: info.entitlements.active[ENTITLEMENT_ID].isActive,
-      } : null
-    });
     setIsSubscribed(hasEntitlement);
   }, []);
 
@@ -60,42 +51,27 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setIsLoading(true);
       // Check if Purchases is available before calling
       if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') {
-        console.log('🔍 checkSubscription: Purchases SDK not available');
         setIsLoading(false);
         return;
       }
-      console.log('🔍 checkSubscription: Fetching customer info from RevenueCat...');
       const info = await Purchases.getCustomerInfo();
-      console.log('🔍 checkSubscription: Customer info received:', {
-        entitlements: Object.keys(info.entitlements.active),
-        hasPremiumEntitlement: !!info.entitlements.active[ENTITLEMENT_ID],
-        premiumEntitlement: info.entitlements.active[ENTITLEMENT_ID] ? {
-          identifier: info.entitlements.active[ENTITLEMENT_ID].identifier,
-          isActive: info.entitlements.active[ENTITLEMENT_ID].isActive,
-        } : null
-      });
       setCustomerInfo(info);
       updateSubscriptionStatus(info);
       
       // Sync campground views from RevenueCat attributes (for reinstall persistence)
       try {
-        const appUserID = await Purchases.getAppUserID();
-        console.log('🔄 checkSubscription: Syncing campground views from RevenueCat for user:', appUserID);
         const { syncFromRevenueCat } = await import('../utils/campgroundViews');
         await syncFromRevenueCat();
-        console.log('✅ checkSubscription: Finished syncing campground views from RevenueCat');
       } catch (syncError) {
-        console.warn('⚠️ checkSubscription: Error syncing campground views from RevenueCat (non-fatal):', syncError);
+        // Silently handle sync errors - non-fatal
       }
-      
-      console.log('🔍 checkSubscription: Subscription status updated');
     } catch (error) {
       console.error('❌ Error checking subscription:', error);
       const purchasesError = error as PurchasesError;
       
       // Handle specific error codes
       if (purchasesError.code === PURCHASES_ERROR_CODE.NETWORK_ERROR) {
-        console.warn('Network error checking subscription, will retry');
+        // Network errors are expected, don't log
       }
     } finally {
       setIsLoading(false);
@@ -115,52 +91,25 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         console.warn('Purchases.getOfferings not available');
         return;
       }
-      console.log('Loading offerings from RevenueCat...');
       const offerings = await Purchases.getOfferings();
-      console.log('Offerings response:', {
-        current: offerings.current ? {
-          identifier: offerings.current.identifier,
-          serverDescription: offerings.current.serverDescription,
-          packages: offerings.current.availablePackages.map(pkg => ({
-            identifier: pkg.identifier,
-            productId: pkg.product.identifier,
-            priceString: pkg.product.priceString
-          }))
-        } : 'null',
-        all: Object.keys(offerings.all),
-        count: Object.keys(offerings.all).length
-      });
       
       // Priority 1: Try to find the specific offering ID if configured
       if (OFFERING_ID && offerings.all[OFFERING_ID]) {
-        console.log('Found specific offering ID:', OFFERING_ID);
-        const specificOffering = offerings.all[OFFERING_ID];
-        console.log('Available packages:', specificOffering.availablePackages.map(p => p.identifier));
-        setCurrentOffering(specificOffering);
+        setCurrentOffering(offerings.all[OFFERING_ID]);
       } else if (offerings.current !== null) {
         // Priority 2: Use current offering if available
-        console.log('Setting current offering:', offerings.current.identifier);
-        console.log('Available packages:', offerings.current.availablePackages.map(p => p.identifier));
         setCurrentOffering(offerings.current);
       } else {
         // Priority 3: Use first available offering
-        console.warn('No current offering available. Available offerings:', Object.keys(offerings.all));
         const offeringKeys = Object.keys(offerings.all);
         if (offeringKeys.length > 0) {
-          console.log('Using first available offering:', offeringKeys[0]);
-          const firstOffering = offerings.all[offeringKeys[0]];
-          console.log('First offering packages:', firstOffering.availablePackages.map(p => p.identifier));
-          setCurrentOffering(firstOffering);
+          setCurrentOffering(offerings.all[offeringKeys[0]]);
         } else {
-          console.error('No offerings available at all. Make sure offerings are configured in RevenueCat dashboard.');
+          console.error('No offerings available. Make sure offerings are configured in RevenueCat dashboard.');
         }
       }
     } catch (error) {
       console.error('Error loading offerings:', error);
-      if (error instanceof Error) {
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
     }
   }, []);
 
@@ -191,42 +140,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         }
       }
 
-      // Configure RevenueCat
-      console.log('Configuring RevenueCat with API key:', apiKey.substring(0, 10) + '...');
-      console.log('Using test/sandbox store:', apiKey.startsWith('test_'));
-      
       // Configure RevenueCat - test keys automatically use sandbox/test store
       await Purchases.configure({ apiKey });
-      console.log('RevenueCat configured successfully');
       
-      // Log store type (will be 'APP_STORE' for production, 'APP_STORE' for sandbox with test keys)
-      try {
-        const appUserID = await Purchases.getAppUserID();
-        console.log('RevenueCat App User ID:', appUserID);
-      } catch (e) {
-        console.warn('Could not get App User ID:', e);
-      }
-      
-      // Set user attributes (optional but recommended)
-      // Note: Some reserved attributes like $appVersion may not be settable
-      // Wrap in try-catch to prevent errors from blocking initialization
-      try {
-        // Only set non-reserved attributes if needed
-        // Reserved attributes ($appVersion, $appUserId, etc.) are managed by RevenueCat
-      } catch (attrError) {
-        // Attribute setting is optional, don't block initialization if it fails
-        console.warn('Could not set RevenueCat attributes:', attrError);
-      }
-
       // Load initial customer info and offerings
-      console.log('Loading customer info and offerings...');
       await Promise.all([
         checkSubscription(),
         loadOfferings(),
       ]);
 
-      console.log('RevenueCat initialization complete');
-      console.log('Final state - currentOffering:', currentOffering ? currentOffering.identifier : 'null');
       setIsInitialized(true);
       setIsLoading(false);
     } catch (error) {
@@ -297,14 +219,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     try {
       setIsLoading(true);
       const { customerInfo } = await Purchases.purchasePackage(pkg);
-      console.log('Purchase completed - customerInfo:', {
-        entitlements: Object.keys(customerInfo.entitlements.active),
-        hasPremium: !!customerInfo.entitlements.active[ENTITLEMENT_ID],
-        premiumEntitlement: customerInfo.entitlements.active[ENTITLEMENT_ID]
-      });
       setCustomerInfo(customerInfo);
       updateSubscriptionStatus(customerInfo);
-      console.log('Purchase completed - subscription status updated, isSubscribed:', customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined);
       return customerInfo;
     } catch (error) {
       const purchasesError = error as PurchasesError;
@@ -350,18 +266,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const getOfferings = async (): Promise<PurchasesOffering | null> => {
     try {
-      console.log('Manually fetching offerings...');
       const offerings = await Purchases.getOfferings();
-      console.log('Fetched offerings:', {
-        current: offerings.current ? offerings.current.identifier : 'null',
-        all: Object.keys(offerings.all),
-        count: Object.keys(offerings.all).length,
-        lookingFor: OFFERING_ID
-      });
       
       // Priority 1: Try to find the specific offering ID if configured
       if (OFFERING_ID && offerings.all[OFFERING_ID]) {
-        console.log('Found specific offering ID:', OFFERING_ID);
         const specificOffering = offerings.all[OFFERING_ID];
         setCurrentOffering(specificOffering);
         return specificOffering;
@@ -369,7 +277,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       
       // Priority 2: Use current offering if available
       if (offerings.current !== null) {
-        console.log('Using current offering:', offerings.current.identifier);
         setCurrentOffering(offerings.current);
         return offerings.current;
       }
@@ -377,13 +284,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       // Priority 3: Use first available offering
       const offeringKeys = Object.keys(offerings.all);
       if (offeringKeys.length > 0) {
-        console.log('No current offering, using first available:', offeringKeys[0]);
         const firstOffering = offerings.all[offeringKeys[0]];
         setCurrentOffering(firstOffering);
         return firstOffering;
       }
       
-      console.error('No offerings available at all');
+      console.error('No offerings available');
       return null;
     } catch (error) {
       console.error('Error getting offerings:', error);
@@ -394,29 +300,16 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const hasEntitlement = useCallback((entitlementId: string): boolean => {
     // Always assume premium subscription in Expo Go
     if (isExpoGo && entitlementId === ENTITLEMENT_ID) {
-      console.log('✅ hasEntitlement: Expo Go - assuming premium subscription');
       return true;
     }
     // Test mode: simulate premium in Expo Go (legacy support)
     if (EXPO_GO_TEST_MODE && expoGoTestPremium && entitlementId === ENTITLEMENT_ID) {
-      console.log('✅ hasEntitlement: Test mode premium active');
       return true;
     }
     if (!customerInfo) {
-      console.log('❌ hasEntitlement: No customerInfo available');
       return false;
     }
-    const hasEntitlementValue = customerInfo.entitlements.active[entitlementId] !== undefined;
-    console.log('🔍 hasEntitlement:', {
-      entitlementId,
-      hasEntitlement: hasEntitlementValue,
-      activeEntitlements: Object.keys(customerInfo.entitlements.active),
-      premiumEntitlement: customerInfo.entitlements.active[entitlementId] ? {
-        identifier: customerInfo.entitlements.active[entitlementId].identifier,
-        isActive: customerInfo.entitlements.active[entitlementId].isActive,
-      } : null
-    });
-    return hasEntitlementValue;
+    return customerInfo.entitlements.active[entitlementId] !== undefined;
   }, [customerInfo, expoGoTestPremium]);
 
   const setCustomerAttributes = useCallback(async (attributes: { [key: string]: string }): Promise<void> => {
