@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,29 +7,35 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MapApp, getAvailableMapApps } from '../../utils/mapAppPreferences';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useSubscription } from '../../hooks/useSubscription';
-import CustomerCenterModal from '../subscription/CustomerCenterModal';
 
 interface SettingsModalProps {
   visible: boolean;
   onClose: () => void;
-  onShowPaywall?: () => void;
 }
 
-export default function SettingsModal({ visible, onClose, onShowPaywall }: SettingsModalProps) {
+export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
-  const { isPremium } = useSubscription();
   const availableApps = getAvailableMapApps();
-  const [showCustomerCenter, setShowCustomerCenter] = useState(false);
 
   const handleAppSelect = async (app: MapApp) => {
     await savePreference(app);
+  };
+
+  const handleOpenPrivacyPolicy = async () => {
+    const url = 'https://mdlb83.github.io/rving-with-bikes-privacy/index.html';
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      console.error("Don't know how to open URI: " + url);
+    }
   };
 
   const themeOptions = [
@@ -145,9 +151,9 @@ export default function SettingsModal({ visible, onClose, onShowPaywall }: Setti
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: theme.text }]}>Subscription</Text>
+                  <Text style={[styles.sectionTitle, { color: theme.text }]}>Legal</Text>
                   <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
-                    {isPremium ? 'You have an active premium subscription' : 'Upgrade to premium for full access'}
+                    View our privacy policy and terms
                   </Text>
                   
                   <TouchableOpacity
@@ -155,33 +161,19 @@ export default function SettingsModal({ visible, onClose, onShowPaywall }: Setti
                       styles.option,
                       { backgroundColor: theme.surfaceSecondary },
                     ]}
-                    onPress={() => {
-                      console.log('Subscription button pressed, isPremium:', isPremium);
-                      if (isPremium) {
-                        console.log('Opening Customer Center');
-                        setShowCustomerCenter(true);
-                      } else {
-                        console.log('Opening Paywall Modal');
-                        // Close settings modal first, then show paywall
-                        onClose();
-                        // Small delay to ensure settings modal closes first
-                        setTimeout(() => {
-                          onShowPaywall?.();
-                        }, 300);
-                      }
-                    }}
+                    onPress={handleOpenPrivacyPolicy}
                   >
                     <View style={styles.optionContent}>
                       <Ionicons 
-                        name={isPremium ? "checkmark-circle" : "lock-closed"} 
+                        name="document-text-outline" 
                         size={20} 
-                        color={isPremium ? theme.primary : theme.iconSecondary} 
+                        color={theme.iconSecondary} 
                       />
                       <Text style={[styles.optionText, { color: theme.text }]}>
-                        {isPremium ? 'Manage Subscription' : 'View Subscription Options'}
+                        Privacy Policy
                       </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={theme.iconSecondary} />
+                    <Ionicons name="open-outline" size={20} color={theme.iconSecondary} />
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -189,10 +181,6 @@ export default function SettingsModal({ visible, onClose, onShowPaywall }: Setti
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
-      <CustomerCenterModal
-        visible={showCustomerCenter}
-        onClose={() => setShowCustomerCenter(false)}
-      />
     </Modal>
   );
 }
