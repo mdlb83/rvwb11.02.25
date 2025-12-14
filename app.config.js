@@ -18,13 +18,13 @@ module.exports = {
     keywords: ["RV", "campground", "bike trails", "camping", "RVing", "bicycle", "trails", "full hookup", "partial hookup"],
     privacy: "public",
     githubUrl: "https://github.com/mdlb83/rvwb11.02.25",
-    // Exclude photos from bundle - they will be downloaded to device storage on first use
-    // Photos are stored in assets/google-maps-photos/ but should not be bundled
+    // Include photos in bundle - they are stored in assets/google-maps-photos/
     assetBundlePatterns: [
       "assets/icon.png",
       "assets/splash.png",
       "assets/adaptive-icon.png",
-      "assets/favicon.png"
+      "assets/favicon.png",
+      "assets/google-maps-photos/**/*"
     ],
     ios: {
       supportsTablet: false, // iPhone only

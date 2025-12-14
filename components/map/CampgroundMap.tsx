@@ -1,6 +1,7 @@
-import React, { useRef, useMemo } from 'react';
-import { StyleSheet, View, Platform } from 'react-native';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
+import { StyleSheet, View, Platform, Text } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import NetInfo from '@react-native-community/netinfo';
 import { CampgroundEntry } from '../../types/campground';
 import CampgroundMarker from './CampgroundMarker';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -16,9 +17,10 @@ interface CampgroundMapProps {
 }
 
 function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegionChangeComplete }: CampgroundMapProps) {
-  const { resolvedThemeMode } = useTheme();
+  const { resolvedThemeMode, theme } = useTheme();
   const internalMapRef = useRef<MapView>(null);
   const mapRefToUse = mapRef || internalMapRef;
+  const [isOffline, setIsOffline] = useState(false);
 
   const initialRegion: Region = {
     latitude: 39.8283, // Center of US
@@ -29,6 +31,24 @@ function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegio
 
   // Use dark map style when dark mode is enabled
   const mapStyle = resolvedThemeMode === 'dark' ? darkMapStyle : lightMapStyle;
+
+  // Monitor network connectivity
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const offline = !state.isConnected || !state.isInternetReachable;
+      setIsOffline(offline);
+    });
+
+    // Check initial network state
+    NetInfo.fetch().then(state => {
+      const offline = !state.isConnected || !state.isInternetReachable;
+      setIsOffline(offline);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   // Memoize valid campgrounds to prevent recalculation on every render
   // This helps prevent crashes during rapid filtering
@@ -113,6 +133,13 @@ function CampgroundMap({ campgrounds, onMarkerPress, onMapPress, mapRef, onRegio
           }
         })}
       </MapView>
+      {isOffline && (
+        <View style={[styles.offlineBanner, { backgroundColor: theme.warning }]}>
+          <Text style={[styles.offlineText, { color: theme.text }]}>
+            ⚠️ Offline - Using cached map data. Markers may not update.
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -124,6 +151,21 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  offlineBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    padding: 8,
+    paddingTop: Platform.OS === 'ios' ? 40 : 8,
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  offlineText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 
