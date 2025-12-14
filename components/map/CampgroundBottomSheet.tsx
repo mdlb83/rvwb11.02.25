@@ -15,6 +15,7 @@ import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getPhotoUri, preloadCampgroundPhotos } from '../../utils/photoCache';
+import { getBundledPhotoSource, hasBundledAsset } from '../../utils/bundledPhotoAssets';
 import SubscriptionBlur from '../subscription/SubscriptionBlur';
 import PaywallModal from '../subscription/PaywallModal';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -132,11 +133,6 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   const [remainingViews, setRemainingViews] = useState<number | null>(null);
   const [shouldShowBlur, setShouldShowBlur] = useState(false);
 
-  // Log subscription status changes for debugging
-  useEffect(() => {
-    console.log('📋 CampgroundBottomSheet - isPremium changed:', isPremium);
-    console.log('📋 CampgroundBottomSheet - Will show blur overlay:', !isPremium && !!campground);
-  }, [isPremium, campground]);
 
   // Refresh subscription status when paywall closes (in case purchase completed)
   useEffect(() => {
@@ -231,8 +227,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     return googleMapsData?.photos || [];
   }, [googleMapsData?.photos]);
 
-  // State to track photo URIs (cached paths or URLs)
-  const [photoUris, setPhotoUris] = useState<{ [index: number]: string }>({});
+  // State to track photo URIs (cached paths, URLs, or bundled require() results)
+  const [photoUris, setPhotoUris] = useState<{ [index: number]: string | any }>({});
 
   // Preload photos when bottom sheet opens or campground changes
   useEffect(() => {
@@ -242,25 +238,28 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     }
 
     const loadPhotoUris = async () => {
-      const uris: { [index: number]: string } = {};
+      const uris: { [index: number]: string | any } = {};
       
       // Load URIs for all photos
       const uriPromises = allPhotos.map(async (photo, index) => {
         if (!photo.photoReference) return;
         
-        // If localPath exists in JSON, use bundled asset (no API call needed)
-        if (photo.localPath) {
-          // localPath format: "assets/google-maps-photos/campground-id/photo-0.jpg"
-          // For Expo bundled assets, we'll try to use the path directly
-          // The Image component will attempt to resolve it, and if it fails,
-          // we'll catch the error in the onError handler and fall back to API
-          // For now, mark it as a bundled asset by using the localPath
-          uris[index] = photo.localPath;
-          console.log('✅ Using bundled asset path:', photo.localPath);
-          return;
+        // Try bundled asset first if localPath exists
+        if (photo.localPath && hasBundledAsset(photo.localPath)) {
+          try {
+            const bundledSource = getBundledPhotoSource(photo.localPath);
+            if (bundledSource) {
+              uris[index] = bundledSource; // Store the require() result directly
+              console.log('✅ Using bundled asset:', photo.localPath);
+              return;
+            }
+          } catch (error) {
+            console.warn('⚠️ Failed to load bundled asset, falling back to API:', photo.localPath, error);
+            // Fall through to API
+          }
         }
         
-        // Fallback: if no localPath or bundled asset failed, use API (for photos not yet bundled)
+        // Fallback to API/cached photos
         const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
         if (!photoUrl) return;
         
@@ -1300,6 +1299,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                               const actualIndex = index + stackIndex;
                               // Use cached URI if available, otherwise fallback to URL
                               const photoUri = photoUris[actualIndex] || getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
+                              const isBundledAsset = photoUri && typeof photoUri !== 'string';
+                              const imageSource = typeof photoUri === 'string' ? { uri: photoUri } : photoUri;
                               
                               return (
                                 <TouchableOpacity
@@ -1313,30 +1314,23 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                                 >
                                   {photoUri ? (
                                     <Image 
-                                      source={
-                                        // If photoUri is a localPath (starts with "assets/"), it's a bundled asset
-                                        // For bundled assets, we'll try using the path as URI
-                                        // If that fails, onError will handle fallback to API
-                                        { uri: photoUri }
-                                      }
+                                      key={`photo-${actualIndex}-${isBundledAsset ? 'bundled' : 'uri'}`}
+                                      source={imageSource}
                                       style={styles.stackPhotoImage}
                                       resizeMode="cover"
                                       onError={(error) => {
                                         console.error('❌ Stack image load error:', {
-                                          photoUri: photoUri.substring(0, 100),
+                                          actualIndex,
+                                          photoUri: photoUri ? (typeof photoUri === 'string' ? photoUri.substring(0, 100) : 'bundled asset') : 'null',
                                           error: error.nativeEvent?.error
                                         });
-                                        // If bundled asset failed, fall back to API
-                                        if (photoUri.startsWith('assets/')) {
-                                          const photoUrl = getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
-                                          if (photoUrl) {
-                                            // Update the URI to use API URL
-                                            setPhotoUris(prev => ({ ...prev, [actualIndex]: photoUrl }));
+                                        // If bundled asset failed, fallback to API URL
+                                        if (isBundledAsset) {
+                                          const apiUrl = getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
+                                          if (apiUrl) {
+                                            setPhotoUris(prev => ({ ...prev, [actualIndex]: apiUrl }));
                                           }
                                         }
-                                      }}
-                                      onLoad={() => {
-                                        console.log('✅ Stack image loaded successfully');
                                       }}
                                     />
                                   ) : (
@@ -1357,6 +1351,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                     // Position 0 or 3, 6, 9... (multiples of 3) - large photo
                     // Use cached URI if available, otherwise fallback to URL
                     const photoUri = photoUris[index] || getPhotoUrl(photo.photoReference, googleMapsData.placeId);
+                    const isBundledAsset = photoUri && typeof photoUri !== 'string';
+                    const imageSource = typeof photoUri === 'string' ? { uri: photoUri } : photoUri;
                     
                     return (
                       <TouchableOpacity
@@ -1370,30 +1366,23 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                       >
                         {photoUri ? (
                           <Image 
-                            source={
-                              // If photoUri is a localPath (starts with "assets/"), it's a bundled asset
-                              // For bundled assets, we'll try using the path as URI
-                              // If that fails, onError will handle fallback to API
-                              { uri: photoUri }
-                            }
+                            key={`photo-${index}-${isBundledAsset ? 'bundled' : 'uri'}`}
+                            source={imageSource}
                             style={styles.featuredPhotoImage}
                             resizeMode="cover"
                             onError={(error) => {
                               console.error('❌ Image load error:', {
-                                photoUri: photoUri.substring(0, 100),
+                                index,
+                                photoUri: photoUri ? (typeof photoUri === 'string' ? photoUri.substring(0, 100) : 'bundled asset') : 'null',
                                 error: error.nativeEvent?.error
                               });
-                              // If bundled asset failed, fall back to API
-                              if (photoUri.startsWith('assets/')) {
-                                const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
-                                if (photoUrl) {
-                                  // Update the URI to use API URL
-                                  setPhotoUris(prev => ({ ...prev, [index]: photoUrl }));
+                              // If bundled asset failed, fallback to API URL
+                              if (isBundledAsset) {
+                                const apiUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
+                                if (apiUrl) {
+                                  setPhotoUris(prev => ({ ...prev, [index]: apiUrl }));
                                 }
                               }
-                            }}
-                            onLoad={() => {
-                              console.log('✅ Image loaded successfully');
                             }}
                           />
                         ) : (
@@ -1544,6 +1533,13 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           placeId={googleMapsData.placeId}
           getPhotoUrl={getPhotoUrl}
           photoUris={photoUris}
+          onPhotoError={(index, photoReference) => {
+            // Fallback to API URL when bundled asset fails
+            const apiUrl = getPhotoUrl(photoReference, googleMapsData.placeId);
+            if (apiUrl) {
+              setPhotoUris(prev => ({ ...prev, [index]: apiUrl }));
+            }
+          }}
           onClose={() => setPhotoViewerVisible(false)}
         />
       )}

@@ -26,19 +26,21 @@ interface PhotoViewerModalProps {
   initialIndex: number;
   placeId?: string;
   getPhotoUrl: (photoReference: string, placeId?: string) => string | null;
-  photoUris?: { [index: number]: string }; // Optional cached photo URIs
+  photoUris?: { [index: number]: string | any }; // Optional cached photo URIs (strings) or bundled assets (require() results)
+  onPhotoError?: (index: number, photoReference: string) => void; // Callback when a photo fails to load
   onClose: () => void;
 }
 
 interface ZoomableImageProps {
-  uri: string;
+  source: any; // Can be { uri: string } or require() result
   width: number;
   height: number;
   onZoomChange?: (isZoomed: boolean) => void;
+  onError?: () => void; // Callback when image fails to load
 }
 
 // Separate component for zoomable image to isolate gesture state
-function ZoomableImage({ uri, width, height, onZoomChange }: ZoomableImageProps) {
+function ZoomableImage({ source, width, height, onZoomChange, onError }: ZoomableImageProps) {
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -58,7 +60,7 @@ function ZoomableImage({ uri, width, height, onZoomChange }: ZoomableImageProps)
     translateY.value = 0;
     savedTranslateX.value = 0;
     savedTranslateY.value = 0;
-  }, [uri]);
+  }, [source]);
 
   const clampTranslation = (value: number, currentScale: number, dimension: number) => {
     'worklet';
@@ -165,11 +167,18 @@ function ZoomableImage({ uri, width, height, onZoomChange }: ZoomableImageProps)
     <GestureDetector gesture={composedGesture}>
       <Animated.View style={[styles.imageContainer, { width, height }]}>
         <Animated.Image
-          source={{ uri }}
+          source={source}
           style={[styles.image, { width, height }, animatedStyle]}
           resizeMode="contain"
           onError={(error) => {
-            console.error('Image load error:', error.nativeEvent?.error);
+            console.error('❌ Image load error in PhotoViewerModal:', {
+              source: source,
+              error: error.nativeEvent?.error
+            });
+            // Call onError callback if provided (for bundled asset fallback)
+            if (onError) {
+              onError();
+            }
           }}
         />
       </Animated.View>
@@ -184,6 +193,7 @@ export default function PhotoViewerModal({
   placeId,
   getPhotoUrl,
   photoUris,
+  onPhotoError,
   onClose,
 }: PhotoViewerModalProps) {
   const flatListRef = useRef<FlatList>(null);
@@ -242,9 +252,9 @@ export default function PhotoViewerModal({
     }
 
     // Use cached URI if available, otherwise get URL
-    const photoUri = photoUris?.[index] || getPhotoUrl(item.photoReference, placeId);
+    const photoSource = photoUris?.[index] || getPhotoUrl(item.photoReference, placeId);
     
-    if (!photoUri) {
+    if (!photoSource) {
       return (
         <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
           <View style={styles.placeholder}>
@@ -255,17 +265,28 @@ export default function PhotoViewerModal({
       );
     }
 
+    // Convert string URI to { uri: string } format, or use require() result directly
+    const imageSource = typeof photoSource === 'string' ? { uri: photoSource } : photoSource;
+
+    // Handle error callback - if bundled asset fails, notify parent to fallback to API
+    const handleImageError = () => {
+      if (photoSource && typeof photoSource !== 'string' && onPhotoError) {
+        onPhotoError(index, item.photoReference);
+      }
+    };
+
     return (
       <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
         <ZoomableImage
-          uri={photoUri}
+          source={imageSource}
           width={dimensions.width}
           height={dimensions.height}
           onZoomChange={index === currentIndex ? handleZoomChange : undefined}
+          onError={handleImageError}
         />
       </View>
     );
-  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange]);
+  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange, onPhotoError]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: dimensions.width,
