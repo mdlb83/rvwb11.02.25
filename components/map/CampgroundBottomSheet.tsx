@@ -1165,7 +1165,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             <Text style={[styles.blogPostButtonLabel, { color: theme.buttonText }]}>Contributor's Blog</Text>
             <View style={[styles.blogPostButtonDivider, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }]} />
             <Text style={[styles.blogPostButtonText, { color: theme.buttonText }]} numberOfLines={2}>
-              {campground.contributor_blog || 'Contributor Blog'}
+              {campground.contributor_blog?.replace(/\.$/, '') || 'Contributor Blog'}
             </Text>
           </TouchableOpacity>
         )}
