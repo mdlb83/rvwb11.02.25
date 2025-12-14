@@ -19,8 +19,9 @@ import { getBundledPhotoSource, hasBundledAsset } from '../../utils/bundledPhoto
 import SubscriptionBlur from '../subscription/SubscriptionBlur';
 import PaywallModal from '../subscription/PaywallModal';
 import { useSubscription } from '../../hooks/useSubscription';
-import { getViewCount } from '../../utils/campgroundViews';
+import { getViewCount, getViewedCampgrounds } from '../../utils/campgroundViews';
 import { SUBSCRIPTION_CONFIG } from '../../utils/subscriptionConfig';
+import { generateCampgroundIdFromEntry } from '../../utils/dataLoader';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
@@ -322,8 +323,16 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       const remaining = Math.max(0, SUBSCRIPTION_CONFIG.maxCampgroundViews - viewCount);
       setRemainingViews(remaining);
       
-      // Show blur if limit reached (after viewing maxCampgroundViews, user has used all free views)
-      setShouldShowBlur(viewCount >= SUBSCRIPTION_CONFIG.maxCampgroundViews);
+      // Check if this campground has already been viewed (one of the 3 free ones)
+      const viewedCampgrounds = await getViewedCampgrounds();
+      const currentCampgroundId = generateCampgroundIdFromEntry(campground);
+      const hasViewedThisCampground = viewedCampgrounds.includes(currentCampgroundId);
+      
+      // Show blur only if:
+      // 1. Limit reached (viewCount >= maxCampgroundViews) AND
+      // 2. This campground hasn't been viewed yet (it's a new campground)
+      // This allows users to still see their 3 free campgrounds even after limit is reached
+      setShouldShowBlur(viewCount >= SUBSCRIPTION_CONFIG.maxCampgroundViews && !hasViewedThisCampground);
     };
 
     // Only run when campground changes
