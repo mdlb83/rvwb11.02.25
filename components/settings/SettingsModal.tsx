@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { MapApp, getAvailableMapApps } from '../../utils/mapAppPreferences';
 import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useSubscription } from '../../hooks/useSubscription';
+import Confetti from '../common/Confetti';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -22,7 +24,9 @@ interface SettingsModalProps {
 export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
+  const { isPremium } = useSubscription();
   const availableApps = getAvailableMapApps();
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleAppSelect = async (app: MapApp) => {
     await savePreference(app);
@@ -45,6 +49,35 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
       await Linking.openURL(url);
     } else {
       console.error("Don't know how to open URI: " + url);
+    }
+  };
+
+  const handlePremiumStatusPress = () => {
+    if (isPremium) {
+      setShowConfetti(true);
+    }
+  };
+
+  const handleSuggestFeature = async () => {
+    const subject = encodeURIComponent('Feature Suggestion');
+    const body = encodeURIComponent(
+      `I'd like to suggest the following feature:\n\n` +
+      `Feature Description:\n` +
+      `\n` +
+      `Why this would be helpful:\n` +
+      `\n` +
+      `Additional Notes:\n\n`
+    );
+    const emailUrl = `mailto:dcbc3705@gmail.com?subject=${subject}&body=${body}`;
+    try {
+      const supported = await Linking.canOpenURL(emailUrl);
+      if (supported) {
+        await Linking.openURL(emailUrl);
+      } else {
+        console.error("Don't know how to open URI: " + emailUrl);
+      }
+    } catch (err) {
+      console.error('Failed to open email:', err);
     }
   };
 
@@ -160,6 +193,58 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                   )}
                 </View>
 
+                {isPremium && (
+                  <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Premium Status</Text>
+                    <Text style={[styles.sectionDescription, { color: theme.textSecondary, marginBottom: 8 }]}>
+                      Thank you for supporting the app!
+                    </Text>
+                    <Text style={[styles.premiumMessage, { color: theme.textSecondary, marginTop: 0 }]}>
+                      Your membership enables us to add more campgrounds and features to this app throughout the year.
+                    </Text>
+                    <TouchableOpacity
+                      style={[
+                        styles.premiumStatusCard,
+                        { 
+                          backgroundColor: theme.primary,
+                          borderColor: theme.primary,
+                        }
+                      ]}
+                      onPress={handlePremiumStatusPress}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.premiumStatusContent}>
+                        <Ionicons name="star" size={24} color="#FFD700" />
+                        <View style={styles.premiumStatusTextContainer}>
+                          <Text style={[styles.premiumStatusTitle, { color: theme.buttonText }]}>
+                            Premium Member
+                          </Text>
+                          <Text style={[styles.premiumStatusSubtitle, { color: theme.buttonText }]}>
+                            Tap to celebrate! 🎉
+                          </Text>
+                        </View>
+                        <Ionicons name="trophy" size={20} color="#FFD700" />
+                      </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.suggestFeatureButton,
+                        { 
+                          backgroundColor: theme.surfaceSecondary,
+                          borderColor: theme.border,
+                        }
+                      ]}
+                      onPress={handleSuggestFeature}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="bulb-outline" size={20} color={theme.primary} />
+                      <Text style={[styles.suggestFeatureButtonText, { color: theme.text }]}>
+                        Suggest a Feature
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
                 <View style={styles.section}>
                   <Text style={[styles.sectionTitle, { color: theme.text }]}>Legal</Text>
                   <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
@@ -211,6 +296,11 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+      <Confetti 
+        visible={showConfetti} 
+        onComplete={() => setShowConfetti(false)}
+        color="#FFD700"
+      />
     </Modal>
   );
 }
@@ -280,6 +370,53 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
+  },
+  premiumStatusCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  premiumStatusContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  premiumStatusTextContainer: {
+    flex: 1,
+  },
+  premiumStatusTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  premiumStatusSubtitle: {
+    fontSize: 14,
+    opacity: 0.9,
+  },
+  premiumMessage: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 12,
+    fontStyle: 'italic',
+  },
+  suggestFeatureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 12,
+    borderWidth: 1,
+  },
+  suggestFeatureButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
