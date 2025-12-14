@@ -984,7 +984,7 @@ export default function MapScreen() {
             >
               <Ionicons name="add-circle-outline" size={20} color={theme.mapControlIcon} />
               <Text style={[styles.suggestButtonText, { color: theme.mapControlIcon }]}>
-                Suggest a campground
+                Suggest campground
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

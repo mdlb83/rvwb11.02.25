@@ -888,7 +888,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             </Text>
             {campground.contributor && (
               <Text style={[styles.contributorTextInline, { color: theme.textSecondary }]}>
-                📍 {campground.contributor}
+                🙏 {campground.contributor}
               </Text>
             )}
           </View>
@@ -991,8 +991,36 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             }
           }
           
-          // Only show section if there's remaining text or a website link
-          if (!remainingText && !campground.campground?.link) return null;
+          // Helper function to extract domain from URL for comparison
+          const getDomain = (url: string): string => {
+            try {
+              const urlObj = new URL(url);
+              // Remove www and convert to lowercase
+              return urlObj.hostname.replace(/^www\./i, '').toLowerCase();
+            } catch {
+              // If URL parsing fails, try to extract domain from string
+              const match = url.toLowerCase().match(/https?:\/\/(?:www\.)?([^\/]+)/);
+              return match ? match[1] : url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./i, '').split('/')[0];
+            }
+          };
+
+          // Check if Google Maps website is significantly different from existing link
+          const shouldShowGoogleMapsWebsite = (): boolean => {
+            if (!googleMapsData?.websiteUri) return false;
+            if (!campground.campground?.link) return true; // Show if no existing link
+            
+            const existingDomain = getDomain(campground.campground.link);
+            const googleDomain = getDomain(googleMapsData.websiteUri);
+            
+            // Hide Google Maps link if domains match
+            return existingDomain !== googleDomain;
+          };
+
+          const showGoogleMapsWebsite = shouldShowGoogleMapsWebsite();
+          const showPhoneNumber = !!googleMapsData?.nationalPhoneNumber;
+          
+          // Only show section if there's remaining text, website link, phone number, or Google Maps website
+          if (!remainingText && !campground.campground?.link && !showPhoneNumber && !showGoogleMapsWebsite) return null;
           
           return (
             <View style={[styles.section, styles.firstSection]}>
@@ -1013,6 +1041,27 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                   <Ionicons name="globe-outline" size={18} color={theme.primary} />
                   <Text style={[styles.websiteButtonText, { color: theme.primary }]}>Visit Campground Website</Text>
                   <Ionicons name="open-outline" size={16} color={theme.primary} />
+                </TouchableOpacity>
+              )}
+              {showGoogleMapsWebsite && (
+                <TouchableOpacity 
+                  style={[styles.websiteButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.primary, marginTop: campground.campground?.link ? 8 : 0 }]}
+                  onPress={() => Linking.openURL(googleMapsData!.websiteUri!).catch(() => Alert.alert('Error', 'Could not open website'))}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="globe-outline" size={18} color={theme.primary} />
+                  <Text style={[styles.websiteButtonText, { color: theme.primary }]}>Visit Website (Google Maps)</Text>
+                  <Ionicons name="open-outline" size={16} color={theme.primary} />
+                </TouchableOpacity>
+              )}
+              {showPhoneNumber && (
+                <TouchableOpacity 
+                  style={[styles.websiteButton, { backgroundColor: theme.surfaceSecondary, borderColor: theme.primary, marginTop: (campground.campground?.link || showGoogleMapsWebsite) ? 8 : 0 }]}
+                  onPress={() => Linking.openURL(`tel:${googleMapsData!.nationalPhoneNumber}`).catch(() => Alert.alert('Error', 'Could not make phone call'))}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="call-outline" size={18} color={theme.primary} />
+                  <Text style={[styles.websiteButtonText, { color: theme.primary }]}>{googleMapsData!.nationalPhoneNumber}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -1410,29 +1459,6 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
               );
             })()}
 
-            {/* Contact Links */}
-            {(googleMapsData.websiteUri || googleMapsData.nationalPhoneNumber) && (
-              <View style={styles.contactContainer}>
-                {googleMapsData.websiteUri && (
-                  <TouchableOpacity
-                    style={[styles.contactButton, { backgroundColor: theme.surfaceSecondary }]}
-                    onPress={() => Linking.openURL(googleMapsData.websiteUri!).catch(() => Alert.alert('Error', 'Could not open website'))}
-                  >
-                    <Ionicons name="globe-outline" size={18} color={theme.primary} />
-                    <Text style={[styles.contactButtonText, { color: theme.primary }]}>Website</Text>
-                  </TouchableOpacity>
-                )}
-                {googleMapsData.nationalPhoneNumber && (
-                  <TouchableOpacity
-                    style={[styles.contactButton, { backgroundColor: theme.surfaceSecondary }]}
-                    onPress={() => Linking.openURL(`tel:${googleMapsData.nationalPhoneNumber}`).catch(() => Alert.alert('Error', 'Could not make phone call'))}
-                  >
-                    <Ionicons name="call-outline" size={18} color={theme.primary} />
-                    <Text style={[styles.contactButtonText, { color: theme.primary }]}>{googleMapsData.nationalPhoneNumber}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
           </View>
           </>
         )}
@@ -1530,7 +1556,7 @@ const styles = StyleSheet.create({
     // Color set dynamically
   },
   header: {
-    marginBottom: 12,
+    marginBottom: 8,
     position: 'relative',
     paddingBottom: 0,
   },
