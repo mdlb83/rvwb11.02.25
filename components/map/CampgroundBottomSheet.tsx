@@ -1149,6 +1149,26 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             </Text>
           </TouchableOpacity>
         )}
+
+        {campground.contributor_blog_link && (
+          <TouchableOpacity 
+            style={[styles.blogPostButton, { backgroundColor: theme.primary, shadowColor: theme.shadow }]}
+            onPress={() => {
+              Linking.openURL(campground.contributor_blog_link!).catch(err => {
+                console.error('Failed to open contributor blog URL:', err);
+                Alert.alert('Error', 'Could not open the contributor blog link.');
+              });
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="document-text" size={24} color={theme.buttonText} style={styles.blogPostButtonIcon} />
+            <Text style={[styles.blogPostButtonLabel, { color: theme.buttonText }]}>Contributor's Blog</Text>
+            <View style={[styles.blogPostButtonDivider, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }]} />
+            <Text style={[styles.blogPostButtonText, { color: theme.buttonText }]} numberOfLines={2}>
+              {campground.contributor_blog || 'Contributor Blog'}
+            </Text>
+          </TouchableOpacity>
+        )}
             </View>
 
         {/* ============================================
