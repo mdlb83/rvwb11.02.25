@@ -809,7 +809,24 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
             let hasSecondPill = false;
             let secondPillText: string | null = null;
             
+            // Check cg_notes first for National Forest, National Preserve, or State Forest
             if (campground.cg_notes) {
+              const cgNotesLower = campground.cg_notes.toLowerCase();
+              
+              if (cgNotesLower.startsWith('national forest')) {
+                hasSecondPill = true;
+                secondPillText = 'National Forest';
+              } else if (cgNotesLower.startsWith('national preserve')) {
+                hasSecondPill = true;
+                secondPillText = 'National Preserve';
+              } else if (cgNotesLower.startsWith('state forest')) {
+                hasSecondPill = true;
+                secondPillText = 'State Forest';
+              }
+            }
+            
+            // If no forest/preserve pill found, check cg_notes for other known prefixes
+            if (!hasSecondPill && campground.cg_notes) {
               for (const prefix of knownPrefixes) {
                 if (campground.cg_notes.startsWith(prefix)) {
                   const afterPrefix = campground.cg_notes.slice(prefix.length).trim();
@@ -934,10 +951,13 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           
           if (campground.cg_notes) {
             const knownPrefixes = ['RV Park', 'City Park', 'County Park', 'State Park', 'National Park'];
+            const forestPreservePrefixes = ['National Forest', 'National Preserve', 'State Forest'];
             let foundPrefix = false;
             
-            for (const prefix of knownPrefixes) {
-              if (campground.cg_notes.startsWith(prefix)) {
+            // First check for forest/preserve prefixes (case-insensitive)
+            const cgNotesLower = campground.cg_notes.toLowerCase();
+            for (const prefix of forestPreservePrefixes) {
+              if (cgNotesLower.startsWith(prefix.toLowerCase())) {
                 const afterPrefix = campground.cg_notes.slice(prefix.length).trim();
                 if (afterPrefix.length > 0 && (afterPrefix.startsWith('.') || afterPrefix.startsWith(','))) {
                   // Has prefix with additional text - show the additional text
@@ -946,6 +966,22 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                 }
                 foundPrefix = true;
                 break;
+              }
+            }
+            
+            // Then check for other known prefixes
+            if (!foundPrefix) {
+              for (const prefix of knownPrefixes) {
+                if (campground.cg_notes.startsWith(prefix)) {
+                  const afterPrefix = campground.cg_notes.slice(prefix.length).trim();
+                  if (afterPrefix.length > 0 && (afterPrefix.startsWith('.') || afterPrefix.startsWith(','))) {
+                    // Has prefix with additional text - show the additional text
+                    remainingText = afterPrefix.replace(/^[.,]\s*/, '').trim();
+                    if (remainingText.length === 0) remainingText = null;
+                  }
+                  foundPrefix = true;
+                  break;
+                }
               }
             }
             

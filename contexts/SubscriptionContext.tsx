@@ -7,7 +7,7 @@ import Purchases, {
   PURCHASES_ERROR_CODE,
   PurchasesError
 } from 'react-native-purchases';
-import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE, OFFERING_ID } from '../constants/revenuecat';
+import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE, OFFERING_ID, isExpoGo } from '../constants/revenuecat';
 
 interface SubscriptionContextType {
   // Subscription state
@@ -392,7 +392,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   };
 
   const hasEntitlement = useCallback((entitlementId: string): boolean => {
-    // Test mode: simulate premium in Expo Go
+    // Always assume premium subscription in Expo Go
+    if (isExpoGo && entitlementId === ENTITLEMENT_ID) {
+      console.log('✅ hasEntitlement: Expo Go - assuming premium subscription');
+      return true;
+    }
+    // Test mode: simulate premium in Expo Go (legacy support)
     if (EXPO_GO_TEST_MODE && expoGoTestPremium && entitlementId === ENTITLEMENT_ID) {
       console.log('✅ hasEntitlement: Test mode premium active');
       return true;
