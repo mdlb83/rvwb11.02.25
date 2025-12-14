@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "sync:google-maps": "node scripts/sync-google-maps-data.js",
     "sync:google-maps:dry-run": "node scripts/sync-google-maps-data.js --dry-run",
-    "sync:google-maps:force": "node scripts/sync-google-maps-data.js --force"
+    "sync:google-maps:force": "node scripts/sync-google-maps-data.js --force",
+    "increment-build": "node scripts/increment-build-number.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
