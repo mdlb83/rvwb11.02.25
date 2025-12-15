@@ -725,9 +725,23 @@ export default function MapScreen() {
     
     // Only track views if not premium (for analytics, but don't auto-show paywall)
     if (!isPremium) {
-      // Track view
       const campgroundId = generateCampgroundIdFromEntry(campground);
-      await addViewedCampground(campgroundId);
+      
+      // Check if this campground has already been viewed (one of the 3 free ones)
+      const { getViewedCampgrounds } = await import('../utils/campgroundViews');
+      const { SUBSCRIPTION_CONFIG } = await import('../utils/subscriptionConfig');
+      const viewedCampgrounds = await getViewedCampgrounds();
+      const hasViewedThisCampground = viewedCampgrounds.includes(campgroundId);
+      const viewCount = viewedCampgrounds.length;
+      
+      // Only add to viewed list if:
+      // 1. Already viewed (one of the 3 free ones), OR
+      // 2. Still have free views left (viewCount < maxCampgroundViews)
+      // Otherwise, don't add it - let the blur show in the bottom sheet
+      if (hasViewedThisCampground || viewCount < SUBSCRIPTION_CONFIG.maxCampgroundViews) {
+        await addViewedCampground(campgroundId);
+      }
+      
       // Update remaining views count
       const remaining = await getRemainingViews();
       setRemainingViews(remaining);
