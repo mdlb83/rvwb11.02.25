@@ -105,7 +105,11 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+              <ScrollView 
+                style={styles.scrollView} 
+                showsVerticalScrollIndicator={false} 
+                contentContainerStyle={styles.scrollContent}
+              >
                 <View style={styles.section}>
                   <Text style={[styles.sectionTitle, { color: theme.text }]}>Appearance</Text>
                   <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
@@ -291,6 +295,8 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                     <Ionicons name="open-outline" size={20} color={theme.iconSecondary} />
                   </TouchableOpacity>
                 </View>
+                {/* Spacer View to ensure empty areas are scrollable */}
+                <View style={{ flex: 1, minHeight: 200 }} />
               </ScrollView>
             </View>
           </TouchableWithoutFeedback>
@@ -335,7 +341,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   section: {
     padding: 20,
