@@ -13,7 +13,10 @@
     "sync:google-maps": "node scripts/sync-google-maps-data.js",
     "sync:google-maps:dry-run": "node scripts/sync-google-maps-data.js --dry-run",
     "sync:google-maps:force": "node scripts/sync-google-maps-data.js --force",
-    "increment-build": "node scripts/increment-build-number.js"
+    "increment-build": "node scripts/increment-build-number.js",
+    "build:production": "node scripts/build-production.js --platform=ios",
+    "build:production:ios": "node scripts/build-production.js --platform=ios",
+    "build:production:android": "node scripts/build-production.js --platform=android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
