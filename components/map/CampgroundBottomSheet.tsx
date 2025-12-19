@@ -241,8 +241,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     return `${city}-${state}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }, [campground]);
 
-  // Maximum number of photos to preload initially (first 4)
-  const MAX_PRELOADED_PHOTOS = 4;
+  // Maximum number of photos to preload initially (first 2)
+  const MAX_PRELOADED_PHOTOS = 2;
 
   // Preload only first 4 photos when bottom sheet opens or campground changes
   useEffect(() => {

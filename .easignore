@@ -1,0 +1,4 @@
+# Exclude photos beyond the first 2 per campground to reduce bundle size
+# Only photo-0.jpg and photo-1.jpg are bundled, rest load on-demand via API
+assets/google-maps-photos/**/photo-[2-9].jpg
+

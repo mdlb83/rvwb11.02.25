@@ -198,8 +198,8 @@ export default function PhotoViewerModal({
   onLoadPhotoIfNeeded,
   onClose,
 }: PhotoViewerModalProps) {
-  // Maximum number of photos that are preloaded (first 4)
-  const MAX_PRELOADED_PHOTOS = 4;
+  // Maximum number of photos that are preloaded (first 2)
+  const MAX_PRELOADED_PHOTOS = 2;
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
