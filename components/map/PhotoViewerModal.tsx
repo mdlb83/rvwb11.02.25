@@ -28,6 +28,7 @@ interface PhotoViewerModalProps {
   getPhotoUrl: (photoReference: string, placeId?: string) => string | null;
   photoUris?: { [index: number]: string | any }; // Optional cached photo URIs (strings) or bundled assets (require() results)
   onPhotoError?: (index: number, photoReference: string) => void; // Callback when a photo fails to load
+  onLoadPhotoIfNeeded?: (index: number) => void; // Callback to lazy load a photo if needed
   onClose: () => void;
 }
 
@@ -194,8 +195,11 @@ export default function PhotoViewerModal({
   getPhotoUrl,
   photoUris,
   onPhotoError,
+  onLoadPhotoIfNeeded,
   onClose,
 }: PhotoViewerModalProps) {
+  // Maximum number of photos that are preloaded (first 4)
+  const MAX_PRELOADED_PHOTOS = 4;
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
@@ -231,9 +235,17 @@ export default function PhotoViewerModal({
       if (newIndex !== undefined && newIndex >= 0) {
         setCurrentIndex(newIndex);
         setIsZoomed(false); // Reset zoom when changing photos
+        
+        // Lazy load photos when swiping beyond first 4
+        if (newIndex >= MAX_PRELOADED_PHOTOS && onLoadPhotoIfNeeded) {
+          // Load current photo and next 2 photos for smooth scrolling
+          for (let i = newIndex; i <= Math.min(photos.length - 1, newIndex + 2); i++) {
+            onLoadPhotoIfNeeded(i);
+          }
+        }
       }
     }
-  }, []);
+  }, [onLoadPhotoIfNeeded, photos.length]);
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
@@ -249,6 +261,11 @@ export default function PhotoViewerModal({
           </View>
         </View>
       );
+    }
+
+    // Lazy load photo if needed (for photos beyond first 4)
+    if (index >= MAX_PRELOADED_PHOTOS && !photoUris?.[index] && onLoadPhotoIfNeeded) {
+      onLoadPhotoIfNeeded(index);
     }
 
     // Use cached URI if available, otherwise get URL
@@ -286,7 +303,7 @@ export default function PhotoViewerModal({
         />
       </View>
     );
-  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange, onPhotoError]);
+  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange, onPhotoError, onLoadPhotoIfNeeded]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: dimensions.width,

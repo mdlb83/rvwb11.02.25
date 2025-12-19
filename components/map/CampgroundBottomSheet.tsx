@@ -241,7 +241,10 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     return `${city}-${state}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }, [campground]);
 
-  // Preload photos when bottom sheet opens or campground changes
+  // Maximum number of photos to preload initially (first 4)
+  const MAX_PRELOADED_PHOTOS = 4;
+
+  // Preload only first 4 photos when bottom sheet opens or campground changes
   useEffect(() => {
     if (!campgroundId || !googleMapsData?.photos || allPhotos.length === 0) {
       setPhotoUris({});
@@ -251,8 +254,10 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     const loadPhotoUris = async () => {
       const uris: { [index: number]: string | any } = {};
       
-      // Load URIs for all photos
-      const uriPromises = allPhotos.map(async (photo, index) => {
+      // Only preload first MAX_PRELOADED_PHOTOS photos
+      const photosToPreload = allPhotos.slice(0, MAX_PRELOADED_PHOTOS);
+      
+      const uriPromises = photosToPreload.map(async (photo, index) => {
         if (!photo.photoReference) return;
         
         // Try bundled asset first if localPath exists
@@ -284,6 +289,37 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
 
     loadPhotoUris();
   }, [campgroundId, allPhotos, googleMapsData?.placeId]);
+
+  // Lazy load photos when user scrolls beyond first 4 in the carousel
+  const loadPhotoIfNeeded = useCallback(async (index: number) => {
+    // Skip if already loaded or out of bounds
+    if (photoUris[index] || index < 0 || index >= allPhotos.length) {
+      return;
+    }
+
+    const photo = allPhotos[index];
+    if (!photo?.photoReference) return;
+
+    // Try bundled asset first (shouldn't exist for photos beyond first 4, but check anyway)
+    if (photo.localPath && hasBundledAsset(photo.localPath)) {
+      try {
+        const bundledSource = getBundledPhotoSource(photo.localPath);
+        if (bundledSource) {
+          setPhotoUris(prev => ({ ...prev, [index]: bundledSource }));
+          return;
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to load bundled asset, falling back to API:', photo.localPath, error);
+      }
+    }
+
+    // Load from API/cache
+    const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData?.placeId);
+    if (!photoUrl) return;
+
+    const uri = await getPhotoUri(photoUrl, campgroundId, index, true);
+    setPhotoUris(prev => ({ ...prev, [index]: uri }));
+  }, [allPhotos, photoUris, googleMapsData?.placeId, campgroundId, getPhotoUrl, getPhotoUri]);
 
 
   // Load the "don't show instructions" preference on mount
@@ -1303,16 +1339,44 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                       isInteractingWithPhotosRef.current = false;
                     }, 100);
                   }}
-                  onMomentumScrollEnd={() => {
+                  onMomentumScrollEnd={(event) => {
                     setTimeout(() => {
                       isInteractingWithPhotosRef.current = false;
                     }, 100);
+                    
+                    // Lazy load photos when scrolling beyond first 4
+                    const scrollX = event.nativeEvent.contentOffset.x;
+                    const photoWidth = Dimensions.get('window').width * 0.85; // Approximate photo width
+                    const visibleIndex = Math.floor(scrollX / photoWidth);
+                    
+                    // Preload photos around the visible area (current + next 2)
+                    for (let i = Math.max(0, visibleIndex - 1); i <= Math.min(allPhotos.length - 1, visibleIndex + 2); i++) {
+                      if (i >= MAX_PRELOADED_PHOTOS) {
+                        loadPhotoIfNeeded(i);
+                      }
+                    }
+                  }}
+                  onScroll={(event) => {
+                    // Also lazy load during scroll for smoother experience
+                    const scrollX = event.nativeEvent.contentOffset.x;
+                    const photoWidth = Dimensions.get('window').width * 0.85;
+                    const visibleIndex = Math.floor(scrollX / photoWidth);
+                    
+                    // Preload next photo if approaching it
+                    if (visibleIndex + 1 < allPhotos.length && visibleIndex + 1 >= MAX_PRELOADED_PHOTOS) {
+                      loadPhotoIfNeeded(visibleIndex + 1);
+                    }
                   }}
                 >
                   <View style={styles.photosLayout}>
                   {/* Pattern: Large, Stack(2 small), Large, Stack(2 small), ... */}
                   {allPhotos.map((photo, index) => {
                     if (!photo.photoReference) return null;
+                    
+                    // Lazy load photo if needed (for photos beyond first 4)
+                    if (index >= MAX_PRELOADED_PHOTOS && !photoUris[index]) {
+                      loadPhotoIfNeeded(index);
+                    }
                     
                     // Pattern repeats every 3 photos: 0 (large), 1-2 (stack), 3 (large), 4-5 (stack), etc.
                     const positionInPattern = index % 3;
@@ -1565,6 +1629,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           placeId={googleMapsData.placeId}
           getPhotoUrl={getPhotoUrl}
           photoUris={photoUris}
+          onLoadPhotoIfNeeded={loadPhotoIfNeeded}
           onPhotoError={(index, photoReference) => {
             // Fallback to API URL when bundled asset fails
             const apiUrl = getPhotoUrl(photoReference, googleMapsData.placeId);
