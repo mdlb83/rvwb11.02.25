@@ -1,4 +1,6 @@
-# Exclude photos beyond the first 2 per campground to reduce bundle size
-# Only photo-0.jpg and photo-1.jpg are bundled, rest load on-demand via API
-assets/google-maps-photos/**/photo-[2-9].jpg
+# Exclude photos beyond the first 4 per campground to reduce bundle size
+# iOS: Uses photos 0-3 (first 4) bundled
+# Android: Uses photos 0-1 (first 2) bundled at runtime to meet 200MB limit
+# Photos 4-9 excluded from all builds, load on-demand via API
+assets/google-maps-photos/**/photo-[4-9].jpg
 
