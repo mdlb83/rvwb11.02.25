@@ -241,10 +241,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     return `${city}-${state}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }, [campground]);
 
-  // Maximum number of photos to preload initially
-  // iOS: 4 photos (all bundled photos)
-  // Android: 2 photos (to meet 200MB Play Store limit)
-  const MAX_PRELOADED_PHOTOS = Platform.OS === 'ios' ? 4 : 2;
+  // Maximum number of photos to preload initially (first 2)
+  const MAX_PRELOADED_PHOTOS = 2;
 
   // Preload only first 4 photos when bottom sheet opens or campground changes
   useEffect(() => {
@@ -262,12 +260,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       const uriPromises = photosToPreload.map(async (photo, index) => {
         if (!photo.photoReference) return;
         
-        // Try bundled asset first if localPath exists
-        // On Android, only use bundled assets for first 2 photos (index 0-1)
-        // On iOS, use bundled assets for first 4 photos (index 0-3)
-        const canUseBundledAsset = Platform.OS === 'ios' || index < 2;
-        
-        if (photo.localPath && hasBundledAsset(photo.localPath) && canUseBundledAsset) {
+        // Try bundled asset first if localPath exists (only first 2 photos are bundled)
+        if (photo.localPath && hasBundledAsset(photo.localPath)) {
           try {
             const bundledSource = getBundledPhotoSource(photo.localPath);
             if (bundledSource) {
@@ -306,12 +300,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     const photo = allPhotos[index];
     if (!photo?.photoReference) return;
 
-    // Try bundled asset first
-    // On Android, only use bundled assets for first 2 photos (index 0-1)
-    // On iOS, use bundled assets for first 4 photos (index 0-3)
-    const canUseBundledAsset = Platform.OS === 'ios' || index < 2;
-    
-    if (photo.localPath && hasBundledAsset(photo.localPath) && canUseBundledAsset) {
+    // Try bundled asset first (only first 2 photos are bundled)
+    if (photo.localPath && hasBundledAsset(photo.localPath)) {
       try {
         const bundledSource = getBundledPhotoSource(photo.localPath);
         if (bundledSource) {

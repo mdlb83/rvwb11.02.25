@@ -198,10 +198,8 @@ export default function PhotoViewerModal({
   onLoadPhotoIfNeeded,
   onClose,
 }: PhotoViewerModalProps) {
-  // Maximum number of photos that are preloaded
-  // iOS: 4 photos (all bundled photos)
-  // Android: 2 photos (to meet 200MB Play Store limit)
-  const MAX_PRELOADED_PHOTOS = Platform.OS === 'ios' ? 4 : 2;
+  // Maximum number of photos that are preloaded (first 2)
+  const MAX_PRELOADED_PHOTOS = 2;
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));

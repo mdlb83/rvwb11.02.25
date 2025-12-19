@@ -11,9 +11,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Maximum number of photos to bundle per campground
-// iOS: 4 photos per campground (~331MB)
-// Android: Only uses first 2 photos at runtime to meet 200MB Play Store limit
-const MAX_BUNDLED_PHOTOS_PER_CAMPGROUND = 4;
+// Reduced to 2 to keep bundle size under 200MB Android Play Store limit
+// Both iOS and Android use first 2 photos bundled, rest load on-demand via API
+const MAX_BUNDLED_PHOTOS_PER_CAMPGROUND = 2;
 
 // Load the Google Maps data JSON
 const googleMapsDataPath = path.join(__dirname, '../data/google-maps-data.json');
