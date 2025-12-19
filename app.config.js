@@ -29,7 +29,7 @@ module.exports = {
     ios: {
       supportsTablet: false, // iPhone only
       bundleIdentifier: "com.rvingwithbikes.app",
-      buildNumber: "10",
+      buildNumber: "11",
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""
       },
