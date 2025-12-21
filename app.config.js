@@ -80,7 +80,8 @@ module.exports = {
       ],
       [
         "expo-screen-orientation"
-      ]
+      ],
+      "expo-font"
     ],
     scheme: "rvingwithbikes",
     extra: {
