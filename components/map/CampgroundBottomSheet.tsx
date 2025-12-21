@@ -1752,7 +1752,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   trailsSection: {
-    marginBottom: 0,
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 18,
