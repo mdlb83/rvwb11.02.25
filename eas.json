@@ -33,7 +33,22 @@
         "simulator": false
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "resourceClass": "large"
+      }
+    },
+    "production-apk": {
+      "node": "20.18.0",
+      "ios": {
+        "simulator": false,
+        "resourceClass": "large"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "large"
+      },
+      "env": {
+        "EXPO_NO_METRO_LAZY": "1"
       }
     },
     "production": {
