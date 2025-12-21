@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases from 'react-native-purchases';
+import { isExpoGo } from '../constants/revenuecat';
 
 const VIEWED_CAMPGROUNDS_KEY = '@campground_views';
 const FIRST_VIEW_DATE_KEY = '@first_view_date';
@@ -21,7 +22,9 @@ export async function syncFromRevenueCat(): Promise<void> {
       const appUserID = await Purchases.getAppUserID();
       console.log('📱 syncFromRevenueCat: RevenueCat App User ID:', appUserID);
     } catch (e) {
-      console.warn('⚠️ syncFromRevenueCat: Could not get App User ID:', e);
+      if (!isExpoGo) {
+        console.warn('⚠️ syncFromRevenueCat: Could not get App User ID:', e);
+      }
     }
     
     const customerInfo = await Purchases.getCustomerInfo();
@@ -58,7 +61,9 @@ export async function syncFromRevenueCat(): Promise<void> {
           campgrounds: viewedCampgrounds
         });
       } catch (parseError) {
-        console.error('❌ syncFromRevenueCat: Error parsing viewed campgrounds from RevenueCat:', parseError);
+        if (!isExpoGo) {
+          console.error('❌ syncFromRevenueCat: Error parsing viewed campgrounds from RevenueCat:', parseError);
+        }
       }
     } else {
       console.log('ℹ️ syncFromRevenueCat: No viewed campgrounds attribute found in RevenueCat');
@@ -80,7 +85,9 @@ export async function syncFromRevenueCat(): Promise<void> {
       hasLocalData: !!localViewedAfter
     });
   } catch (error) {
-    console.error('❌ syncFromRevenueCat: Error syncing from RevenueCat:', error);
+    if (!isExpoGo) {
+      console.error('❌ syncFromRevenueCat: Error syncing from RevenueCat:', error);
+    }
   }
 }
 
@@ -124,10 +131,14 @@ async function syncToRevenueCat(viewedCampgrounds: string[], firstViewDate?: str
         firstViewDateExists: !!syncedAttributes[REVENUECAT_FIRST_VIEW_DATE_KEY]
       });
     } catch (verifyError) {
-      console.warn('⚠️ syncToRevenueCat: Could not verify sync:', verifyError);
+      if (!isExpoGo) {
+        console.warn('⚠️ syncToRevenueCat: Could not verify sync:', verifyError);
+      }
     }
   } catch (error) {
-    console.error('❌ syncToRevenueCat: Error syncing to RevenueCat:', error);
+    if (!isExpoGo) {
+      console.error('❌ syncToRevenueCat: Error syncing to RevenueCat:', error);
+    }
   }
 }
 

@@ -5,9 +5,9 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   ScrollView,
   Linking,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MapApp, getAvailableMapApps } from '../../utils/mapAppPreferences';
@@ -15,6 +15,8 @@ import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSubscription } from '../../hooks/useSubscription';
 import Confetti from '../common/Confetti';
+import { isExpoGo } from '../../constants/revenuecat';
+import { Switch } from 'react-native';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -24,9 +26,14 @@ interface SettingsModalProps {
 export default function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const { theme, themeMode, setThemeMode } = useTheme();
   const { preference, loading, savePreference } = useMapAppPreference();
-  const { isPremium } = useSubscription();
+  const { isPremium, setExpoGoTestSubscription } = useSubscription();
   const availableApps = getAvailableMapApps();
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Debug: Log Expo Go status
+  if (__DEV__) {
+    console.log('SettingsModal - isExpoGo:', isExpoGo, 'setExpoGoTestSubscription:', !!setExpoGoTestSubscription);
+  }
 
   const handleAppSelect = async (app: MapApp) => {
     await savePreference(app);
@@ -94,22 +101,24 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
       animationType="slide"
       onRequestClose={onClose}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={[styles.overlay, { backgroundColor: theme.overlay }]}>
-          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-            <View style={[styles.modalContent, { backgroundColor: theme.modalBackground }]}>
-              <View style={[styles.header, { borderBottomColor: theme.border }]}>
-                <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={24} color={theme.icon} />
-                </TouchableOpacity>
-              </View>
+      <View style={[styles.overlay, { backgroundColor: theme.overlay }]}>
+        <Pressable 
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
+        <View style={[styles.modalContent, { backgroundColor: theme.modalBackground }]}>
+          <View style={[styles.header, { borderBottomColor: theme.border }]}>
+            <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color={theme.icon} />
+            </TouchableOpacity>
+          </View>
 
-              <ScrollView 
-                style={styles.scrollView} 
-                showsVerticalScrollIndicator={false} 
-                contentContainerStyle={styles.scrollContent}
-              >
+          <ScrollView 
+            style={styles.scrollView} 
+            showsVerticalScrollIndicator={false} 
+            contentContainerStyle={styles.scrollContent}
+          >
                 <View style={styles.section}>
                   <Text style={[styles.sectionTitle, { color: theme.text }]}>Appearance</Text>
                   <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
@@ -196,6 +205,34 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                     ))
                   )}
                 </View>
+
+                {/* Expo Go Test Subscription Toggle - only show in Expo Go */}
+                {isExpoGo && (
+                  <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Testing (Expo Go Only)</Text>
+                    <Text style={[styles.sectionDescription, { color: theme.textSecondary }]}>
+                      Toggle subscription status for testing
+                    </Text>
+                    <View style={[
+                      styles.option,
+                      { backgroundColor: theme.surfaceSecondary },
+                    ]}>
+                      <Text style={[styles.optionText, { color: theme.text }]}>
+                        Simulate Premium Subscription
+                      </Text>
+                      <Switch
+                        value={isPremium}
+                        onValueChange={(value) => {
+                          if (setExpoGoTestSubscription) {
+                            setExpoGoTestSubscription(value);
+                          }
+                        }}
+                        trackColor={{ false: theme.border, true: theme.primaryLight }}
+                        thumbColor={isPremium ? theme.primary : theme.border}
+                      />
+                    </View>
+                  </View>
+                )}
 
                 {isPremium && (
                   <View style={styles.section}>
@@ -299,9 +336,7 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                 <View style={{ flex: 1, minHeight: 200 }} />
               </ScrollView>
             </View>
-          </TouchableWithoutFeedback>
         </View>
-      </TouchableWithoutFeedback>
       <Confetti 
         visible={showConfetti} 
         onComplete={() => setShowConfetti(false)}

@@ -84,7 +84,7 @@ try {
   process.exit(1);
 }
 
-// Read the new build number to include in commit message
+// Read the new build number (iOS and Android are synchronized to the same value)
 const appConfigPath = path.join(__dirname, '../app.config.js');
 const appConfigContent = fs.readFileSync(appConfigPath, 'utf8');
 const buildNumberMatch = appConfigContent.match(/buildNumber:\s*["'](\d+)["']/);
@@ -99,9 +99,9 @@ try {
   }
   execSync(`git add ${filesToAdd.join(' ')}`, { stdio: 'inherit' });
   
-  let commitMessage = `Increment build number to ${newBuildNumber} for production build`;
+  let commitMessage = `Increment build number to ${newBuildNumber} (iOS & Android synchronized) for production build`;
   if (!shouldSkipVersion) {
-    commitMessage = `Increment version to ${newVersion} and build number to ${newBuildNumber} for production build`;
+    commitMessage = `Increment version to ${newVersion} and build number to ${newBuildNumber} (iOS & Android synchronized) for production build`;
   }
   execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
 } catch (error) {
@@ -120,7 +120,7 @@ try {
 }
 
 console.log('✅ Production build completed!');
-console.log(`📱 Build number ${newBuildNumber} has been committed to git.`);
+console.log(`📱 Build number ${newBuildNumber} (iOS & Android synchronized) has been committed to git.`);
 if (!shouldSkipVersion) {
   console.log(`📱 Version ${newVersion} has been committed to git.`);
 }

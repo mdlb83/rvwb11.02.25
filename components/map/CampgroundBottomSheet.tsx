@@ -22,6 +22,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { getViewCount, getViewedCampgrounds } from '../../utils/campgroundViews';
 import { SUBSCRIPTION_CONFIG } from '../../utils/subscriptionConfig';
 import { generateCampgroundIdFromEntry } from '../../utils/dataLoader';
+import { isExpoGo } from '../../constants/revenuecat';
 
 /**
  * Calculate if a place is currently open based on weekdayText hours
@@ -1654,7 +1655,9 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
               await syncPurchases();
             }
           } catch (error) {
-            console.warn('⚠️ Error syncing purchases:', error);
+            if (!isExpoGo) {
+              console.warn('⚠️ Error syncing purchases:', error);
+            }
           }
           
           await checkSubscription();

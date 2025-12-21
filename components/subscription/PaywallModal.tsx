@@ -6,7 +6,7 @@ import PurchasesUI from 'react-native-purchases-ui';
 import Purchases from 'react-native-purchases';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { ENTITLEMENT_ID } from '../../constants/revenuecat';
+import { ENTITLEMENT_ID, isExpoGo } from '../../constants/revenuecat';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -41,7 +41,9 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
     // Check if PurchasesUI is available first
     if (!PurchasesUI || typeof PurchasesUI.presentPaywall !== 'function') {
       setError('Subscription features require a development build. RevenueCat SDK is not available.');
-      console.error('PurchasesUI.presentPaywall not available');
+      if (!isExpoGo) {
+        console.error('PurchasesUI.presentPaywall not available');
+      }
       return;
     }
 
@@ -84,7 +86,9 @@ export default function PaywallModal({ visible, onClose, onPurchaseComplete }: P
             await Purchases.syncPurchases();
             console.log('✅ Purchases synced');
           } catch (syncError) {
-            console.warn('⚠️ Error syncing purchases (non-fatal):', syncError);
+            if (!isExpoGo) {
+              console.warn('⚠️ Error syncing purchases (non-fatal):', syncError);
+            }
           }
           
           // Then check subscription status with retries

@@ -8,6 +8,7 @@ import Purchases, {
   PurchasesError
 } from 'react-native-purchases';
 import { REVENUECAT_API_KEY, ENTITLEMENT_ID, EXPO_GO_TEST_MODE, OFFERING_ID, isExpoGo } from '../constants/revenuecat';
+import { getExpoGoTestSubscription, setExpoGoTestSubscription } from '../utils/expoGoTestSubscription';
 
 interface SubscriptionContextType {
   // Subscription state
@@ -26,6 +27,9 @@ interface SubscriptionContextType {
   
   // Entitlement checking
   hasEntitlement: (entitlementId: string) => boolean;
+  
+  // Expo Go test mode methods (only available in Expo Go)
+  setExpoGoTestSubscription?: (isPremium: boolean) => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -36,7 +40,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [currentOffering, setCurrentOffering] = useState<PurchasesOffering | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  // Test mode: simulate premium subscription in Expo Go
+  // Test mode: simulate premium subscription in Expo Go (from AsyncStorage)
   const [expoGoTestPremium, setExpoGoTestPremium] = useState(false);
 
   // Define updateSubscriptionStatus before it's used
@@ -66,7 +70,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         // Silently handle sync errors - non-fatal
       }
     } catch (error) {
-      console.error('❌ Error checking subscription:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('❌ Error checking subscription:', error);
+      }
       const purchasesError = error as PurchasesError;
       
       // Handle specific error codes
@@ -82,13 +89,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const loadOfferings = useCallback(async () => {
     // Test mode: In Expo Go, RevenueCat SDK is not available, so skip loading
     if (EXPO_GO_TEST_MODE) {
-      console.warn('⚠️ EXPO GO TEST MODE: RevenueCat SDK not available in Expo Go. Use a development build to test subscriptions.');
+      // Suppress warning in Expo Go
       return;
     }
     
     try {
       if (!Purchases || typeof Purchases.getOfferings !== 'function') {
-        console.warn('Purchases.getOfferings not available');
+        if (!isExpoGo) {
+          console.warn('Purchases.getOfferings not available');
+        }
         return;
       }
       const offerings = await Purchases.getOfferings();
@@ -105,11 +114,16 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         if (offeringKeys.length > 0) {
           setCurrentOffering(offerings.all[offeringKeys[0]]);
         } else {
-          console.error('No offerings available. Make sure offerings are configured in RevenueCat dashboard.');
+          if (!isExpoGo) {
+            console.error('No offerings available. Make sure offerings are configured in RevenueCat dashboard.');
+          }
         }
       }
     } catch (error) {
-      console.error('Error loading offerings:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('Error loading offerings:', error);
+      }
     }
   }, []);
 
@@ -120,7 +134,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       const apiKey = REVENUECAT_API_KEY;
       
       if (!apiKey) {
-        console.error('RevenueCat API key is not configured');
+        if (!isExpoGo) {
+          console.error('RevenueCat API key is not configured');
+        }
         setIsLoading(false);
         return;
       }
@@ -128,13 +144,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       // Check if Purchases is available (required for development builds, not Expo Go)
       if (!Purchases || typeof Purchases.configure !== 'function') {
         if (EXPO_GO_TEST_MODE) {
-          console.warn('⚠️ EXPO GO TEST MODE: RevenueCat SDK not available in Expo Go. Using test mode to simulate subscriptions.');
-          console.warn('⚠️ This is for UI testing only. Real subscriptions require a development build.');
+          // Suppress warnings in Expo Go
           setIsLoading(false);
           setIsInitialized(true);
           return;
         } else {
-          console.warn('RevenueCat SDK not available. This requires a development build, not Expo Go.');
+          if (!isExpoGo) {
+            console.warn('RevenueCat SDK not available. This requires a development build, not Expo Go.');
+          }
           setIsLoading(false);
           return;
         }
@@ -152,11 +169,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setIsInitialized(true);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error initializing RevenueCat:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('Error initializing RevenueCat:', error);
+      }
       // Don't block app if RevenueCat fails - allow app to continue
       setIsLoading(false);
     }
   }, [checkSubscription, loadOfferings]);
+
+  // Load Expo Go test subscription status on mount
+  useEffect(() => {
+    if (isExpoGo) {
+      getExpoGoTestSubscription().then(setExpoGoTestPremium);
+    }
+  }, []);
 
   // Initialize RevenueCat on mount
   useEffect(() => {
@@ -172,7 +199,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         });
       }
     } catch (error) {
-      console.warn('Could not set up RevenueCat listener:', error);
+      // Suppress warnings in Expo Go
+      if (!isExpoGo) {
+        console.warn('Could not set up RevenueCat listener:', error);
+      }
     }
 
     return () => {
@@ -185,10 +215,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const purchasePackage = async (pkg: PurchasesPackage): Promise<CustomerInfo> => {
     // Test mode: simulate purchase in Expo Go
     if (EXPO_GO_TEST_MODE) {
-      console.log('⚠️ EXPO GO TEST MODE: Simulating purchase (RevenueCat not available in Expo Go)');
+      // Suppress log in Expo Go
       setIsLoading(true);
       // Simulate a delay
       await new Promise(resolve => setTimeout(resolve, 500));
+      // Persist the test subscription state
+      await setExpoGoTestSubscription(true);
       setExpoGoTestPremium(true);
       setIsSubscribed(true);
       setIsLoading(false);
@@ -232,7 +264,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         // Payment is pending, subscription will activate when payment completes
         throw new Error('Payment pending');
       } else {
-        console.error('Error purchasing package:', purchasesError);
+        // Suppress errors in Expo Go
+        if (!isExpoGo) {
+          console.error('Error purchasing package:', purchasesError);
+        }
         throw purchasesError;
       }
     } finally {
@@ -248,7 +283,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       updateSubscriptionStatus(info);
       return info;
     } catch (error) {
-      console.error('Error restoring purchases:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('Error restoring purchases:', error);
+      }
       throw error;
     } finally {
       setIsLoading(false);
@@ -260,7 +298,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       await Purchases.syncPurchases();
       await checkSubscription();
     } catch (error) {
-      console.error('Error syncing purchases:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('Error syncing purchases:', error);
+      }
     }
   };
 
@@ -289,18 +330,24 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         return firstOffering;
       }
       
-      console.error('No offerings available');
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('No offerings available');
+      }
       return null;
     } catch (error) {
-      console.error('Error getting offerings:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('Error getting offerings:', error);
+      }
       return null;
     }
   };
 
   const hasEntitlement = useCallback((entitlementId: string): boolean => {
-    // Always assume premium subscription in Expo Go
+    // In Expo Go, use the test subscription toggle state
     if (isExpoGo && entitlementId === ENTITLEMENT_ID) {
-      return true;
+      return expoGoTestPremium;
     }
     // Test mode: simulate premium in Expo Go (legacy support)
     if (EXPO_GO_TEST_MODE && expoGoTestPremium && entitlementId === ENTITLEMENT_ID) {
@@ -315,19 +362,48 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const setCustomerAttributes = useCallback(async (attributes: { [key: string]: string }): Promise<void> => {
     // Test mode: skip setting attributes in Expo Go
     if (EXPO_GO_TEST_MODE) {
-      console.log('⚠️ EXPO GO TEST MODE: Skipping setCustomerAttributes');
+      // Suppress log in Expo Go
       return;
     }
     
     try {
       if (!Purchases || typeof Purchases.setAttributes !== 'function') {
-        console.warn('Purchases.setAttributes not available');
+        if (!isExpoGo) {
+          console.warn('Purchases.setAttributes not available');
+        }
         return;
       }
       await Purchases.setAttributes(attributes);
-      console.log('✅ Customer attributes set:', Object.keys(attributes));
+      if (!isExpoGo) {
+        console.log('✅ Customer attributes set:', Object.keys(attributes));
+      }
     } catch (error) {
-      console.error('Error setting customer attributes:', error);
+      // Suppress errors in Expo Go
+      if (!isExpoGo) {
+        console.error('Error setting customer attributes:', error);
+      }
+    }
+  }, []);
+
+  // Expo Go test subscription toggle handler
+  const handleSetExpoGoTestSubscription = useCallback(async (isPremium: boolean): Promise<void> => {
+    if (!isExpoGo) {
+      return;
+    }
+    await setExpoGoTestSubscription(isPremium);
+    setExpoGoTestPremium(isPremium);
+    // Update subscription status
+    setIsSubscribed(isPremium);
+    
+    // When toggling subscription OFF, reset view tracking (free views, viewed campgrounds, etc.)
+    if (!isPremium) {
+      try {
+        const { resetViewCount } = await import('../utils/campgroundViews');
+        await resetViewCount();
+        console.log('✅ Reset view tracking for Expo Go test mode');
+      } catch (error) {
+        console.error('Error resetting view count:', error);
+      }
     }
   }, []);
 
@@ -345,6 +421,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         getOfferings,
         setCustomerAttributes,
         hasEntitlement,
+        setExpoGoTestSubscription: isExpoGo ? handleSetExpoGoTestSubscription : undefined,
       }}
     >
       {children}
