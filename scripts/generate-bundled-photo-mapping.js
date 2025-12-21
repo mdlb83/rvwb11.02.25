@@ -3,7 +3,7 @@
  * This creates a mapping file that maps localPath to require() calls
  * Run this script whenever new photos are added to generate the mapping
  * 
- * Only bundles the first 4 photos per campground to reduce bundle size.
+ * Only bundles the first 2 photos per campground to reduce bundle size.
  * Additional photos will be loaded on-demand via API.
  */
 
@@ -11,8 +11,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Maximum number of photos to bundle per campground
-// Reduced to 2 to keep bundle size under 200MB Android Play Store limit
-// Both iOS and Android use first 2 photos bundled, rest load on-demand via API
+// Both iOS and Android: 2 photos per campground to reduce bundle size
 const MAX_BUNDLED_PHOTOS_PER_CAMPGROUND = 2;
 
 // Load the Google Maps data JSON

@@ -244,7 +244,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   // Maximum number of photos to preload initially (first 2)
   const MAX_PRELOADED_PHOTOS = 2;
 
-  // Preload only first 4 photos when bottom sheet opens or campground changes
+  // Preload only first 2 photos when bottom sheet opens or campground changes
   useEffect(() => {
     if (!campgroundId || !googleMapsData?.photos || allPhotos.length === 0) {
       setPhotoUris({});
