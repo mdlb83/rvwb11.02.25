@@ -8120,6 +8120,107 @@
       "placeId": "ChIJtxbzEPx51oYR8ICxo54AZ9s",
       "latitude": 32.1668808,
       "longitude": -110.99823599999999
+    },
+    {
+      "city": "Branford",
+      "state": "FL",
+      "hookup_type": "full",
+      "campground": {
+        "name": "Rivers Crossing RV Resort",
+        "link": "https://www.riverscrossingrv.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Suwanee River Greenway",
+        "link": "https://visitsuwannee.com/listing/florida-bike-trails-suwannee-river-greenway/"
+      },
+      "trail_notes": "This is a 29 mile paved asphalt trail which runs right by the campground.",
+      "latitude": 29.950447999999998,
+      "longitude": -82.90120999999999,
+      "placeId": "ChIJiwRQRovV6IgRuKDyJutbJBA"
+    },
+    {
+      "city": "Okeechobee",
+      "state": "FL",
+      "hookup_type": "full",
+      "campground": {
+        "name": "Taylor Creek RV Resort",
+        "link": "https://taylorcreekrvresort.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Lake Okeechobee Scenic Trail",
+        "link": "https://www.saj.usace.army.mil/LOST/"
+      },
+      "trail_notes": "This is a 110 mile trail that is paved and gravel.",
+      "latitude": 27.209170699999998,
+      "longitude": -80.79961,
+      "placeId": "ChIJo4HNGGWg3ogRbvYiJCAKqhU"
+    },
+    {
+      "city": "Columbus",
+      "state": "GA",
+      "hookup_type": "full",
+      "campground": {
+        "name": "Camp David RV Resort",
+        "link": "https://www.campdavidrvresort.com/"
+      },
+      "cg_notes": "RV Park",
+      "trail": {
+        "name": "Chattahoochee RiverWalk Biking Trail",
+        "link": "https://visitcolumbusga.com/visit/things-to-do/chattahoochee_riverwalk"
+      },
+      "trail_notes": "This is a 22 miles paved trail.",
+      "latitude": 32.378723,
+      "longitude": -84.958793,
+      "placeId": "ChIJq_tTT63TjIgRMP74BXi2ijA"
+    },
+    {
+      "city": "Grand Canyon",
+      "state": "AZ",
+      "hookup_type": "none",
+      "campground": {
+        "name": "Mather Campground",
+        "link": "https://www.recreation.gov/camping/campgrounds/232490"
+      },
+      "cg_notes": "National Park. Grand Canyon National Park",
+      "trail": {
+        "name": "Grand Canyon Greenway Trail",
+        "link": "https://www.railstotrails.org/trailblog/arizonas-grand-canyon-greenway-trail/"
+      },
+      "trails": [
+        {
+          "name": "Grand Canyon Greenway Trail",
+          "link": "https://www.railstotrails.org/trailblog/arizonas-grand-canyon-greenway-trail/"
+        },
+        {
+          "name": "Hermit Road Greenway Trail",
+          "link": "https://www.nps.gov/grca/planyourvisit/bicycling.htm#:~:text=Bicycling%20on%20the%20South%20Rim%3A%20Hermit%20Road,-Scenic%20Hermit%20Road&text=The%20Hermit%20Road%20Greenway%20Trail,the%20rim%20of%20Grand%20Canyon."
+        }
+      ],
+      "trail_notes": "The Grand Canyon Greenway Trail is 13 miles of paved trail. It also connects to the Hermit Road Greenway which is 2.8 miles of paved trail.",
+      "latitude": 36.050629199999996,
+      "longitude": -112.12112929999999,
+      "placeId": "ChIJt_mmfxwRM4cRVMEjZJclMAw"
+    },
+    {
+      "city": "Tucson",
+      "state": "AZ",
+      "hookup_type": "full",
+      "campground": {
+        "name": "South Forty RV Ranch",
+        "link": "https://southfortyrvranch.com/"
+      },
+      "cg_notes": "55+. This is a 55+ RV resort which offers full hook ups for short term or seasonal stays.",
+      "trail": {
+        "name": "Tucson Loop",
+        "link": "https://tucsonloop.org/"
+      },
+      "trail_notes": "Take a right out of the RV Park. Ride in bike lane on Road about 1/2 block. Turn right and cut the corner in the big empty retail parking lot. Hit the nice wide sidewalk on Thornydale Road. Ride North about 6 blocks on the sidewalk to W. Starburst Drive. There is a small LOOP Parking lot there. (Total of 1 mile from the RV Park) From that you can go North (Right) on the Canada De Oro Trail or Left to the Santa Cruz River Trail and/or the Rillito Trail. These trails are part of the Tucson Loop.",
+      "contributor": "Thanks to Barb from Cottonwood, Arizona for emailing in this location!",
+      "latitude": 32.323961,
+      "longitude": -111.04147329999999,
+      "placeId": "ChIJbY9_N9l01oYRPJdw2ojOAE8"
     }
   ],
   "metadata": {

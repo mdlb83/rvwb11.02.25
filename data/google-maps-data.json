@@ -47030,11 +47030,542 @@
       },
       "lastUpdated": "2025-11-25T20:31:53.265Z",
       "syncStatus": "success"
+    },
+    "branford-fl-rivers-crossing-rv-resort": {
+      "campgroundId": "branford-fl-rivers-crossing-rv-resort",
+      "placeId": "ChIJiwRQRovV6IgRuKDyJutbJBA",
+      "rating": 5,
+      "userRatingCount": 5,
+      "reviewSummary": {
+        "text": "This RV park is a great place to stay , clean level sites with FHU , both 50 and 30 amp service, plenty of room to park my unit. Really nice owner’s who are actively involved with the park and very helpful. The park it self is in a quite rural sitting , there is a bike trail at the entrance of the park that you can ride on , that goes in to town and also to other local attractions. We took the trail to a place called the Farm Stand and had lunch , best Tacos! I will stay here again."
+      },
+      "reviewTopics": [
+        "Clean",
+        "Great for families",
+        "Quiet"
+      ],
+      "photos": [
+        {
+          "photoReference": "AZLasHqipRDHhRrt71Tlw4IIFPCIEBHJiTS6wQLK_WH5LUTWVMb0G-SB-zHGXsIEzxSlZMdBhnIzRDS2KrdOzYQsT5Q4H4rhmgNpHC4iF9XiTrej-piJDEUAvoGT8-gIFRXQn0Bym-a7pTb6vnJbrj1yLgJHZh1e0R9h3miPnyvyMAmTTjg-7lw5Xs99vWS040Qy652hbiDdg6Kgpw7_7ymtblLEqLaSeiUmjSagz6NJTii3Qu77qL_q28WMU_7q6xXqT0eQMgb0fMgRzlRIJfy9O_iYxl0JDJL5dQKP50rZXcUnyw",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-0.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHqSHXk-530HuYoVxJZFOfceUv7zs6DtcaTzSjv63mXbQSjN8YVMoIvPHs9FQvKoWCiKUKNCSii-tgjWxmW3XtVNYq5knVYrluspf5QYuDT5t58UUsyZ1rUi0ygCohIpS1mh4PEn67b9rooE3p6FTnwElCypQNuWhii_ywl5MVIng9x6n9HzwIvPaCBvlXMid40Z7lk2s1eqLGA85AjoKRzzRtrBwIBxQN45MR2ADQLASx1wcroaCu1-a5LQhsWJec6s5IyxsqUaNP0ZSyiFWsv_YjGNd9HxhQr-lpElSXCBuQ",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-1.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHo5KgnoC-8YvTt-BSYsYDBUJuKR24_6nTvxDp-Mfce6SEuZZeneTNRVa0-btSBsFbqIjXNy6aS4NknEqGuaE4DSZWmWr1K5pVkfjRvo9hwsuvzqwPvRNyZhrZIDTu4dgxUUdAmOV8WN_8-6gOfMl-FkSv2C_FdspWEqdfNx60KjzK3KEM2ZdHb8hXyB3kl9XzSsjotYdckeCzW7iqqd-Rvlwa1ntN6brPobage_3wkgv4bESetQn14jytzFss7siSlMavIJUCHGyuKrQ57godIzLNfNHiUyyfCUwkXgD_LKRg",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-2.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHpmREUG1m1e-HXhG46JmN19UGDKr2Jufeif6UaUrkfn7XWPYHfNiWbu6budZrRTd-k1Mb6zz30y2zsATT6jgtF4SYuTDJT3NO5mDXpnzmNCnvO0_UY1foNesccfAqksLK97g_Ix4RfuDV_kA5k6dgKft8hoNqmu2SE0cTiPxC3IM85838SnhKbkm5qmtfKcihJwQASYTt0pugzFgr5jK56LRUnayT2oLYUwrFVXqjD4oZQAtXMaQ68nSPb5imD8eZsoGzhcYn_9Xb22ZfVNb0I8IPpdwkzVjD_UEbmOPkM91A",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-3.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHqbwuIOjDGyCdAh58Y22kfgjTebb31tUKiQYJcdu0y4NT-ekzcBGFcT86MyTWfg9_C-z96vDwQ6N31w7iPryvHTXN-akfsJ5qzl-l6ZzYrwl8akdUfiGGWZO44jjeNc-5dHDJ7SJpTNlYB7W5SWnTelufS4fTzOOH8hGu8ZVmiQFoKU1W6oXeSYGpUSwx3D99tFsZ627koZnTrOvvhRcdGVmp6OfmGeNQrteOs1LbYLekdV6hVg1RigHIO91lP4BgZ_g38YSq_WOZn3H9R8wsE7hJGKsRpKNtjecq2eQ75f3Q",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-4.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHouxmDMvQ2NHIZc8dGoRinIUtQIFz1o-GDkPIfWJdyN_xfxvD2K0UO7SqmkitRKE-qO3NQCsv8SEh-VO9jMTZcewKr7jupsMxirNYICT2aw-US4delGzTcxznZClg83NtuD4L5tXI7yZN28ODAZDfDRSZRgUYb8Ea_t8ZkP5JgXMt3z5l9ze0l33fD36AXLysnWBuqLkDNcs1BJ9SqUyCo4M_CIiYYF2u6_mEDrCXgUKeCWAhbtEJSHhmfjAh2nmqBTDyYlUt_tlBR7W1r9TmZBu1mmuEN_h1XUxe_cDZRaKA",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-5.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHrO_0kqmiaPqByBbrnNXbHyNia1eFmQREF5D586cMGW9-75OXMsGdST7v28sLF6ENqVFYlrzojtbaDFt7aj9XBmf0vU2KbMsjPKY9KRBxiBLmQ04EuhdWEeniFAeUkhJUhQvCS4Vw-VedPMTIYBeNtXd8shAGKtah25yjTTN4cGzDnSXdup0oGQnB9rlci-p8qqd7Zl_rz5X9gb2cije_Q3O2x9-iT7wdHelZ4r4TsU4ufPXER0FZGqOgKe6YmOHEbjHONQb0VBax_mHcdWVP37I1FxjCzW-GgClEyJI3DlRw",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-6.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Rivers Crossing RV Resort"
+        },
+        {
+          "photoReference": "AZLasHoV6H63oRI7yTElw5aSYhGZ0213CzrFKj5TMe3NHNXqvtSGNI1XaeOmqk84bj9oYiA8fvY_rd5PqtlfwkHNC3wbFIO1ryH8QPNpa1r3TP0Yz34X18jaUAqejMl34gycDcc5ft7U-2Jl76uyjEzobRTnyLMhgz9g-bEQAfx4VZ_lZRU4rB6xfkEyNj2bZxrG9QUEiUScpT7SoQYXChwHkfSZcHRi0LNhBoEnQAGVadBP_dCrV_bzjBi_2CtpKW8oetSbpE4ozmXUKW25J_RDkHN2SVWBWibWUTsxC2u2aNwyzw",
+          "localPath": "assets/google-maps-photos/branford-fl-rivers-crossing-rv-resort/photo-7.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Rivers Crossing RV Resort"
+        }
+      ],
+      "websiteUri": "https://riverscrossingrv.com/",
+      "nationalPhoneNumber": "(386) 266-9087",
+      "allowsDogs": true,
+      "paymentOptions": {
+        "acceptsCashOnly": false
+      },
+      "lastUpdated": "2025-12-21T16:43:39.942Z",
+      "syncStatus": "success"
+    },
+    "okeechobee-fl-taylor-creek-rv-resort": {
+      "campgroundId": "okeechobee-fl-taylor-creek-rv-resort",
+      "placeId": "ChIJo4HNGGWg3ogRbvYiJCAKqhU",
+      "rating": 4.1,
+      "userRatingCount": 190,
+      "reviewSummary": {
+        "text": "Really enjoyed our stay.(winter 24/25) Great RV park, fantastic onsite manager and owners.\nNice large, clean, well-maintained sites. Bathhouse is adequate, secure and always very clean.\nAlmost constant lite breeze off of lake and harbor. Very few insects.\nDirect trail access. Lots of local shops, restaurants, and grocery stores.\nOwners and staff working everyday to keep park clean and well maintained.\nManager also help us with a small RV issue, and double checked to make sure we were all good.\nHighly recommend and would definitely stay again when in the area."
+      },
+      "reviewTopics": [
+        "Clean",
+        "Quiet",
+        "Great for families"
+      ],
+      "photos": [
+        {
+          "photoReference": "AZLasHqc_n0VjbotMxFji1gVXDj9Zd7zJXW0CAct6H4H7erG4QK4vcqJSwyVImbHVIqQKgleGwpKx056yAuCmSimegmTfpbJ8emO5P4OsXn1rxh438_EbtRsEh3GLPGGmTmuDC-HhLlEa1MqAlPK1z7cNGEuhBnLpi42PZq_hf78ScKV6Hgb2GmynO_mPUMW5Qb3jr3xMlzfjOGEujd8BdJCAK6iS_-R-dM_8R4W_E-kLdPqmG_J-Ycz0wZ_RayIfF9HzH6d_KbIKsktbvcQ9x8d55wCkGv8H2qmyfaypK7WQugiow",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-0.jpg",
+          "width": 4000,
+          "height": 2250,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHoR1lr7U43pag6AvCxyEZIP93w-jMp-WZ621JkBGoyNSjAsBoH3BB4-UORZBJCpMVcFTwCnJwmLsNe6R_jGPcsR3kKwu5ItZohq4dGhjzsse23hnR3wWjQhgfopLIK-9kMgc-htF4hd4kaxky4Fzzx21AGb2HtGCt3B2r699FMaRM5bevG0KoNDdoycW-XkFiOUFZtdUvI3A0DTXFb5OcunN4a22t9xvLoUp7g3u7fu6ORJsypQU4jTe3gKDodXuI02yWzk_AzceRPmctArpNLZlqDd-WjqShvCe8N1PqdevA",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-1.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHpzIODgsM6UhUr-Rq-HNVcMu67ztg4HcuumQrvx4o-bJfwwEj8RmbiXWxfml5EA5VXNEgBT6dTqh3MhxTGrVyLKJqFx3vGyqruvIkhzcZZCxNfV2SjmHm4_74VT7mvccckSiXYPC-lACoiPq-yYlNnvBs38Ec8Stgt47XgRgM5aHnUdETulSFV3oQEFcPRbNfQ8h-A4wItGO8QoCQt9Vv6IAqitiGuxO1-PY-cNewJ4xnqI6o0U7RAQ8rVL91yvAGV95tl4-mmOOhcuqefHVFNrkELQVoPpez-e8rcL_6lzIQ",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-2.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHrF0ITSK_M_ZriVxbYdBKkRmQDlcqGp3BXVyOhAlxE4dCLFrOeE-N-aNtXSdsCad2XkFmAHRFROjz1OlngfEpqqx64HDTcikGo5meYlZvfn9tjYsIHcM7AoGykXAt-jphWUlt9EchUvQa07ifC1bT_0lZLTDZPwCZjzlyW3_Danrh6fgdQo6dd20J0Mx1Z8elPJYGcNVpPoXgS3WdyEc8JKEp86NfWMBEp0cFmGZKbCaoiLp4-daEWnIr6xCz57Syq7ETCNh-MNjOgQksd9SsHlVqmhxdzJp1XOiFtEvtF_GA",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-3.jpg",
+          "width": 4000,
+          "height": 2250,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHr5Ze95seJ24Elr5qbXREPnTiAuckrErrDhTYWUJAXH8tGpisAJt0AJaKFik1iGWZZReHLp30h8RcvmNgOWYWEddKwvbBRciFuWgMzvafvCesEe8KM-tDef1QciJx3mvPVh3QiMOY7OwfZUZNtfp--fk-lzCXbz3Qyr5S_0t6OWRb-JVZ6FFCvR06YniY8SxcvKoDqFtIWJuGwjY6sQeHQ9ZY8Bp7LXx8OwU5F801_5QfiTgAHjXiIA_TVWvnTuH3-fKsR9jnJ0qRJY9B3X76vNBZ2Eksrzim7EovIIpq5arA",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-4.jpg",
+          "width": 1920,
+          "height": 1440,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHo5DgJCDkKph5lz2IEYCiiE9LQEB4kJtt0vjoVHo0jZ-7HTydY54dCVmflKV4iJGoPcE3J5j3EXbGs3pdtjyJzMQVse5JoMTaPgOx0909vKf_jqiVA7TIBwCWDhsdKgRAw6mGRsrURA_aMNyThtW0h9Ke2YRqSjXf-EINStee4vFUZIh9inVIvhMVulNHJ3iUrbAYgqUD3PVMSrgG1G0vwtvA5GxZS7E9UAnSJgNI5dfYQvemWg2M4o9-RulEyNYYcnYs80IKZNCpvgM_h1SvpdLjExGv8NUtV5KPaUh1tepQ",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-5.jpg",
+          "width": 4000,
+          "height": 2250,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHpbl0phW0Z5AlJghg42_7LCfiGhmeTfNk60TjTx4v9vMCjfW87icOCHJRoBUZBaT96LMsq3Hi33hea3ShG4vw7TpV8V0BOpoyAWCw7ajbuGYI46V8xtEYMu0Hq55ypLG-MV2RMp7Y94M5gyfRdKwEZvFw75tLt0kkBEmKQKXnRq859OK5rVC_LRNZMDbtfOivGfXY5bJZU-SsYjFWB3i9sDdiJ_xZqYD6UxkcaarT8D9upWV7p3rkMv2qvaf4Zel60_a3fl357x5fZDzQqgA_F-No26kX4XMwmF6VsvwsIjZg",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-6.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHrB_iFM2a5hbISds47wAyQlquDtZmfAs1TFCh4ynVfOYFBqFUHV_nwjQNikVlvlcTomJoYdL8CCK_viIoo-KK8lXGSBO5_qklForI4toq1LvijWrUQfDc1NGZRYgns8EPr-zKKx7wocv5W0w5jchDwiY4b2e5k9dKI2KVpRwFIhNUzsrm0pXnz1rRs8lCkMDywpg2sn6rNJwtHxRboEY4kBU3OsF-_uxK1xJ2KOEdvsOSgPVd_toHw6RPJ0mwcYZZS3jxsDuv4hAYUvbGJrFvB2MtlOVE4TRNayu7FYJj7PJA",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-7.jpg",
+          "width": 1458,
+          "height": 1944,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHpHSqRajeFEcrs07jCAGyHQePOAygXMfSwWsNUAm9ge_Oduj8jU-l6C7zcLz18sX8fWkWNXYjmt196LTaXxSJpmcDxvxSSaUv6hFreoHH4os5oCpBFpTlZEq0lMGvDvFdls6F4Y9xy5jDqOvgsLjN3bQwzht8Rp-MmddxBdvzHfJNElFEAaTPTA8fQmO9oZ49hOO18ea88XTaoQ8NvOuR0-D8xkj68SAYnHhJKJUEIqUYirSiB_iyPTbuZ_3J_moozJTP0ZHQksrgul6fvahtiozRi39gT9qYNyPLfV8SINEg",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-8.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Taylor Creek RV Resort"
+        },
+        {
+          "photoReference": "AZLasHqrldZP5jsoE5gCHg7R3O_Nyv6V7mFtLtk5zOnf3-DJYEkdUVTUnsGRh4FHc-BRp9f5KdwCrNQSqTnGl2FAOe4UenldwpjAVyJKefSXW-ZoJo5-OlLdBLF2D5Wz8rh5VrqSSyYHqLk5ZiaweBtmZpiKa58IsbpvU8ifSoA1B8EQOFl4pHrnc3yocB-wkD86tZQdsd8A1zPoCiQCH4sh0zOVl-gqlkl7U4s6NDS3vmgg0URvuaEH3AknjGuGdI06jxU1oABGupcNWyqp3b9vkjpGywkl0NZEu4zqUkP_HNz8UA",
+          "localPath": "assets/google-maps-photos/okeechobee-fl-taylor-creek-rv-resort/photo-9.jpg",
+          "width": 2016,
+          "height": 1512,
+          "attribution": "Taylor Creek RV Resort"
+        }
+      ],
+      "openingHours": {
+        "weekdayText": [
+          "Monday: 9:00 AM – 5:00 PM",
+          "Tuesday: 9:00 AM – 5:00 PM",
+          "Wednesday: 9:00 AM – 5:00 PM",
+          "Thursday: 9:00 AM – 5:00 PM",
+          "Friday: 9:00 AM – 5:00 PM",
+          "Saturday: 9:00 AM – 12:00 PM",
+          "Sunday: Closed"
+        ],
+        "openNow": false
+      },
+      "websiteUri": "http://taylorcreekrvresort.com/",
+      "nationalPhoneNumber": "(863) 763-4417",
+      "allowsDogs": true,
+      "restroom": true,
+      "accessibilityOptions": {
+        "wheelchairAccessibleParking": true,
+        "wheelchairAccessibleEntrance": true
+      },
+      "paymentOptions": {
+        "acceptsCreditCards": true,
+        "acceptsDebitCards": true,
+        "acceptsCashOnly": false,
+        "acceptsNfc": true
+      },
+      "lastUpdated": "2025-12-21T16:46:01.739Z",
+      "syncStatus": "success"
+    },
+    "columbus-ga-camp-david-rv-resort": {
+      "campgroundId": "columbus-ga-camp-david-rv-resort",
+      "placeId": "ChIJq_tTT63TjIgRMP74BXi2ijA",
+      "rating": 4.7,
+      "userRatingCount": 141,
+      "reviewSummary": {
+        "text": "Buddy Camping set up with pull thru sites was very nice (no shade though - thankful we had our awnings from both campers to shade our shared concrete slab/picnic bench. Nice walking trail to the beautiful pond. The National Infantry Museum is a must! I also recommend Moe's BBQ Restaurant."
+      },
+      "reviewTopics": [
+        "Clean",
+        "Great for families",
+        "Pet-friendly"
+      ],
+      "photos": [
+        {
+          "photoReference": "AZLasHoMzRVHoTEmu8AGIAFMaynX52REGJaVOvhIJ3By2JbeHzi4_pbrWrLFl-M9MUHBCw5J_SlqZNM4QyaoJwIVPaMWAhc4SlDtlmQcFj-HdT32gLQ67_FouyG57eg5SIdMCCMTuveXFtV4hmSnSFeggp1wYew-WahwpTMkspG1dScfKU335yyWg7sgaBYkJ6YZnP0tZYYTCgDgW70wWPC7X7io4m2mlHzvD8S3tkfdxgBIvdILpiK9LM2A0YUD4sbHAjioVcA9A4BeoT5oh4i4h667nzmfRudgug2t0wA16ID72w",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-0.jpg",
+          "width": 4800,
+          "height": 3596,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHreNqRLwqhUBraEatyZ-rP643DS4iCrA3-88zZr7jRxis-IhQhQVMR4xP-tupDXglGBUcC7Al2C3tFm-zY5jHzXB68dusX9g18O4wtCzNxBMhT97kqVlx3_wU3Rkp3M-EWVEagq-9ZvekuKus82hwcRGjlz2ly0zZ5c-il1YS_SHckjTZWbnsendak7K363ekIGjajMpfdKYYewvDo-XVXWk5Vrx_P219DhQCReg7LloptF_hQfKtJhKsl22mpjrjU2v4AT2cQtCYMWjIqrkTsOEfGJKZPgxILtks49-EmYiQ",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-1.jpg",
+          "width": 683,
+          "height": 533,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHp4omV27sHxevX24rX799hEPRCBCO8UfCCWw_LKAcbfa6Spwlbw1rMLmYGFuIFH6H3l8cD91rQ8qHrlwAX1SrQ6Gamq00Gt-w_pptZf3RL-kF-MRQA8H3rwWfCOqXUpPyeVuWgIli3d7Kd4-rRJLEUTiQw63dedDDJ6zoAg4tIriz7udmFQJLtMmekunkkBiOzXx0Syl6Kat7Ym9ioZAd-i_Y9FDUAIm0Pa9EGw0cd2ODLvQgyju-Nha8m2Og2OLQmcK8x82sGLUJYUvAtul4lKCS5_INVIsgaetdsuh0ChGg",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-2.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHpDhxWL2lgyOYjSie8ShVHS2U41e9LWifyvWAq9xhx8FhGS-griibrwdCo9jdM1-3X08kXHHVyu7Ifc2qbdVGMqmEado2ygOrCL4LF6xAxgy21d-OFtTYRB9cS2xONKvHZK2NNBgD-kJ58uKM9nNWlnca9k337B8e1p1Vd64W3-oowqGV3bTXisXPXZVeC7UXhTOorulpO0wfpK9Na3cEiq21fFG011AOkOP4SLRQM15AI-cboxcrmsxj8aXr4YLDZQvV6HLmU7n4IlLtaIxbN0WNS5uMc3lPWPJRXTZA5yxQ",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-3.jpg",
+          "width": 2898,
+          "height": 2173,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHp5X4J4ILmddt_pkxV5pLeFEtI3X-cQBT7vWmcvQhoZrUn-uvY2UYkK_ALYN4IyftkiaUPuBR9lMfIksnZa6-QYSUdAf0Xy2NOseJpylMCz8D6XIUIy4RC-tQJdhb3BjJRy--q4OHOGuvJ7iE_LGVGtNMSLMM-6RNgCZ-8RwxpxorGN7CppFuSCU2B2aEBRiKMxjFLtqoSkusDbvbuDbA6XNOyFEePOZaVFnC-V1MNpVMyWoIT-zv5dE3hm9suXctb6wxFqGHuggPQMQhvH4I0NhlDigOtJk9Gex75EnMRuoA",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-4.jpg",
+          "width": 4800,
+          "height": 3596,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHpC3JO7ATIKP0GncMaYejqtysQRibfLGXtOHexljBQrE5y7MhXIevKjRcpfiKWmf9d59e3y8-jc42tLlGY8RrxU6Qy0HI71sDm5YHYyI7Tef3NPBZtG5RXjOjQSpoJ6eGSTPFCmr5uMJZEx-NopcKNNAS4NtX0twGhXrSZ06F87v7SpAMStyfOO9rAXLXAaLA7bpt2nzuJOWVFJ9l4dWa1cwCz8TyzkDwpkJyML0OUygZur3aHwmZV9w9GUffdAmXCq-be6-75oCIz7lZw7xIyxwJBFghoS2cf4bAeHpEp-Gw",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-5.jpg",
+          "width": 4800,
+          "height": 3596,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHrsH_VjmfOyRaPBfbe__yNYEWGxWmM7aG_Ua0OVxgmAl3piRKpyMmE-bOV9mLPdICeKmes-WUKM9DNM2nsgN3AUNhNi-VjmDZJBCkoya8bPCtvyWmZdi7OBZTnSgR5ruWJNv3E5-jWVfIV8F9-j07KSfOAQs-SDwTnpAYp9rFnB-2jTb7cXO9lcgMNW_31XbiT3bNlEoRbAE-tTtzvwyt3D_vdDjM3xH3L7TEDlZ87CUwf15q64SvlXk4viypT0UXc8iJd-nG0J6Y-E1P8-CrUcoTRnoD1QjE-vXzrASe4DLw",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-6.jpg",
+          "width": 2287,
+          "height": 2500,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHpIAjDGHgCRdnq8ytIVZjKBuOOH8SOlinYhtTqscW3K74M8jij9QNFW9KoZgDdg4carwlt5tDKXycSRIQL7_Aw37-d4SYtE1wgdpQGQPYW9uzpdprSsKA5GP5EgCFdp_Bzz15U82vt5cpHRgICP1ChDno9iWAEWtJePTE605i7Xn74LtEz858MWYl7Krf6bsdimrj8YyeBS0_iwu1OpRk7mMzprihVWynDRJALBCj0lvrqDQfSaYkgXIlF2EM4NNkiJ_oPdCQ0j2lc4wi3cmlNmxNehbS28xIapN1_oCxxTtA",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-7.jpg",
+          "width": 1060,
+          "height": 788,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHoLjSOlOhJ4lz0zCB6_aU9y7nj8nSlHjRvhALfPYqQZvVcGvZx4TiNfKl7FGR-A3CXIX-cVqm5VUrKqNueqd6S4uLj8xxLUUGBB3QepxkcUy7XR3U4hBtmdf1ipsE5zdATGjvjW1hDt4yq1rO7b-6p_c_QYxAzNjp0CVbU7NbnXeSkfQB8d_V1sJKiXbH8pMT1n-mmYUYtIisATMaUUFhhsPb34Uq1TxWjptnfxocPZOwKR886Dq_6U4Zgc6q-Bui_ZrkrJ_PctfgyeZUR17SayoPdL32eP6fmdslx1dBLJxw",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-8.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Camp David RV Resort LLC."
+        },
+        {
+          "photoReference": "AZLasHq7CJLKdbe9kMJywGie4FAxHR125hSa3hDKDYYrpQoIaISpXla2uxcZRRORcDXoItiSpIPx6N72OpFS28Xyfh0ErsYeJ4Lfteh4rBVBHH_oE_ZGBac-JXQaP34k67aVCs14WcJMmOEMqenWlci71fb4lkQ6XOdRWJcIoM4_4Sas6gCBxBHBgIc4ts-Rufgh7GGjXY53PrbgSMIrt4Q1QQ9Pm8V0yBQAM3qRY3zBw-FjdOcnEt3j4T9akU58_JkimLZSvaeCUQsnMw0pMjZ0cibXILIDq5EmFSTNh3BmAADqUQ",
+          "localPath": "assets/google-maps-photos/columbus-ga-camp-david-rv-resort/photo-9.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "Camp David RV Resort LLC."
+        }
+      ],
+      "openingHours": {
+        "weekdayText": [
+          "Monday: 9:30 AM – 1:30 PM, 2:30 – 6:00 PM",
+          "Tuesday: 9:30 AM – 1:30 PM, 2:30 – 6:00 PM",
+          "Wednesday: 9:30 AM – 1:30 PM, 2:30 – 6:00 PM",
+          "Thursday: 9:30 AM – 6:00 PM",
+          "Friday: 9:30 AM – 1:30 PM, 2:30 – 6:00 PM",
+          "Saturday: 9:30 AM – 1:30 PM, 2:30 – 6:00 PM",
+          "Sunday: Closed"
+        ],
+        "openNow": false
+      },
+      "websiteUri": "https://www.campdavidrvresort.com/",
+      "nationalPhoneNumber": "(706) 392-1627",
+      "goodForChildren": true,
+      "allowsDogs": true,
+      "restroom": true,
+      "accessibilityOptions": {
+        "wheelchairAccessibleParking": true,
+        "wheelchairAccessibleEntrance": true
+      },
+      "parkingOptions": {
+        "paidParkingLot": true
+      },
+      "paymentOptions": {
+        "acceptsCreditCards": true,
+        "acceptsDebitCards": true,
+        "acceptsCashOnly": false
+      },
+      "lastUpdated": "2025-12-21T16:50:00.768Z",
+      "syncStatus": "success"
+    },
+    "grand-canyon-az-mather-campground": {
+      "campgroundId": "grand-canyon-az-mather-campground",
+      "placeId": "ChIJt_mmfxwRM4cRVMEjZJclMAw",
+      "rating": 4.6,
+      "userRatingCount": 739,
+      "reviewSummary": {
+        "text": "By some random streak of luck (as of 11/4/2025), Mather Campground is WIDE OPEN. Normally you need to book 6 months in advance but due to the government shutdown (sorry park rangers) the ground was closed and then reopened. We went 10/31-11/2 and the bathrooms were stocked, water was still running, and there was no park entrance fee. These are flushable bathrooms with lights, sinks, and soap. Big trash dumpsters are nearby for safely throwing away trash. This campground is also right next to the south rim trail! We stayed at 170, a short walk to the bathrooms but still private and beautiful. I recommended doing the Trail of Time for an easy walk around the rim. It’ll be very cold at night (around 30 degrees) but warm in the sun during the day. Grandview Point is fabulous for sunrise + sunset views. You can go to mather point at night for some awesome stargazing!"
+      },
+      "reviewTopics": [
+        "Clean",
+        "Quiet"
+      ],
+      "photos": [
+        {
+          "photoReference": "AZLasHriBAs7RqfKErqHqMxPI3e4UAQoztBhDsA2SpiZMQBfxxaAJ2ZpyB0DK1bfj-rFCs8s7xWClvkbClpx_0XGqp-l9AFCXCYI1f8BtzS4vmK3gWlF06W1SGtFrZZkIOFthtZeyQSTB5VI5kACTg86bxERaGjzGU9Wbk7A06oeenxCPWR3dq7gQDJ1QDGE4D9o17ztIG9WI1y_Qn7BXSXceIwVOfYHCyALQTlqaOXTbwc6d2w66osFdDXQ3E0i1rBMcFkMV3biG0v1ouRGrNDOLzWWmvVPHb5hQE65bV1ip3NS92hkaftZ3nZfPhCkdd8shlk4Zn0DLL-KLS8NmJ_ZNznvVaXDQpTqPOY-T5GmstLdeaynJb_vfjyaAAuU_FFAFH-YebFvkXgPqPeyDAvK5xuqA2iXbFDqxPZHqp6cnejGBiw",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-0.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Hiker Shirl"
+        },
+        {
+          "photoReference": "AZLasHpnXtPc4wRmxiRj3eF3MLfdYTTvSFeifBAugT16LRGIpq5aN1EhjmdnMuP9ljNfT1PFnL5eV-NFNPhh05_rqFbfXclH12sBOnk9wR76vjjEIM1jMTSKT0AJ9BEE0xAKwAB3c50mPFVumWshRbnQU8_uWoILQbYKqC1hvjwUCiSWtqRw6kPalJ5cohhhHixBTtcOm-8W3FOHbJVNU3dn64Nk3H5RbrSazFpymF9QDXaiA2OC9xApH1Cl0iq9tx4Dy1WbyGu7DR1l_J5ApGJC_A7muy6ZWKb5nIlPAUZTGxKFfTk_Ji0Fke9JMxCx4l3OxAxs_IQGLeTzjaIqAVs3vuUsNR8z5ZtFA655XDq9KfPNhq7K4ISeGBRCAUxvUAcBv8pMLjPCaqMOmAPhRynLVc90fxGs1ayC3GKCjMHxock_JQ",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-1.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Sean Newton"
+        },
+        {
+          "photoReference": "AZLasHq-bF1BwfOZQ_kZQMf_IJVFhkX5oSZ55I539LkKn7-cEdcSDFp0lcqp6C6Qy2UJRCF046504KrC1v1f4PCR6m1BxWVwPz3Cf5b2C8r9H7RejvvCSkSxjBmjQm2u9p3ftAS334QZpwQugq9URcBwvTXgwlcL1Uyxl_Z8oReOeG8gwPxp6kH34-JNiIdTrMp9gH8S1IBXkq5ewfvfkkCbxrS4qD-Zd783lCv-03q-G2Yo2y6CJaTrkm3TVLmhUoihMKGFA6nsI0r9Sv4eL0FtyWFRwCfGfS7NB_be3UMIiM48Z_8y0UJTc31VJ19kaBQZAXbewKJF4X6L4WlWcDiXS_Z8VTRtw91lDQefa3ZxreC4oMlhPyFXbZxCwzJH5Bd_0G06ffMCMoR_N2IHOXHnZkbvdUip1zHfevBRpQYdGNM",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-2.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Tina"
+        },
+        {
+          "photoReference": "AZLasHoHXR5fJX0uZvvxfWNjf5jHdA7cw8ooL5pjtVbIpPU1vuwo6Z6fCRG02_PYJOHxbnyxrekzksjqDLAFQhMcGYmqw1SFAvnwzvawBk1DYEzaV6X5yX8WkHspc0elVT-3csTCpx9iVntnL1LnPbbGmwWthlyRVSUxk5iP_hbsNdDXPM2qeFnSDWzRo6hOCg13Xls2veUAc5ZwVwK_Cy5BuTW19f6tQ-9uAoKXSEk2dpmDyi5EBWYRomdL1CfbvoKSLThKg728RL-0s2ism9v97tY_ben1jBfVBK7sbrsahulxOwM2T41pKBG2Z3ZTikOQOzirVK0voBBCHDYnOpDnz0lEHRr8WYvh25lkP4Bi6TlsRA7qx08V2N5Qg1drcZYSV6K6qQuxmnodL3XhYP_rSI2gI20cO6AxJiQTFFG2Sk7U-g",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-3.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Hiker Shirl"
+        },
+        {
+          "photoReference": "AZLasHqFZZK3yNvvt2VNh0EpsyCei8mBtspNdD8lCYS2E6FDQ76K0BV4dauPtYwVbCa8EDaFZPn2cAhGxDQtb3Y-4ZuNCrs3KhhUE3EAnaOBskZeiqADEITTez4FAcguGAGTT6VQAe7Hxy50vsyb7Tk4gG7qpjOSkIEsKPDudniERU-fi53QBbNVQeLJAe3ikAX0Hzfi3xuakSmD6ntT2lqlrkSzEjKuwNWFxCa7BN0y9EzmhXAL0Sfft7S4xCdma89Lo0CLfw59rjQr35FX0WEamveIpNzESTQ9xu7RT4yi6XMwB5AZQwSEfNQZwFUVTr3NBsymXgaGCfegcg5bdMcVBbLrG7hWD82W3UaB_PyPgAYZS2NXs4rFoehcRK-mo7I9dSaDfqodvJ7i-45vsaQopKtvBfhCX7X3rAvE3EIAdrw",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-4.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Paul Cazals"
+        },
+        {
+          "photoReference": "AZLasHqsVpjrb74H_3PNpDcKBdX2-xcmTAZSVWdTPlXAt2QKMtlr2rx4QFQSb3CWwtgKpMiQCZbB4Cpz6wi_jcNyuspNeNcy1Ae-ZqvdPivZfBIJayGCv9daFjkHrjbCdEwM8nDp3zfDK7MZsa7xIr_l3c2IHRvCY776clKiUBVbIFif-gTDJwKAv5knOaxohE-LtGxJj46QhT8letcoqhGA5mgGDw3il5nLFKQMmPWmb9G0xpfglSpmeOqLtlecvN8najjzB9a6EcLMKO3VlxnyB9hqW5GniQiZ4UgMYURbyjZOa7p6T1tWqP_U0sfGN1W_giLa2JMH28pTpk1J27hg94WrE77cd6Oy1a6pSup_tI-KzrUW84DBIAXYnrWQncTwj4HtWZMVZK-Y1b7oo0vy0eGSwGCi8Qwa80ZFI8pKFXBzje56EEPSNluRo8Tt5g",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-5.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "Marijke Bergen"
+        },
+        {
+          "photoReference": "AZLasHq9MHQMJgtCBmZKraDE_WPC1CR0jRY26izjzThGeh1KAgIqnrdeXP8wiMI4XcXICX0LcBS07RshrT133D2KoTi71N4tqrjACaB_Rn82racPpfBdc26sX2uJ4ZCqT95b5zz2RrPNe0KmZkBJ8Afk5gTpV1bUyfWhB-c52sGfzL4I_psZvG5VWsG4VzublfNciIyZfTNILJRgn93tO2zFThLfpzHzPOrsAize1ZvXhVfCPk1b_caAaqITz7wzVz2vLN6pv1ORugrnPGtHkFV3kjdmBvcqXoyHnnbZ4vvOVE0zlHoWP7EtNacA_wyN5r3RiDjjmxdU0aGmRgGAog7qTwzASRADm1GXj8FYSrlue3UuHu_YmUZYqIPOfeumNo9TLAphHfaG3aZrYCo9Toz1F6SpACIO_c9x0CB3bSW7r4awtA",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-6.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "葉競聲"
+        },
+        {
+          "photoReference": "AZLasHqwVh_AJMHQ3glWW-QzFcn1jLBO7lxmE8TA3YcTpY71axG3ITqryPNKQdw7VlRPRG7RVX4-r_X6uDvzA_fLmmahgO20IqtHBM9LrLlZzcH1bOseUsH5TCqb7Drm-V9CNLXpAzaa8JZk3NO98xY6WVeb6oJDs0DVLs-HBYe4EBDdGvVQL5fgKbNvk4A7cefPfl49celPDHwsgeFdEVC1NH93ZcH7qxj9Yt__u_IbtKVdmF98p7rrmKuhYPgJ6X99KBwZ8MgBWQuRSEtP6zR0ljbhqJ45E7mHPokXayb3e02lsissUOl6PQ2HRMqfq8dK8jJ9W2hTGmYvxfyC1dDNhHGEMaJLAz6lQe8Uh8_QCvlxTGhyTtarRHNbMX7KOh3VYzDcBRwSp-1bn6_yZ2NTond75-IG5j6yKOALq9uX6NlOZw",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-7.jpg",
+          "width": 4800,
+          "height": 3600,
+          "attribution": "bostonh2o"
+        },
+        {
+          "photoReference": "AZLasHpLMME44Ix3emXrBITghEVUyE1LV38oYqJV_H23j1in7FMyfpzh-c-CSIXtsPElNcZQg9heVhQWmWi0gVF7MXxb9WLaEYxp1uBJyVtj7bsfF8ruIbIrF7ORisyjnDN3f2jNpFQUGqB-ZeagpRo7_W_I5Hq9ibInqPnoiXvSgWm346-BaCnEL3MdsAPgz7p_T3bkWKRyFS8rTIIOELzdejkRtYRCovDvFpPGZKb-G7YUHEChIEhkhFipaoL6_KGcIHAq4wbGlmTRTRb6TKndfZBVgO6mOjtpZmEli5Q-1pc6XceMQdnNhboQ0pyEHr3gbU6xCgOkpXmDi0eVV-_UCn-AuGQN4s7UTOWQnkDcJjVBWuaY4Cg6Z8cZ7IMKkYr2HPP8hmOtCsT5d7oQSiD39lPOPggEvwW_5aPYCPuOKmLLKHzv",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-8.jpg",
+          "width": 3024,
+          "height": 4032,
+          "attribution": "RJ M"
+        },
+        {
+          "photoReference": "AZLasHp7v6YPv-2RHtCZXrU689ZU5xDxxAnZNjtHstQk1QMepupdUMbND5TyGmOAqx5hP9ZUn0piKyEl3rcmFdRH1jVNGEzhyrKE85ZayNqZXlPVG3Jo4FFotceKyz_U3GEyQJ5SC7PYD8HjNwbOtTeFkfVWPrW5sR_NtgiqBsuPh1NexosswMRlDY2YFiRvhQDTQe4ju5nzNGbqsE6ipUgkQXe_59rg51lJCc8iB3eBqC7qcWMLNVwOnSQky7rP7MNcg2Qn2uaaUEtJT0ySxoTu89SrbkjccJiYAxjKHh-mxZm0A1x2PWIcoMnSpU5RVGMIpxnDJmG7Y-0_HbBWqxUmb6KVnnutuXRAr7_k8zyeFN-CGktpCotUdyl52IPjdgpfBIznQ8IF0Bbt88fpWFhhC0R4dGp9LWCIb2g9htDdH2N8PVQ",
+          "localPath": "assets/google-maps-photos/grand-canyon-az-mather-campground/photo-9.jpg",
+          "width": 4032,
+          "height": 3024,
+          "attribution": "H Martin"
+        }
+      ],
+      "websiteUri": "https://www.recreation.gov/camping/campgrounds/232490",
+      "goodForChildren": true,
+      "allowsDogs": true,
+      "restroom": true,
+      "accessibilityOptions": {
+        "wheelchairAccessibleParking": true,
+        "wheelchairAccessibleEntrance": true,
+        "wheelchairAccessibleRestroom": true
+      },
+      "parkingOptions": {
+        "freeParkingLot": true
+      },
+      "paymentOptions": {
+        "acceptsCreditCards": true,
+        "acceptsDebitCards": true,
+        "acceptsCashOnly": false
+      },
+      "lastUpdated": "2025-12-21T16:53:30.047Z",
+      "syncStatus": "success"
+    },
+    "tucson-az-south-forty-rv-ranch": {
+      "campgroundId": "tucson-az-south-forty-rv-ranch",
+      "placeId": "ChIJbY9_N9l01oYRPJdw2ojOAE8",
+      "editorialSummary": "Pets are welcome at this adults-only RV park offering a clubhouse with a gym, heated pool & spa.",
+      "rating": 3.9,
+      "userRatingCount": 231,
+      "reviewSummary": {
+        "text": "We stayed here for 10 days and overall it was a nice and clean shower, bathroom, laundry $$$ and pool area. The office staff were polite but not efficient in accounting. They blamed their mistakes on the computer not functioning. We got a veteran discount but the extra taxes were similar to hotel taxes. We stayed at many rv resorts across U.S. and never charged extra taxes similar to hotel taxes. We had our own rv and just rented a site space! Also, my dog didn’t want to go to their little dog park, there was hardly no shade, trees or grass and it smelled badly. It could have been managed better. When I return to Tucson, I will find another rv resort and will not be paying high taxes."
+      },
+      "reviewTopics": [
+        "Pet-friendly",
+        "Clean",
+        "Great for families",
+        "Quiet"
+      ],
+      "photos": [
+        {
+          "photoReference": "AZLasHo9m9yimgQf8lxk43LQ29hbaREgBrY4HaRUctZnS8jYpQ9s3DSkmvQLg7CCwcmAGoX64zpO4ZOMRZSnbg0AUeVVaP6LOkJdCSD99Mmh-OHNnZURmSLskAihSiG2Yup57aZuKKdttR-hNEQc30gyNPyj9dTDKN5cR5tzIZM9VZFE4rr91ZegnzX_0k99lmeZELEscQ7tKtCf_V-EtTyqhPh8Aj4RSye9a5CdwkyLZFK31kDDEZzHLR1fCcC8S6mCsUrFq_45B7zvjQX6ATWGSjAI6zKyyKWCQyytXPom7MQXfg",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-0.jpg",
+          "width": 4800,
+          "height": 3200,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHrcQHD_wxIDGq2wQzDgA-SGAboHvIB3Kj7NQdKZT1i8K1gxqfeljydmFuA7w3TnK55bY9jr6njPwiO2S423pkykO7UlRSknpa0a2JC1vsNw65u1wh9Om20ZYmdKCHS_mPxi8DJ_4jWQd-iblcM5RmjcdRv4ul5HS5RC5UD12ZUj18qXTbvBDjLzET0EsK_bQxc4RoSTLd6COSUcUdUjuglqD7gg-G9BJIRB7_JdFMh9bNYu9Iad_1eRfQuh3ZP-vl26SDSkijBHNLOTtwp0LAm8Y_2oe5-EG4ABPe6A-TqKAQKT0huRoegqDwHrTq5i0yb2nftKZQrm3-nEO3A_BM93FkOLzWTiQn12eLG01oOWX8552jLanqAPWCaGP_6xNt12ZKzmNxwWw_My4JEByB2f5W5pcWofjwjlj549IGh2TEA",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-1.jpg",
+          "width": 3024,
+          "height": 3025,
+          "attribution": "HADLEY S"
+        },
+        {
+          "photoReference": "AZLasHqyoZ3apVpv72xgMmIfoYKn7szWslvrKUIksbd28XpBUWTmg12BuW_e61WNhUoTX2daO-CfZ3EoR3Z7anY9FsgTbUMnfLr4f6_mDFJD_gGZRdnxdAqOg54X6Q0mgy1ZPUdqraVwIxGZsWWrUAHY6Vvlx08heOquG_hf-hAmZbmiiGtzUiVlP7AuVjZ5uxDReK-omEA6_gdkFuUhH5yVxge6GhJ_rSKymap8zCXX4zJFL3670XYBOdMAeIHirWAgkKWEyY4txLyyxpsAWLjxGimu6qxFyaC8cCyIlQm0HP4vvw",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-2.jpg",
+          "width": 1280,
+          "height": 960,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHrtFEQSh9hxt0WdLHGfcuZmzojYGRWC7L3n9HibVGoBVUbujn9TAeP7sPVvGSFaeFCTpqEKA2F1YiA7FBRVt1cNK0rPOthtCm3ymDwDgVtJlvRm3ZZ3NEmF-pCVKX-37bIxGx35v8_qBUaFMvbb278jh_vWKgyH4rhjchKL9JUmJ-KYUcCv-cgGH1tndycDGp4XHK6mI8saZk87ohpgKilcKnUcQbPuDlQIhAdvrjkOwT73ED796LwrNPpfqbS8KdDbm2ZJliEJ0GitmfC5X7BSp8FsogzK1sEoK4uNLi_hcg",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-3.jpg",
+          "width": 4800,
+          "height": 3205,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHpWZ9BPzFWm_ZxqPeq5BBFmgG4PhZBtYPWMec2lrm2-_I0_zqQrv4RvaldtmE78pPcVcXAVthebHD--FGyb_bjNh9ocbivc5lSqum710tX3DDsxI8ImtdQXktLu34nMdKmGMtykMqUCS9b3Q5xP2qElqQK4CyRmQxw7usHYooxXZ4soNQWwdTs8hdH8ls9TQCiFbh7CCOAwmym3BqyiXG59Owy-LKNK9ym6tXdny6beSWFSFIJMaAmjlrcrrs1-ieclFucuwuobD_SSq0oF7js4Lg--OyBOmE9u92ZqcPl8Fg",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-4.jpg",
+          "width": 1920,
+          "height": 844,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHr7b_vGfeei59oUdNBAKfydq5NqQ2dJ53mK6myGKhVay4odFyfG8JmAc1J3pool80YWbDPvMU0cz1k46LTYhRrV9MPcInw2tYjC-ZQuB5wyl7JWKSABuclzZ20fLaWXtteuL_eYxEZHu_R7bYK5CkmLmC0KhkFdtBmRLo5Kvd3SRanOph6cJEyFCBnA3kaxSox13L1eR8G6fmkC2mIwqulKPszgZKvdvJBU0-_S6o_u_FjM8MfHFqeIWIqXSBEx8WKyR7vLKNozlL-6n8qAt4VhiA1zkV3_BTYHtylaOFbCmw",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-5.jpg",
+          "width": 4800,
+          "height": 3180,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHoTV7VgOnWxU90SItbcDySs4-8Ni1dc7ES7twO-Lti-BGV1S3QRsZbC93eEc5og005HKuCTavJwM-f4FnFZjulDhTk3rFb9E2hFVDPxX-trWVIhbK3kHrVoly2pnTN2xdTR7uymEFii-fQmytQ40qKyGo9KB_3gdS8VOxLeOtBIeGrJIsu908sAnZcdr8gyAgFpq4aK1UTWzXcCMN6d9l1pFnxt__kv9F8zkDsD3hRAwfHGm2FWz2Nk2tkjtZsvgZmtVymk-xCgkEVzN-9JkD2firr2H0eb6-OPerD83YdSZA",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-6.jpg",
+          "width": 1280,
+          "height": 960,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHqppohK7oexNNfyKTo8YX1GKLE8IXbS5jgspKoK3i8OO8gpWWMrDZO4B4EThu3ovrEyS_2a9hfLbPYbqjc4LYXdIPVkyovMfZvJv_qRfwNlAyit8lnbDxDU7m-VtIWlDfyYK-AnnOkPKFlSAyrS_M8T5eI0r3LmdbRlLqBI8y6BdY7U7DD5P9i3IS_JL2KGZp5iZT9L7EHQZmX-z42VxEHSuL8JuySKOZXk8a4wZQIDOKtNGCfgh16UZGkGEpm43FwoOA8uz_2bKvsmpfdUo7uwNhERFL2bng9bgFeoDt9N-g",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-7.jpg",
+          "width": 1280,
+          "height": 960,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHrWFuj7ZPuERlDVcbIZgxKHFlVR3H60sp8iyf3ew4rLa1y014LI0plBRBeKXpCiBFJGnatXo0cl4K1-NfT1s_qUu8KN2cwFO5Wc5xn9Q__HypSes179Sb-QJS9T8TGos0q9SI99X0eO8TFx1wCm-BVLP67N0CazJCs1N0If4mcPeqXNa9nm_0ta9eiDaALJukYon07d3qhRTo4s_V1Mkaj898Qp3je1aVA2iAg2X8qOID1PTri5jeHeipKfJB1JSY0sLphPmws9KQ4Bp2XV-oc72x5CpEJQkRHFsrqJMAQu0Q",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-8.jpg",
+          "width": 1280,
+          "height": 960,
+          "attribution": "South Forty RV Ranch/Park"
+        },
+        {
+          "photoReference": "AZLasHoxtbyCbSttYc9uj6SKzQgnt-Musp1Gk4j8k_Z4dnsvffExyoRdhzqXavYV7jkPLuaRuJdDglySxotrnIZeL6bY6CIOBaLiLH3ssTTDkBNE89l_aGxBC-nNvycLn_OiUeGRvdG3XnFhZlV1_3Me3ucmG60-5SPUGqcWfhGUBW63w1i0OjiU22sL5pbutbQHjKzlEszbPuy_IocrCFKrgLFYYrxA-9GUVkiCdoWYpKsVyd1N3IZ-8kTfbsdSkk1ygCsfj0YKCW7dhkaq3FRZLM5sEPBhwKT8ZIad-PBe0fL7Hw",
+          "localPath": "assets/google-maps-photos/tucson-az-south-forty-rv-ranch/photo-9.jpg",
+          "width": 4800,
+          "height": 3187,
+          "attribution": "South Forty RV Ranch/Park"
+        }
+      ],
+      "openingHours": {
+        "weekdayText": [
+          "Monday: 9:00 AM – 3:00 PM",
+          "Tuesday: 9:00 AM – 3:00 PM",
+          "Wednesday: 9:00 AM – 3:00 PM",
+          "Thursday: 9:00 AM – 3:00 PM",
+          "Friday: 9:00 AM – 3:00 PM",
+          "Saturday: Closed",
+          "Sunday: Closed"
+        ],
+        "openNow": false
+      },
+      "websiteUri": "http://www.southfortyrvranch.com/",
+      "nationalPhoneNumber": "(520) 297-2503",
+      "allowsDogs": true,
+      "restroom": true,
+      "accessibilityOptions": {
+        "wheelchairAccessibleParking": true,
+        "wheelchairAccessibleEntrance": true
+      },
+      "paymentOptions": {
+        "acceptsCreditCards": true,
+        "acceptsDebitCards": true,
+        "acceptsCashOnly": false,
+        "acceptsNfc": true
+      },
+      "lastUpdated": "2025-12-21T16:58:15.676Z",
+      "syncStatus": "success"
     }
   },
   "metadata": {
-    "lastFullSync": "2025-11-25T20:32:14.409Z",
-    "totalEntries": 434,
+    "lastFullSync": "2025-12-21T16:58:15.804Z",
+    "totalEntries": 439,
     "syncVersion": "1.0.0"
   }
 }

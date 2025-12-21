@@ -1225,7 +1225,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           <>
             <View style={[styles.googleMapsSeparator, { backgroundColor: theme.border }]} />
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>Google Maps Information</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Additional Campground Info</Text>
             
             {/* Editorial Summary */}
             {googleMapsData.editorialSummary && (
