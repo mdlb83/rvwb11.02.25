@@ -5,7 +5,7 @@ module.exports = {
   expo: {
     name: "RVing with Bikes",
     slug: "rving-with-bikes",
-    version: "1.0.0",
+    version: "1.0.1",
     orientation: "default", // Allow rotation - we'll control it per screen
     icon: "./assets/icon.png",
     userInterfaceStyle: "automatic",
