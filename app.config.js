@@ -29,7 +29,7 @@ module.exports = {
     ios: {
       supportsTablet: false, // iPhone only
       bundleIdentifier: "com.rvingwithbikes.app",
-      buildNumber: "14",
+      buildNumber: "15",
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""
       },
@@ -51,7 +51,7 @@ module.exports = {
         backgroundColor: "#4CAF50"
       },
       package: "com.rvingwithbikes.app",
-      versionCode: 1,
+      versionCode: 15,
       userInterfaceStyle: "automatic",
       config: {
         googleMaps: {
