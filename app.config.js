@@ -5,7 +5,7 @@ module.exports = {
   expo: {
     name: "RVing with Bikes",
     slug: "rving-with-bikes",
-    version: "1.0.1",
+    version: "1.0.2",
     orientation: "default", // Allow rotation - we'll control it per screen
     icon: "./assets/icon.png",
     userInterfaceStyle: "automatic",
@@ -29,7 +29,7 @@ module.exports = {
     ios: {
       supportsTablet: false, // iPhone only
       bundleIdentifier: "com.rvingwithbikes.app",
-      buildNumber: "15",
+      buildNumber: "16",
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || ""
       },
@@ -51,7 +51,7 @@ module.exports = {
         backgroundColor: "#4CAF50"
       },
       package: "com.rvingwithbikes.app",
-      versionCode: 15,
+      versionCode: 16,
       userInterfaceStyle: "automatic",
       config: {
         googleMaps: {
