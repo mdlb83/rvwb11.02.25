@@ -26,9 +26,7 @@ interface PhotoViewerModalProps {
   initialIndex: number;
   placeId?: string;
   getPhotoUrl: (photoReference: string, placeId?: string) => string | null;
-  photoUris?: { [index: number]: string | any }; // Optional cached photo URIs (strings) or bundled assets (require() results)
-  onPhotoError?: (index: number, photoReference: string) => void; // Callback when a photo fails to load
-  onLoadPhotoIfNeeded?: (index: number) => void; // Callback to lazy load a photo if needed
+  photoUris?: { [index: number]: string | any }; // Optional bundled assets (require() results) for first 2 photos
   onClose: () => void;
 }
 
@@ -38,10 +36,12 @@ interface ZoomableImageProps {
   height: number;
   onZoomChange?: (isZoomed: boolean) => void;
   onError?: () => void; // Callback when image fails to load
+  showPlaceholderOnError?: boolean; // Show placeholder instead of logging error
 }
 
 // Separate component for zoomable image to isolate gesture state
-function ZoomableImage({ source, width, height, onZoomChange, onError }: ZoomableImageProps) {
+function ZoomableImage({ source, width, height, onZoomChange, onError, showPlaceholderOnError }: ZoomableImageProps) {
+  const [hasError, setHasError] = useState(false);
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -53,7 +53,7 @@ function ZoomableImage({ source, width, height, onZoomChange, onError }: Zoomabl
   const MAX_SCALE = 4;
   const ZOOM_TARGET = 2.5;
 
-  // Reset zoom when image changes
+  // Reset zoom and error state when image changes
   useEffect(() => {
     scale.value = 1;
     savedScale.value = 1;
@@ -61,6 +61,7 @@ function ZoomableImage({ source, width, height, onZoomChange, onError }: Zoomabl
     translateY.value = 0;
     savedTranslateX.value = 0;
     savedTranslateY.value = 0;
+    setHasError(false);
   }, [source]);
 
   const clampTranslation = (value: number, currentScale: number, dimension: number) => {
@@ -164,6 +165,18 @@ function ZoomableImage({ source, width, height, onZoomChange, onError }: Zoomabl
     ],
   }));
 
+  // Show placeholder if error occurred and showPlaceholderOnError is true
+  if (hasError && showPlaceholderOnError) {
+    return (
+      <View style={[styles.imageContainer, { width, height }]}>
+        <View style={styles.placeholder}>
+          <Ionicons name="image-outline" size={64} color="#666" />
+          <Text style={styles.placeholderText}>Photo unavailable</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <GestureDetector gesture={composedGesture}>
       <Animated.View style={[styles.imageContainer, { width, height }]}>
@@ -171,12 +184,9 @@ function ZoomableImage({ source, width, height, onZoomChange, onError }: Zoomabl
           source={source}
           style={[styles.image, { width, height }, animatedStyle]}
           resizeMode="contain"
-          onError={(error) => {
-            console.error('❌ Image load error in PhotoViewerModal:', {
-              source: source,
-              error: error.nativeEvent?.error
-            });
-            // Call onError callback if provided (for bundled asset fallback)
+          onError={() => {
+            setHasError(true);
+            // Call onError callback if provided
             if (onError) {
               onError();
             }
@@ -194,8 +204,6 @@ export default function PhotoViewerModal({
   placeId,
   getPhotoUrl,
   photoUris,
-  onPhotoError,
-  onLoadPhotoIfNeeded,
   onClose,
 }: PhotoViewerModalProps) {
   // Maximum number of photos that are preloaded (first 2)
@@ -235,17 +243,9 @@ export default function PhotoViewerModal({
       if (newIndex !== undefined && newIndex >= 0) {
         setCurrentIndex(newIndex);
         setIsZoomed(false); // Reset zoom when changing photos
-        
-        // Lazy load photos when swiping beyond first 4
-        if (newIndex >= MAX_PRELOADED_PHOTOS && onLoadPhotoIfNeeded) {
-          // Load current photo and next 2 photos for smooth scrolling
-          for (let i = newIndex; i <= Math.min(photos.length - 1, newIndex + 2); i++) {
-            onLoadPhotoIfNeeded(i);
-          }
-        }
       }
     }
-  }, [onLoadPhotoIfNeeded, photos.length]);
+  }, []);
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
@@ -263,15 +263,21 @@ export default function PhotoViewerModal({
       );
     }
 
-    // Lazy load photo if needed (for photos beyond first 4)
-    if (index >= MAX_PRELOADED_PHOTOS && !photoUris?.[index] && onLoadPhotoIfNeeded) {
-      onLoadPhotoIfNeeded(index);
-    }
-
-    // Use cached URI if available, otherwise get URL
-    const photoSource = photoUris?.[index] || getPhotoUrl(item.photoReference, placeId);
+    // Simple: Try bundled asset first, then generate API URL
+    let imageSource: any = null;
     
-    if (!photoSource) {
+    // Check for bundled asset (only first 2 photos)
+    if (photoUris?.[index]) {
+      imageSource = photoUris[index];
+    } else if (placeId) {
+      // Generate API URL
+      const photoUrl = getPhotoUrl(item.photoReference, placeId);
+      if (photoUrl) {
+        imageSource = { uri: photoUrl };
+      }
+    }
+    
+    if (!imageSource) {
       return (
         <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
           <View style={styles.placeholder}>
@@ -282,16 +288,6 @@ export default function PhotoViewerModal({
       );
     }
 
-    // Convert string URI to { uri: string } format, or use require() result directly
-    const imageSource = typeof photoSource === 'string' ? { uri: photoSource } : photoSource;
-
-    // Handle error callback - if bundled asset fails, notify parent to fallback to API
-    const handleImageError = () => {
-      if (photoSource && typeof photoSource !== 'string' && onPhotoError) {
-        onPhotoError(index, item.photoReference);
-      }
-    };
-
     return (
       <View style={[styles.photoContainer, { width: dimensions.width, height: dimensions.height }]}>
         <ZoomableImage
@@ -299,11 +295,11 @@ export default function PhotoViewerModal({
           width={dimensions.width}
           height={dimensions.height}
           onZoomChange={index === currentIndex ? handleZoomChange : undefined}
-          onError={handleImageError}
+          showPlaceholderOnError={true}
         />
       </View>
     );
-  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange, onPhotoError, onLoadPhotoIfNeeded]);
+  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: dimensions.width,

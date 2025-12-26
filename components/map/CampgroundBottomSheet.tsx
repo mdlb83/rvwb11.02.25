@@ -9,13 +9,15 @@ import { useMapAppPreference } from '../../hooks/useMapAppPreference';
 import { getMapAppUrl, getMapAppName, MapApp, getDontShowInstructionsPreference } from '../../utils/mapAppPreferences';
 import { isBookmarked, toggleBookmark } from '../../utils/bookmarks';
 import { getGoogleMapsDataForEntry } from '../../utils/googleMapsDataLoader';
-import { GoogleMapsData } from '../../types/googleMapsData';
+import { GoogleMapsData, GoogleMapsPhoto } from '../../types/googleMapsData';
 import MapAppPickerModal from '../settings/MapAppPickerModal';
 import MapReturnInstructionsModal from './MapReturnInstructionsModal';
 import PhotoViewerModal from './PhotoViewerModal';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getPhotoUri, preloadCampgroundPhotos } from '../../utils/photoCache';
 import { getBundledPhotoSource, hasBundledAsset } from '../../utils/bundledPhotoAssets';
+import { fetchPlacePhotos, downloadAndCachePlacePhotos } from '../../utils/fetchPlacePhotos';
+import { Paths } from 'expo-file-system';
+import { isPhotoCached, getCachedPhotoPath } from '../../utils/photoCache';
 import SubscriptionBlur from '../subscription/SubscriptionBlur';
 import PaywallModal from '../subscription/PaywallModal';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -193,18 +195,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     const extraKey = Constants.expoConfig?.extra?.googleMapsApiKey;
     const apiKey = iosKey || androidKey || extraKey || '';
     
-    console.log('🖼️ getPhotoUrl called:', {
-      photoReference: photoReference?.substring(0, 30) + '...',
-      placeId,
-      hasIosKey: !!iosKey,
-      hasAndroidKey: !!androidKey,
-      hasExtraKey: !!extraKey,
-      hasApiKey: !!apiKey,
-      apiKeyLength: apiKey.length
-    });
-    
     if (!apiKey) {
-      console.warn('⚠️ getPhotoUrl returning null: no API key');
       return null;
     }
     
@@ -217,11 +208,9 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       // Old format: need to construct full path
       photoUrl = `https://places.googleapis.com/v1/places/${placeId}/photos/${photoReference}/media?maxWidthPx=400&maxHeightPx=400&key=${apiKey}`;
     } else {
-      console.warn('⚠️ getPhotoUrl returning null: no placeId for old format');
       return null;
     }
     
-    console.log('✅ Generated photo URL:', photoUrl.substring(0, 100) + '...');
     return photoUrl;
   }, []);
 
@@ -230,8 +219,23 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     return googleMapsData?.photos || [];
   }, [googleMapsData?.photos]);
 
-  // State to track photo URIs (cached paths, URLs, or bundled require() results)
-  const [photoUris, setPhotoUris] = useState<{ [index: number]: string | any }>({});
+  // Get effective placeId: prefer googleMapsData.placeId, fallback to campground.placeId
+  const effectivePlaceId = useMemo(() => {
+    return googleMapsData?.placeId || campground?.placeId;
+  }, [googleMapsData?.placeId, campground?.placeId]);
+
+  // Simple state: just track bundled assets for first 2 photos
+  const [bundledPhotoUris, setBundledPhotoUris] = useState<{ [index: number]: any }>({});
+  
+  // Track which photos failed to load (so we can show placeholder)
+  const [failedPhotos, setFailedPhotos] = useState<Set<number>>(new Set());
+  
+  // Track photo load timeouts
+  const photoTimeoutsRef = useRef<{ [index: number]: NodeJS.Timeout }>({});
+  
+  // Track fetched/cached photos beyond first 2
+  const [fetchedPhotoUris, setFetchedPhotoUris] = useState<{ [index: number]: string }>({});
+  const [fetchingPhotos, setFetchingPhotos] = useState(false);
 
   // Generate a unique ID for the campground for deep linking
   const campgroundId = useMemo(() => {
@@ -242,85 +246,183 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     return `${city}-${state}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }, [campground]);
 
-  // Maximum number of photos to preload initially (first 2)
-  const MAX_PRELOADED_PHOTOS = 2;
-
-  // Preload only first 2 photos when bottom sheet opens or campground changes
+  // Simple: Preload bundled assets for first 2 photos only
   useEffect(() => {
-    if (!campgroundId || !googleMapsData?.photos || allPhotos.length === 0) {
-      setPhotoUris({});
+    if (!allPhotos || allPhotos.length === 0) {
+      setBundledPhotoUris({});
+      setFailedPhotos(new Set());
+      setFetchedPhotoUris({}); // Reset fetched photos
+      
+      // Clear all timeouts
+      Object.values(photoTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
+      photoTimeoutsRef.current = {};
       return;
     }
 
-    const loadPhotoUris = async () => {
-      const uris: { [index: number]: string | any } = {};
-      
-      // Only preload first MAX_PRELOADED_PHOTOS photos
-      const photosToPreload = allPhotos.slice(0, MAX_PRELOADED_PHOTOS);
-      
-      const uriPromises = photosToPreload.map(async (photo, index) => {
-        if (!photo.photoReference) return;
-        
-        // Try bundled asset first if localPath exists (only first 2 photos are bundled)
-        if (photo.localPath && hasBundledAsset(photo.localPath)) {
-          try {
-            const bundledSource = getBundledPhotoSource(photo.localPath);
-            if (bundledSource) {
-              uris[index] = bundledSource; // Store the require() result directly
-              console.log('✅ Using bundled asset:', photo.localPath);
-              return;
-            }
-          } catch (error) {
-            console.warn('⚠️ Failed to load bundled asset, falling back to API:', photo.localPath, error);
-            // Fall through to API
+    const bundled: { [index: number]: any } = {};
+    
+    // Only check first 2 photos for bundled assets
+    allPhotos.slice(0, 2).forEach((photo, index) => {
+      if (photo.localPath && hasBundledAsset(photo.localPath)) {
+        try {
+          const bundledSource = getBundledPhotoSource(photo.localPath);
+          if (bundledSource) {
+            bundled[index] = bundledSource;
           }
+        } catch (error) {
+          // Silently fail - will use API URL instead
         }
-        
-        // Fallback to API/cached photos
-        const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
-        if (!photoUrl) return;
-        
-        const uri = await getPhotoUri(photoUrl, campgroundId, index, true);
-        uris[index] = uri;
+      }
+    });
+
+    setBundledPhotoUris(bundled);
+    setFailedPhotos(new Set()); // Reset failed photos when campground changes
+    setFetchedPhotoUris({}); // Reset fetched photos
+    setConfirmedCachedPhotos({}); // Reset confirmed cached photos
+    
+    // Clear all timeouts
+    Object.values(photoTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
+    photoTimeoutsRef.current = {};
+  }, [allPhotos]);
+
+  // Fetch fresh photos from API for photos beyond first 2
+  useEffect(() => {
+    // Only fetch if we have photos beyond first 2 and haven't fetched yet
+    if (
+      !effectivePlaceId ||
+      !campgroundId ||
+      allPhotos.length <= 2 ||
+      fetchingPhotos ||
+      Object.keys(fetchedPhotoUris).length > 0
+    ) {
+      console.log('⏭️ Skipping photo fetch:', {
+        hasPlaceId: !!effectivePlaceId,
+        hasCampgroundId: !!campgroundId,
+        photoCount: allPhotos.length,
+        isFetching: fetchingPhotos,
+        alreadyFetched: Object.keys(fetchedPhotoUris).length
       });
-
-      await Promise.allSettled(uriPromises);
-      setPhotoUris(uris);
-    };
-
-    loadPhotoUris();
-  }, [campgroundId, allPhotos, googleMapsData?.placeId]);
-
-  // Lazy load photos when user scrolls beyond first 4 in the carousel
-  const loadPhotoIfNeeded = useCallback(async (index: number) => {
-    // Skip if already loaded or out of bounds
-    if (photoUris[index] || index < 0 || index >= allPhotos.length) {
       return;
     }
 
-    const photo = allPhotos[index];
-    if (!photo?.photoReference) return;
-
-    // Try bundled asset first (only first 2 photos are bundled)
-    if (photo.localPath && hasBundledAsset(photo.localPath)) {
+    const fetchPhotos = async () => {
+      console.log('🔄 Starting photo fetch:', {
+        placeId: effectivePlaceId,
+        campgroundId: campgroundId,
+        totalPhotos: allPhotos.length,
+        photosToFetch: allPhotos.length - 2
+      });
+      
+      setFetchingPhotos(true);
       try {
-        const bundledSource = getBundledPhotoSource(photo.localPath);
-        if (bundledSource) {
-          setPhotoUris(prev => ({ ...prev, [index]: bundledSource }));
-          return;
+        // Fetch fresh photo names from API (starting from index 2)
+        const photoNames = await fetchPlacePhotos(effectivePlaceId, 2, allPhotos.length - 2);
+        
+        console.log('📸 Photo names fetched:', photoNames.length);
+        
+        if (photoNames.length > 0) {
+          // Download and cache the photos
+          const cached = await downloadAndCachePlacePhotos(photoNames, campgroundId, 2);
+          console.log('💾 Cached photos:', Object.keys(cached).length);
+          setFetchedPhotoUris(cached);
+        } else {
+          console.warn('⚠️ No photo names returned from API');
         }
       } catch (error) {
-        console.warn('⚠️ Failed to load bundled asset, falling back to API:', photo.localPath, error);
+        console.error('❌ Error fetching photos:', error);
+      } finally {
+        setFetchingPhotos(false);
+      }
+    };
+
+    fetchPhotos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectivePlaceId, campgroundId, allPhotos.length]);
+
+  // State to track which photos are confirmed cached (checked directly from file system)
+  const [confirmedCachedPhotos, setConfirmedCachedPhotos] = useState<{ [index: number]: string }>({});
+
+  // Check cache for photos beyond first 2
+  useEffect(() => {
+    if (!campgroundId || allPhotos.length <= 2) {
+      return;
+    }
+
+    const checkCache = async () => {
+      const cached: { [index: number]: string } = {};
+      for (let i = 2; i < allPhotos.length; i++) {
+        const isCached = await isPhotoCached(campgroundId, i);
+        if (isCached) {
+          const cachedPath = getCachedPhotoPath(campgroundId, i);
+          cached[i] = cachedPath.uri;
+        }
+      }
+      if (Object.keys(cached).length > 0) {
+        setConfirmedCachedPhotos(cached);
+      }
+    };
+
+    checkCache();
+  }, [campgroundId, allPhotos.length]);
+
+  // Simple helper: Get photo source for a given index
+  const getPhotoSource = useCallback((photo: GoogleMapsPhoto, index: number) => {
+    // If this photo already failed, return null to show placeholder
+    if (failedPhotos.has(index)) {
+      return null;
+    }
+
+    // First, try bundled asset (only for first 2 photos)
+    if (bundledPhotoUris[index]) {
+      return bundledPhotoUris[index];
+    }
+
+    // For photos beyond first 2, check confirmed cached photos first, then fetched photos
+    if (index >= 2) {
+      if (confirmedCachedPhotos[index]) {
+        console.log(`📷 Using confirmed cached photo for index ${index}`);
+        return { uri: confirmedCachedPhotos[index] };
+      }
+      if (fetchedPhotoUris[index]) {
+        console.log(`📷 Using fetched photo for index ${index}`);
+        return { uri: fetchedPhotoUris[index] };
+      }
+      // If fetching is in progress, return null to show loading (don't use expired references)
+      if (fetchingPhotos) {
+        return null;
       }
     }
 
-    // Load from API/cache
-    const photoUrl = getPhotoUrl(photo.photoReference, googleMapsData?.placeId);
-    if (!photoUrl) return;
+    // Otherwise, try to use stored photo reference (fallback - only if not fetching)
+    if (!photo.photoReference) {
+      return null;
+    }
 
-    const uri = await getPhotoUri(photoUrl, campgroundId, index, true);
-    setPhotoUris(prev => ({ ...prev, [index]: uri }));
-  }, [allPhotos, photoUris, googleMapsData?.placeId, campgroundId, getPhotoUrl, getPhotoUri]);
+    // Use effective placeId
+    if (!effectivePlaceId) {
+      return null;
+    }
+
+    const photoUrl = getPhotoUrl(photo.photoReference, effectivePlaceId);
+    if (!photoUrl) {
+      return null;
+    }
+
+    // Set timeout for photos beyond first 2 (API URLs) - if they don't load in 10 seconds, mark as failed
+    if (index >= 2 && !photoTimeoutsRef.current[index]) {
+      photoTimeoutsRef.current[index] = setTimeout(() => {
+        console.log(`⏱️ Photo ${index} timeout - marking as failed`);
+        setFailedPhotos(prev => {
+          const next = new Set(prev);
+          next.add(index);
+          return next;
+        });
+        delete photoTimeoutsRef.current[index];
+      }, 10000); // 10 second timeout
+    }
+
+    return { uri: photoUrl };
+  }, [bundledPhotoUris, effectivePlaceId, getPhotoUrl, failedPhotos, fetchedPhotoUris, confirmedCachedPhotos, fetchingPhotos]);
 
 
   // Load the "don't show instructions" preference on mount
@@ -1340,33 +1442,10 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                       isInteractingWithPhotosRef.current = false;
                     }, 100);
                   }}
-                  onMomentumScrollEnd={(event) => {
+                  onMomentumScrollEnd={() => {
                     setTimeout(() => {
                       isInteractingWithPhotosRef.current = false;
                     }, 100);
-                    
-                    // Lazy load photos when scrolling beyond first 4
-                    const scrollX = event.nativeEvent.contentOffset.x;
-                    const photoWidth = Dimensions.get('window').width * 0.85; // Approximate photo width
-                    const visibleIndex = Math.floor(scrollX / photoWidth);
-                    
-                    // Preload photos around the visible area (current + next 2)
-                    for (let i = Math.max(0, visibleIndex - 1); i <= Math.min(allPhotos.length - 1, visibleIndex + 2); i++) {
-                      if (i >= MAX_PRELOADED_PHOTOS) {
-                        loadPhotoIfNeeded(i);
-                      }
-                    }
-                  }}
-                  onScroll={(event) => {
-                    // Also lazy load during scroll for smoother experience
-                    const scrollX = event.nativeEvent.contentOffset.x;
-                    const photoWidth = Dimensions.get('window').width * 0.85;
-                    const visibleIndex = Math.floor(scrollX / photoWidth);
-                    
-                    // Preload next photo if approaching it
-                    if (visibleIndex + 1 < allPhotos.length && visibleIndex + 1 >= MAX_PRELOADED_PHOTOS) {
-                      loadPhotoIfNeeded(visibleIndex + 1);
-                    }
                   }}
                 >
                   <View style={styles.photosLayout}>
@@ -1374,18 +1453,12 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                   {allPhotos.map((photo, index) => {
                     if (!photo.photoReference) return null;
                     
-                    // Lazy load photo if needed (for photos beyond first 4)
-                    if (index >= MAX_PRELOADED_PHOTOS && !photoUris[index]) {
-                      loadPhotoIfNeeded(index);
-                    }
-                    
                     // Pattern repeats every 3 photos: 0 (large), 1-2 (stack), 3 (large), 4-5 (stack), etc.
                     const positionInPattern = index % 3;
                     
                     // If position is 1 or 2, it's part of a stack - handle separately
                     if (positionInPattern === 1 || positionInPattern === 2) {
                       // Only render the first photo of the stack (position 1)
-                      // Position 2 will be rendered within the same stack
                       if (positionInPattern === 1) {
                         const stackPhotos = allPhotos.slice(index, index + 2).filter(p => p.photoReference);
                         if (stackPhotos.length === 0) return null;
@@ -1394,10 +1467,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                           <View key={`stack-${index}`} style={styles.photosStack}>
                             {stackPhotos.map((stackPhoto, stackIndex) => {
                               const actualIndex = index + stackIndex;
-                              // Use cached URI if available, otherwise fallback to URL
-                              const photoUri = photoUris[actualIndex] || getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
-                              const isBundledAsset = photoUri && typeof photoUri !== 'string';
-                              const imageSource = typeof photoUri === 'string' ? { uri: photoUri } : photoUri;
+                              const imageSource = getPhotoSource(stackPhoto, actualIndex);
                               
                               return (
                                 <TouchableOpacity
@@ -1409,29 +1479,44 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                                     setPhotoViewerVisible(true);
                                   }}
                                 >
-                                  {photoUri ? (
-                                    <Image 
-                                      key={`photo-${actualIndex}-${isBundledAsset ? 'bundled' : 'uri'}`}
-                                      source={imageSource}
-                                      style={styles.stackPhotoImage}
-                                      resizeMode="cover"
-                                      onError={(error) => {
-                                        console.error('❌ Stack image load error:', {
-                                          actualIndex,
-                                          photoUri: photoUri ? (typeof photoUri === 'string' ? photoUri.substring(0, 100) : 'bundled asset') : 'null',
-                                          error: error.nativeEvent?.error
-                                        });
-                                        // If bundled asset failed, fallback to API URL
-                                        if (isBundledAsset) {
-                                          const apiUrl = getPhotoUrl(stackPhoto.photoReference, googleMapsData.placeId);
-                                          if (apiUrl) {
-                                            setPhotoUris(prev => ({ ...prev, [actualIndex]: apiUrl }));
+                                  {imageSource ? (
+                                    failedPhotos.has(actualIndex) ? (
+                                      <View style={[styles.stackPhotoImage, styles.photoPlaceholderContainer, { backgroundColor: theme.surfaceSecondary }]}>
+                                        <Ionicons name="image-outline" size={20} color={theme.textTertiary} />
+                                      </View>
+                                    ) : (
+                                      <Image 
+                                        key={`stack-photo-${actualIndex}-${typeof imageSource === 'object' && 'uri' in imageSource ? imageSource.uri?.substring(0, 50) : 'bundled'}`}
+                                        source={imageSource}
+                                        style={styles.stackPhotoImage}
+                                        resizeMode="cover"
+                                        onError={(error) => {
+                                          const errorMsg = error.nativeEvent?.error || 'unknown error';
+                                          console.log(`❌ Stack photo ${actualIndex} failed to load:`, errorMsg);
+                                          // Clear timeout if exists
+                                          if (photoTimeoutsRef.current[actualIndex]) {
+                                            clearTimeout(photoTimeoutsRef.current[actualIndex]);
+                                            delete photoTimeoutsRef.current[actualIndex];
                                           }
-                                        }
-                                      }}
-                                    />
+                                          // Force state update to show placeholder
+                                          setFailedPhotos(prev => {
+                                            const next = new Set(prev);
+                                            next.add(actualIndex);
+                                            return next;
+                                          });
+                                        }}
+                                        onLoad={() => {
+                                          console.log(`✅ Stack photo ${actualIndex} loaded successfully`);
+                                          // Clear timeout if exists
+                                          if (photoTimeoutsRef.current[actualIndex]) {
+                                            clearTimeout(photoTimeoutsRef.current[actualIndex]);
+                                            delete photoTimeoutsRef.current[actualIndex];
+                                          }
+                                        }}
+                                      />
+                                    )
                                   ) : (
-                                    <View style={styles.photoPlaceholderContainer}>
+                                    <View style={[styles.stackPhotoImage, styles.photoPlaceholderContainer, { backgroundColor: theme.surfaceSecondary }]}>
                                       <Ionicons name="image-outline" size={20} color={theme.textTertiary} />
                                     </View>
                                   )}
@@ -1446,10 +1531,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                     }
                     
                     // Position 0 or 3, 6, 9... (multiples of 3) - large photo
-                    // Use cached URI if available, otherwise fallback to URL
-                    const photoUri = photoUris[index] || getPhotoUrl(photo.photoReference, googleMapsData.placeId);
-                    const isBundledAsset = photoUri && typeof photoUri !== 'string';
-                    const imageSource = typeof photoUri === 'string' ? { uri: photoUri } : photoUri;
+                    const imageSource = getPhotoSource(photo, index);
                     
                     return (
                       <TouchableOpacity
@@ -1461,29 +1543,44 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                           setPhotoViewerVisible(true);
                         }}
                       >
-                        {photoUri ? (
-                          <Image 
-                            key={`photo-${index}-${isBundledAsset ? 'bundled' : 'uri'}`}
-                            source={imageSource}
-                            style={styles.featuredPhotoImage}
-                            resizeMode="cover"
-                            onError={(error) => {
-                              console.error('❌ Image load error:', {
-                                index,
-                                photoUri: photoUri ? (typeof photoUri === 'string' ? photoUri.substring(0, 100) : 'bundled asset') : 'null',
-                                error: error.nativeEvent?.error
-                              });
-                              // If bundled asset failed, fallback to API URL
-                              if (isBundledAsset) {
-                                const apiUrl = getPhotoUrl(photo.photoReference, googleMapsData.placeId);
-                                if (apiUrl) {
-                                  setPhotoUris(prev => ({ ...prev, [index]: apiUrl }));
+                        {imageSource ? (
+                          failedPhotos.has(index) ? (
+                            <View style={[styles.featuredPhotoImage, styles.photoPlaceholderContainer, { backgroundColor: theme.surfaceSecondary }]}>
+                              <Ionicons name="image-outline" size={40} color={theme.textTertiary} />
+                            </View>
+                          ) : (
+                            <Image 
+                              key={`photo-${index}-${typeof imageSource === 'object' && 'uri' in imageSource ? imageSource.uri?.substring(0, 50) : 'bundled'}`}
+                              source={imageSource}
+                              style={styles.featuredPhotoImage}
+                              resizeMode="cover"
+                              onError={(error) => {
+                                const errorMsg = error.nativeEvent?.error || 'unknown error';
+                                console.log(`❌ Photo ${index} failed to load:`, errorMsg);
+                                // Clear timeout if exists
+                                if (photoTimeoutsRef.current[index]) {
+                                  clearTimeout(photoTimeoutsRef.current[index]);
+                                  delete photoTimeoutsRef.current[index];
                                 }
-                              }
-                            }}
-                          />
+                                // Force state update to show placeholder
+                                setFailedPhotos(prev => {
+                                  const next = new Set(prev);
+                                  next.add(index);
+                                  return next;
+                                });
+                              }}
+                              onLoad={() => {
+                                console.log(`✅ Photo ${index} loaded successfully`);
+                                // Clear timeout if exists
+                                if (photoTimeoutsRef.current[index]) {
+                                  clearTimeout(photoTimeoutsRef.current[index]);
+                                  delete photoTimeoutsRef.current[index];
+                                }
+                              }}
+                            />
+                          )
                         ) : (
-                          <View style={styles.photoPlaceholderContainer}>
+                          <View style={[styles.featuredPhotoImage, styles.photoPlaceholderContainer, { backgroundColor: theme.surfaceSecondary }]}>
                             <Ionicons name="image-outline" size={40} color={theme.textTertiary} />
                           </View>
                         )}
@@ -1627,17 +1724,9 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           visible={photoViewerVisible}
           photos={allPhotos}
           initialIndex={selectedPhotoIndex}
-          placeId={googleMapsData.placeId}
+          placeId={effectivePlaceId}
           getPhotoUrl={getPhotoUrl}
-          photoUris={photoUris}
-          onLoadPhotoIfNeeded={loadPhotoIfNeeded}
-          onPhotoError={(index, photoReference) => {
-            // Fallback to API URL when bundled asset fails
-            const apiUrl = getPhotoUrl(photoReference, googleMapsData.placeId);
-            if (apiUrl) {
-              setPhotoUris(prev => ({ ...prev, [index]: apiUrl }));
-            }
-          }}
+          photoUris={bundledPhotoUris}
           onClose={() => setPhotoViewerVisible(false)}
         />
       )}
@@ -2182,6 +2271,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  photoLoadingContainer: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   photoPlaceholder: {
     fontSize: 10,

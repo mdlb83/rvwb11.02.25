@@ -44,7 +44,15 @@ export async function downloadAndCachePhoto(
     const file = getCachedPhotoPath(campgroundId, photoIndex);
     const response = await fetch(photoUrl);
     if (!response.ok) {
-      console.error('Failed to download photo:', response.status);
+      const errorText = await response.text().catch(() => 'Unable to read error response');
+      console.error('❌ Failed to download photo:', {
+        status: response.status,
+        statusText: response.statusText,
+        campgroundId,
+        photoIndex,
+        photoUrl: photoUrl.substring(0, 150) + '...', // Log partial URL (don't expose full API key)
+        error: errorText.substring(0, 200) // Log first 200 chars of error
+      });
       return null;
     }
 
@@ -81,15 +89,22 @@ export async function getPhotoUri(
     return file.uri;
   }
 
-  // If not cached and downloadIfMissing is true, download in background
+  // If not cached and downloadIfMissing is true, try to download synchronously first
+  // This ensures we catch errors immediately for the first 2 photos
   if (downloadIfMissing) {
-    // Download in background (don't wait)
-    downloadAndCachePhoto(photoUrl, campgroundId, photoIndex).catch(err => {
-      console.error('Background photo download failed:', err);
-    });
+    try {
+      const cachedUri = await downloadAndCachePhoto(photoUrl, campgroundId, photoIndex);
+      if (cachedUri) {
+        return cachedUri;
+      }
+      // If download failed, fall through to return URL (will try to load directly)
+    } catch (err) {
+      console.warn('⚠️ Photo download failed, will try direct URL:', err);
+      // Fall through to return URL
+    }
   }
 
-  // Return the URL for now (will use cached version on next load)
+  // Return the URL for now (will try to load directly, or cached version on next load)
   return photoUrl;
 }
 
