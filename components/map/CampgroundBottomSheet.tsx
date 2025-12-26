@@ -132,10 +132,12 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   const { isPremium, checkSubscription, syncPurchases } = useSubscription();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const contentBeforeSeparatorRef = useRef<View>(null);
+  const scrollViewRef = useRef<any>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [remainingViews, setRemainingViews] = useState<number | null>(null);
   const [shouldShowBlur, setShouldShowBlur] = useState(false);
+  const [isScrolledToTop, setIsScrolledToTop] = useState(true);
 
 
   // Refresh subscription status when paywall closes (in case purchase completed)
@@ -493,23 +495,19 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     if (index >= 2) {
       // Always prefer confirmed cached photos (checked from file system)
       if (confirmedCachedPhotos[index]) {
-        console.log(`📷 Using confirmed cached photo for index ${index}`);
         return { uri: confirmedCachedPhotos[index] };
       }
       // Then try fetched photos from state
       if (fetchedPhotoUris[index]) {
-        console.log(`📷 Using fetched photo for index ${index}`);
         return { uri: fetchedPhotoUris[index] };
       }
       // If fetching is in progress, return null to show loading (don't use expired references)
       if (fetchingPhotos) {
-        console.log(`⏳ Photo ${index} - fetching in progress, showing placeholder`);
         return null;
       }
       // If we have cached photos for other indices but not this one, don't use expired references
       // This means photos are being fetched/cached, so wait for them
       if (Object.keys(confirmedCachedPhotos).length > 0 || Object.keys(fetchedPhotoUris).length > 0) {
-        console.log(`⏳ Photo ${index} - other photos cached, waiting for this one`);
         return null;
       }
     }
@@ -642,15 +640,20 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
 
   // Determine if bottom sheet should be visible (index -1 = closed)
   const sheetIndex = useMemo(() => (campground ? initialSnapIndex : -1), [campground, initialSnapIndex]);
+  const [currentSnapIndex, setCurrentSnapIndex] = useState<number>(initialSnapIndex);
 
   // Update bottom sheet position when campground changes
   useEffect(() => {
     if (campground) {
+      setIsScrolledToTop(true);
+      setCurrentSnapIndex(initialSnapIndex);
       // Small delay to ensure smooth animation
       const timer = setTimeout(() => {
         bottomSheetRef.current?.snapToIndex(initialSnapIndex);
       }, 50);
       return () => clearTimeout(timer);
+    } else {
+      setIsScrolledToTop(true);
     }
     return undefined;
   }, [campground, initialSnapIndex]);
@@ -1072,7 +1075,11 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       enablePanDownToClose={true}
       activeOffsetY={[-1, 1]}
       failOffsetX={[-5, 5]}
+      enableOverDrag={false}
+      enableHandlePanningGesture={true}
+      enableContentPanningGesture={currentSnapIndex === 2 ? isScrolledToTop : true}
       onChange={(index) => {
+        setCurrentSnapIndex(index);
         if (index === -1) {
           onClose();
         }
@@ -1082,8 +1089,14 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       backgroundStyle={[styles.bottomSheetBackground, { backgroundColor: theme.bottomSheetBackground }]}
     >
       <BottomSheetScrollView 
+        ref={scrollViewRef}
         contentContainerStyle={styles.contentContainer}
         style={styles.scrollView}
+        onScroll={(event) => {
+          const offsetY = event.nativeEvent.contentOffset.y;
+          setIsScrolledToTop(offsetY <= 0);
+        }}
+        scrollEventThrottle={16}
       >
         {campground ? (
           (() => {
