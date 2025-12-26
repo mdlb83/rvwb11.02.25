@@ -236,6 +236,9 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   // Track fetched/cached photos beyond first 2
   const [fetchedPhotoUris, setFetchedPhotoUris] = useState<{ [index: number]: string }>({});
   const [fetchingPhotos, setFetchingPhotos] = useState(false);
+  
+  // Ref to track which campground we're currently fetching for (to cancel stale fetches)
+  const currentFetchCampgroundRef = useRef<string>('');
 
   // Generate a unique ID for the campground for deep linking
   const campgroundId = useMemo(() => {
@@ -252,6 +255,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       setBundledPhotoUris({});
       setFailedPhotos(new Set());
       setFetchedPhotoUris({}); // Reset fetched photos
+      setConfirmedCachedPhotos({}); // Reset confirmed cached photos
       
       // Clear all timeouts
       Object.values(photoTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
@@ -279,6 +283,10 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
     setFailedPhotos(new Set()); // Reset failed photos when campground changes
     setFetchedPhotoUris({}); // Reset fetched photos
     setConfirmedCachedPhotos({}); // Reset confirmed cached photos
+    setFetchingPhotos(false); // Reset fetching state
+    
+    // Cancel any in-flight fetches by updating the ref
+    currentFetchCampgroundRef.current = '';
     
     // Clear all timeouts
     Object.values(photoTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
@@ -288,50 +296,105 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
   // Fetch fresh photos from API for photos beyond first 2
   useEffect(() => {
     // Only fetch if we have photos beyond first 2 and haven't fetched yet
+    // Check if we have cached photos for THIS campground by checking if any cached photos exist
+    const hasCachedPhotos = Object.keys(confirmedCachedPhotos).length > 0 || Object.keys(fetchedPhotoUris).length > 0;
+    
     if (
       !effectivePlaceId ||
       !campgroundId ||
       allPhotos.length <= 2 ||
       fetchingPhotos ||
-      Object.keys(fetchedPhotoUris).length > 0
+      hasCachedPhotos
     ) {
       console.log('⏭️ Skipping photo fetch:', {
         hasPlaceId: !!effectivePlaceId,
         hasCampgroundId: !!campgroundId,
         photoCount: allPhotos.length,
         isFetching: fetchingPhotos,
-        alreadyFetched: Object.keys(fetchedPhotoUris).length
+        hasCachedPhotos: hasCachedPhotos,
+        confirmedCachedCount: Object.keys(confirmedCachedPhotos).length,
+        fetchedCount: Object.keys(fetchedPhotoUris).length
       });
       return;
     }
 
     const fetchPhotos = async () => {
-      console.log('🔄 Starting photo fetch:', {
-        placeId: effectivePlaceId,
-        campgroundId: campgroundId,
-        totalPhotos: allPhotos.length,
-        photosToFetch: allPhotos.length - 2
-      });
+      // Store the current campground ID to check if we've switched
+      const fetchCampgroundId = campgroundId;
+      currentFetchCampgroundRef.current = fetchCampgroundId;
       
       setFetchingPhotos(true);
       try {
         // Fetch fresh photo names from API (starting from index 2)
         const photoNames = await fetchPlacePhotos(effectivePlaceId, 2, allPhotos.length - 2);
         
+        // Check if we've switched campgrounds during fetch
+        if (currentFetchCampgroundRef.current !== fetchCampgroundId) {
+          console.log('⏹️ Photo fetch cancelled - campground changed during fetch');
+          return;
+        }
+        
         console.log('📸 Photo names fetched:', photoNames.length);
         
         if (photoNames.length > 0) {
-          // Download and cache the photos
-          const cached = await downloadAndCachePlacePhotos(photoNames, campgroundId, 2);
-          console.log('💾 Cached photos:', Object.keys(cached).length);
+          // Download and cache the photos in parallel, updating state as each photo completes
+          const cached = await downloadAndCachePlacePhotos(
+            photoNames, 
+            fetchCampgroundId, 
+            2,
+            (index, uri) => {
+              // Check if still for the same campground before updating state
+              if (currentFetchCampgroundRef.current === fetchCampgroundId) {
+                // Update state immediately when each photo is cached for faster UI updates
+                setFetchedPhotoUris(prev => ({ ...prev, [index]: uri }));
+                setConfirmedCachedPhotos(prev => ({ ...prev, [index]: uri }));
+              }
+            }
+          );
+          
+          // Final check before updating state
+          if (currentFetchCampgroundRef.current !== fetchCampgroundId) {
+            console.log('⏹️ Photo cache update cancelled - campground changed during download');
+            return;
+          }
+          
+          console.log('💾 All photos cached:', Object.keys(cached).length);
+          
+          // Final update with all cached photos
           setFetchedPhotoUris(cached);
+          const confirmed: { [index: number]: string } = {};
+          const newlyCachedIndices: number[] = [];
+          
+          for (const [index, uri] of Object.entries(cached)) {
+            const photoIndex = parseInt(index);
+            confirmed[photoIndex] = uri;
+            
+            // Track if this photo was previously marked as failed
+            if (failedPhotos.has(photoIndex)) {
+              newlyCachedIndices.push(photoIndex);
+            }
+          }
+          
+          setConfirmedCachedPhotos(prev => ({ ...prev, ...confirmed }));
+          
+          // Clear failed status for photos that are now cached
+          if (newlyCachedIndices.length > 0) {
+            setFailedPhotos(prev => {
+              const next = new Set(prev);
+              newlyCachedIndices.forEach(index => next.delete(index));
+              return next;
+            });
+          }
         } else {
           console.warn('⚠️ No photo names returned from API');
         }
       } catch (error) {
         console.error('❌ Error fetching photos:', error);
       } finally {
-        setFetchingPhotos(false);
+        // Only reset fetching state if still for the same campground
+        if (currentFetchCampgroundRef.current === fetchCampgroundId) {
+          setFetchingPhotos(false);
+        }
       }
     };
 
@@ -348,22 +411,71 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
       return;
     }
 
+    // Store current campground ID to check if we've switched
+    const checkCampgroundId = campgroundId;
+
     const checkCache = async () => {
+      // Check if we've switched campgrounds
+      if (checkCampgroundId !== campgroundId) {
+        return;
+      }
+
       const cached: { [index: number]: string } = {};
+      const newlyFoundIndices: number[] = [];
+      
       for (let i = 2; i < allPhotos.length; i++) {
-        const isCached = await isPhotoCached(campgroundId, i);
+        // Check again if we've switched
+        if (checkCampgroundId !== campgroundId) {
+          return;
+        }
+
+        const isCached = await isPhotoCached(checkCampgroundId, i);
         if (isCached) {
-          const cachedPath = getCachedPhotoPath(campgroundId, i);
+          const cachedPath = getCachedPhotoPath(checkCampgroundId, i);
           cached[i] = cachedPath.uri;
+          
+          // Track if this photo was previously marked as failed
+          if (failedPhotos.has(i)) {
+            newlyFoundIndices.push(i);
+          }
         }
       }
+      
+      // Final check before updating state
+      if (checkCampgroundId !== campgroundId) {
+        return;
+      }
+      
       if (Object.keys(cached).length > 0) {
-        setConfirmedCachedPhotos(cached);
+        setConfirmedCachedPhotos(prev => {
+          // Merge with existing cached photos
+          const merged = { ...prev, ...cached };
+          // Always return merged to trigger re-render (even if count is same, URIs might be different)
+          // This ensures Image components re-render when cached photos become available
+          return merged;
+        });
+        
+        // Clear failed status for photos that are now cached
+        if (newlyFoundIndices.length > 0) {
+          setFailedPhotos(prev => {
+            const next = new Set(prev);
+            newlyFoundIndices.forEach(index => next.delete(index));
+            return next;
+          });
+        }
       }
     };
 
     checkCache();
-  }, [campgroundId, allPhotos.length]);
+    
+    // Also check cache periodically in case photos are being downloaded
+    // Use shorter interval for faster updates
+    const interval = setInterval(() => {
+      checkCache();
+    }, 500); // Check every 500ms for faster updates
+    
+    return () => clearInterval(interval);
+  }, [campgroundId, allPhotos.length, failedPhotos]);
 
   // Simple helper: Get photo source for a given index
   const getPhotoSource = useCallback((photo: GoogleMapsPhoto, index: number) => {
@@ -379,16 +491,25 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
 
     // For photos beyond first 2, check confirmed cached photos first, then fetched photos
     if (index >= 2) {
+      // Always prefer confirmed cached photos (checked from file system)
       if (confirmedCachedPhotos[index]) {
         console.log(`📷 Using confirmed cached photo for index ${index}`);
         return { uri: confirmedCachedPhotos[index] };
       }
+      // Then try fetched photos from state
       if (fetchedPhotoUris[index]) {
         console.log(`📷 Using fetched photo for index ${index}`);
         return { uri: fetchedPhotoUris[index] };
       }
       // If fetching is in progress, return null to show loading (don't use expired references)
       if (fetchingPhotos) {
+        console.log(`⏳ Photo ${index} - fetching in progress, showing placeholder`);
+        return null;
+      }
+      // If we have cached photos for other indices but not this one, don't use expired references
+      // This means photos are being fetched/cached, so wait for them
+      if (Object.keys(confirmedCachedPhotos).length > 0 || Object.keys(fetchedPhotoUris).length > 0) {
+        console.log(`⏳ Photo ${index} - other photos cached, waiting for this one`);
         return null;
       }
     }
@@ -1486,7 +1607,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                                       </View>
                                     ) : (
                                       <Image 
-                                        key={`stack-photo-${actualIndex}-${typeof imageSource === 'object' && 'uri' in imageSource ? imageSource.uri?.substring(0, 50) : 'bundled'}`}
+                                        key={`stack-photo-${actualIndex}-${confirmedCachedPhotos[actualIndex] || fetchedPhotoUris[actualIndex] || (typeof imageSource === 'object' && 'uri' in imageSource ? imageSource.uri?.substring(0, 50) : 'bundled')}`}
                                         source={imageSource}
                                         style={styles.stackPhotoImage}
                                         resizeMode="cover"
@@ -1550,7 +1671,7 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
                             </View>
                           ) : (
                             <Image 
-                              key={`photo-${index}-${typeof imageSource === 'object' && 'uri' in imageSource ? imageSource.uri?.substring(0, 50) : 'bundled'}`}
+                              key={`photo-${index}-${confirmedCachedPhotos[index] || fetchedPhotoUris[index] || (typeof imageSource === 'object' && 'uri' in imageSource ? imageSource.uri?.substring(0, 50) : 'bundled')}`}
                               source={imageSource}
                               style={styles.featuredPhotoImage}
                               resizeMode="cover"
@@ -1727,6 +1848,8 @@ export default function CampgroundBottomSheet({ campground, onClose, onBookmarkC
           placeId={effectivePlaceId}
           getPhotoUrl={getPhotoUrl}
           photoUris={bundledPhotoUris}
+          cachedPhotoUris={{ ...confirmedCachedPhotos, ...fetchedPhotoUris }}
+          campgroundId={campgroundId}
           onClose={() => setPhotoViewerVisible(false)}
         />
       )}

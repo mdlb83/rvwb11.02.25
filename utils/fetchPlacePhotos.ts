@@ -82,18 +82,20 @@ export async function fetchPlacePhotos(
 
 /**
  * Download and cache photos from Google Places API
+ * Downloads photos in parallel for faster loading
  * Returns array of cached photo URIs
  */
 export async function downloadAndCachePlacePhotos(
   photoNames: string[],
   campgroundId: string,
-  startIndex: number
+  startIndex: number,
+  onPhotoCached?: (index: number, uri: string) => void // Callback when each photo is cached
 ): Promise<{ [index: number]: string }> {
   const cachedPhotos: { [index: number]: string } = {};
 
-  for (let i = 0; i < photoNames.length; i++) {
+  // Download all photos in parallel for faster loading
+  const downloadPromises = photoNames.map(async (photoName, i) => {
     const photoIndex = startIndex + i;
-    const photoName = photoNames[i];
     
     // Check if already cached
     const cachedPath = getCachedPhotoPath(campgroundId, photoIndex);
@@ -102,7 +104,10 @@ export async function downloadAndCachePlacePhotos(
     if (cachedInfo.exists) {
       console.log(`✅ Photo ${photoIndex} already cached:`, cachedPath.uri);
       cachedPhotos[photoIndex] = cachedPath.uri;
-      continue;
+      if (onPhotoCached) {
+        onPhotoCached(photoIndex, cachedPath.uri);
+      }
+      return { index: photoIndex, uri: cachedPath.uri };
     }
 
     // Download photo
@@ -113,7 +118,7 @@ export async function downloadAndCachePlacePhotos(
     const apiKey = iosKey || androidKey || extraKey || TEMP_API_KEY;
 
     if (!apiKey) {
-      continue;
+      return null;
     }
 
     const photoUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=800&maxHeightPx=800&key=${apiKey}`;
@@ -123,15 +128,18 @@ export async function downloadAndCachePlacePhotos(
     if (cachedUri) {
       console.log(`✅ Photo ${photoIndex} cached successfully:`, cachedUri);
       cachedPhotos[photoIndex] = cachedUri;
+      if (onPhotoCached) {
+        onPhotoCached(photoIndex, cachedUri);
+      }
+      return { index: photoIndex, uri: cachedUri };
     } else {
       console.warn(`⚠️ Failed to cache photo ${photoIndex}`);
+      return null;
     }
+  });
 
-    // Small delay to avoid rate limiting
-    if (i < photoNames.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-    }
-  }
+  // Wait for all downloads to complete (in parallel)
+  await Promise.allSettled(downloadPromises);
 
   return cachedPhotos;
 }

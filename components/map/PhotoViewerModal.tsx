@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { GoogleMapsPhoto } from '../../types/googleMapsData';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { isPhotoCached, getCachedPhotoPath } from '../../utils/photoCache';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -27,6 +28,8 @@ interface PhotoViewerModalProps {
   placeId?: string;
   getPhotoUrl: (photoReference: string, placeId?: string) => string | null;
   photoUris?: { [index: number]: string | any }; // Optional bundled assets (require() results) for first 2 photos
+  cachedPhotoUris?: { [index: number]: string }; // Cached photo URIs for photos beyond first 2
+  campgroundId?: string; // Campground ID for cache checking
   onClose: () => void;
 }
 
@@ -204,6 +207,8 @@ export default function PhotoViewerModal({
   placeId,
   getPhotoUrl,
   photoUris,
+  cachedPhotoUris,
+  campgroundId,
   onClose,
 }: PhotoViewerModalProps) {
   // Maximum number of photos that are preloaded (first 2)
@@ -212,6 +217,7 @@ export default function PhotoViewerModal({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
   const [isZoomed, setIsZoomed] = useState(false);
+  const [confirmedCachedPhotos, setConfirmedCachedPhotos] = useState<{ [index: number]: string }>({});
 
   // Update dimensions on orientation change
   useEffect(() => {
@@ -220,6 +226,29 @@ export default function PhotoViewerModal({
     });
     return () => subscription?.remove();
   }, []);
+
+  // Check cache for photos beyond first 2 when modal opens
+  useEffect(() => {
+    if (!visible || !campgroundId || photos.length <= 2) {
+      return;
+    }
+
+    const checkCache = async () => {
+      const cached: { [index: number]: string } = {};
+      for (let i = 2; i < photos.length; i++) {
+        const isCached = await isPhotoCached(campgroundId, i);
+        if (isCached) {
+          const cachedPath = getCachedPhotoPath(campgroundId, i);
+          cached[i] = cachedPath.uri;
+        }
+      }
+      if (Object.keys(cached).length > 0) {
+        setConfirmedCachedPhotos(cached);
+      }
+    };
+
+    checkCache();
+  }, [visible, campgroundId, photos.length]);
 
   // Reset to initial index when modal opens
   useEffect(() => {
@@ -263,13 +292,24 @@ export default function PhotoViewerModal({
       );
     }
 
-    // Simple: Try bundled asset first, then generate API URL
+    // Simple: Try bundled asset first, then cached photos, then generate API URL
     let imageSource: any = null;
     
     // Check for bundled asset (only first 2 photos)
     if (photoUris?.[index]) {
       imageSource = photoUris[index];
-    } else if (placeId) {
+    } 
+    // For photos beyond first 2, check confirmed cached photos first, then passed cachedPhotoUris
+    else if (index >= 2) {
+      if (confirmedCachedPhotos[index]) {
+        imageSource = { uri: confirmedCachedPhotos[index] };
+      } else if (cachedPhotoUris?.[index]) {
+        imageSource = { uri: cachedPhotoUris[index] };
+      }
+    }
+    
+    // Fallback to API URL if no cached version available
+    if (!imageSource && placeId) {
       // Generate API URL
       const photoUrl = getPhotoUrl(item.photoReference, placeId);
       if (photoUrl) {
@@ -299,7 +339,7 @@ export default function PhotoViewerModal({
         />
       </View>
     );
-  }, [dimensions, placeId, getPhotoUrl, photoUris, currentIndex, handleZoomChange]);
+  }, [dimensions, placeId, getPhotoUrl, photoUris, cachedPhotoUris, confirmedCachedPhotos, currentIndex, handleZoomChange]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: dimensions.width,
